@@ -1,0 +1,23 @@
+\section{Progress}
+We proceed by case analysis on the typing rules.
+
+\begin{itemize}
+    \item $\inferrule[]{ }{ %% const
+    \typerule{t.\<const>c} {
+        \insttype{\type{\epsilon}{l}{g}{\phi}}
+            {\type{\ti{t}{a}}{l}{g}{\phi,\ti{t}{a},(\<eq>a\;(t\;c))}}}
+    }$
+
+    \proof Trivial, since $t.\<const> c$ is a value.
+
+    \item $\inferrule[]{ }{ %% binop
+        C \vdash t.\<binop> :
+        {\begin{stackTL}
+            \ti{t}{a_1}\ti{t}{a_2};l;g;\phi \\
+            \rightarrow \ti{t}{a_3};l;g;\phi,\ti{t}{a_3},(\<eq>a_3\;(\<binop>\;a_1\;a_2))
+        \end{stackTL}}
+    }$
+    
+    \proof 
+
+\end{itemize}

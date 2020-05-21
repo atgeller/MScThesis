@@ -1,0 +1,76 @@
+\section{Subject Reduction}
+We proceed by case analysis on the reduction rules.
+
+\begin{itemize}
+    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ $\land$
+    $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow t.\<const> c$ if $c=\<binop>(c_1,c_2)$
+
+    \proof By $const$ and $binop$, we know that $s_2$ has the form $s_1 \ti{t}{a_3}$, $l_2=l_1$, $g_2=g_1$, and that
+    \begin{align*}
+        \phi_1&, 
+        \begin{stackTL}
+            \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c_1}), \\
+            \ti{t}{a_2}, (\<eq> a_2 (t c_2)), \\
+            \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\;a_1 a_2))
+        \end{stackTL} \\    
+        &\implies \phi_2
+    \end{align*}
+
+    By $const$, $C \vdash t.\<const> c :
+        \begin{stackTL}
+            \epsilon;l_1;g_1;\phi_1 \\ 
+            \rightarrow \ti{t}{a_3};l_1;g_1;\phi_1,\ti{t}{a_3},(\<eq> a_3\;\ti{t}{c})
+        \end{stackTL}$.
+
+    Because $c=binop_t(c_1,c_2)$, then by \todo{Need a lemma to state this $\phi$s},
+    \begin{align*}
+        \phi_1,\ti{t}{a},(\<eq> a\;\ti{t}{c}) &\implies \phi_1,
+        \begin{stackTL}
+            \ti{t}{a_1}, (\<eq> a_1\; \ti{t}{c_1}), \\
+            \ti{t}{a_2}, (\<eq> a_2\; \ti{t}{c_2}), \\
+            \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\;a_1 a_2))
+        \end{stackTL}
+    \end{align*}
+
+    Therefore, by $extension$ and $weakening$:
+    \[C \vdash (t.\<const> c) : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; \ti{t}{a_3};l_1;g_1;\phi_2\]
+
+    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ $\land$
+    $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow \<trap>$
+
+    \proof Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
+
+    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ $\land$
+    $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> \hookrightarrow t.\<const> c$ if $c=\<relop>(c_1,c_2)$
+
+    \proof Similar to $\<binop>$.
+
+    \item $C\vdash (t.\<const> c)\; t.\<testop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ 
+    \\$\land (t.\<const> c)\; (t.\<const> c)\; t.\<testop> \hookrightarrow t.\<const> c_2$ where $c_2=\<testop>(c)$
+
+    \proof By $const$ and $testop$, we know that $s_2$ has the form $s_1 \ti{t}{a_2}$, $l_2=l_1$, $g_2=g_1$, and that
+    \begin{align*}
+        \phi_1&, 
+        \begin{stackTL}
+            \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c}), \\
+            \ti{t}{a_2}, (\<eq> a_2\;(\<testop>\;a_1))
+        \end{stackTL} \\
+        &\implies \phi_2
+    \end{align*}
+
+    By $const$, $C \vdash t.\<const> c :
+        \begin{stackTL}
+            \epsilon;l_1;g_1;\phi_1 \\ 
+            \rightarrow \ti{t}{a_2};l_1;g_1;\phi_1,\ti{t}{a_2},(\<eq> a_2\;\ti{t}{c_2})
+        \end{stackTL}$.
+
+    Because $c_2=testop_t(c)$, then by \todo{Need a lemma to state this $\phi$s},
+    \begin{align*}
+        \phi_1,\ti{t}{a},(\<eq> a\;\ti{t}{c_2}) &\implies \phi_1,
+        \begin{stackTL}
+            \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c}), \\
+            \ti{t}{a_2}, (\<eq> a_2\;(\<testop>\;a_1))
+        \end{stackTL}
+    \end{align*}
+    
+\end{itemize}

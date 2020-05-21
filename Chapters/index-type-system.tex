@@ -1,0 +1,69 @@
+\chapter{The \name Type System}
+\label{chp:typesys}
+
+The goal of \name is to be used to eliminate unecessary dynamic checks.
+To acclomplish this, it must be able to 1) Statically identify instructions which may require dynamic checks, and 2) Prove that certain instructions do not require dynamic checks.
+With these challenges in mind, we designed an indexed type system based on the type system presented in \dtal, modified to fit \wasm.
+To understand the modifications we made to the \name type system to work with \wasm, we must first discuss how the \wasm type system works.
+
+\todo{I'm decently happy with the high-high-level path here: Design constraints $\rightarrow$ WASM basics $\rightarrow$ building on WASM basics to fulfill design, but I'm worried the digression in WASM kinda ruins the flow}
+
+\todo{Also, I'm unsure where the best place to introduce and discuss what an indexed type system is: the intro? here? related work about \dtal? Some combination of those with differing amounts of detail?}
+
+\todo{I think the way I'm going to handle appealing to z3 for constraint satisfaction is to basically treat it as a black box and include a writeup in the appendix.}
+
+\section{The \wasm Type System}
+\wasm is a stack-based language, so the type of an instruction in \wasm consists of a precondition and postcondition on the shape of the stack.
+This can be viewed as though instructions \emph{consume} certain values from the stack and then \emph{produce} values to be pushed on the stack.
+For example, a binary operation of some type $t$ consumes two values of the given type $t$ on the stack and produces a value of type $t$:
+
+\[
+    \inferrule{ }{C \vdash t.binop : t\ t \rightarrow t}
+\]
+
+In the above rule, $C$ is the module type context, which keeps track of various module-level types.
+
+Because most instructions only manipulate the top of the stack, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
+\emph{Stack polymorphism} allows extending the precondition and postcondition with the same data to thread unmodified parts of the stack through a list of instructions.
+Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the instruction being checked, after which point the ``forgotten'' part can be re-added.
+
+\todo{The explanation of this example seems really clunky}
+For example, if the stack has the shape $t_2\; t\; t$, then stack polymorphism allows us to ignore $t_2$ and typecheck $t.binop$ with $t\;t$ on the stack.
+Then the stack would look like $t$, at which point we add $t_2$ back to the postcondtion to get $t_2\; t$ after executing $t.binop$.
+
+\section{Extending The \wasm Type System With Indexed Types}
+\begin{figure}[ht]
+    \begin{math}
+        \begin{array}{rcl}
+            t &:: & \<ithreetwo> | \<isixfour> \\
+            a &::= & Var \\
+            x\;y &::=& a | (t\;c) | (binop\;x\;y) \\
+            P &::=& (testop\;x) | (relop\;x\;y) | \neg P | P \land P | P \lor P \\
+            \phi &::=& \circ | \phi, (t\;a) | \phi, P \\
+        \end{array}
+    \end{math}
+    \caption{Syntax of the \name index type language}
+    \label{fig:itsyntax}
+\end{figure}
+
+\todo{Details on the index type language}
+An indexed type system uses an index language in the type system to track constraints on program variables.
+Index variables are used to 
+
+In \name, we extend \wasm's technique for handling the stack to include an index context $\phi$ (which contains type index variable declarations and the constraints on indices) and the index types of local and global variables (similar to the Register file in DTAL) in the precondition and postcondition.
+Now, a precondition on the stack would look like $(t\ a); \phi; L; G$, where $(t\ a)$ is an index type, and $L$ and $G$ map local and global variables, respectively, to index type variables.
+
+\section{The Complete \name Type System}
+
+The \name type system is an extension of the existing \wasm type system.
+Figure~\ref{fig:itsyntax} shows the syntax for the index type language.
+Syntax written in a \tbbf{blue, bold font} denotes a \wasm instruction.
+Below is a quick overview of each of the terms.
+
+\begin{itemize}
+    \item $t$ represents a primitive \wasm type.
+    We do not reason about floating points, so it is either a 32-bit integer ($i32$) or a 64-bit integer ($i64$).
+    \item $a$ Is a type index variable which is associated with a program variable.
+\end{itemize}
+
+\input{chapters/IndexTypeSystem/typingrules.tex}

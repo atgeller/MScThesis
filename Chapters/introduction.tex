@@ -1,0 +1,34 @@
+\chapter{Introduction}
+\label{chp:intro}
+
+Types systems are useful for reasoning about programs.
+They can be used to reason about the correctness of programs, usually in the form of safety guarantees.
+For example, type safety is the property that a well-typed program will never become \emph{stuck}, that is, it will always be able to reduce the current expression. %% TODO: This sentence is super weak
+The safety guarantees provided by type systems provide a degree of trust in programs as a well typed program implicitly contains a checkable proof that it will not exhibit behavior disallowed by the type system.
+
+Expressive type systems can allow near complete trust in a program by verifying that it will never exhibit unsafe behavior.
+Generally, such type systems are attached to high level language, where the language abstractions make reasoning about programs in that language easier.
+However, prior work has attached expressive type systems that permit complex correctness guarantees to simple low-level languages.
+
+Using such an expressive type system for a low-level language, we can alleviate overhead otherwise required to ensure safety of untrusted low-level programs.
+Typically, executing code in an untrusted context requires dynamic safety checks which introduce potentially unnecessary instructions, slowing down execution.
+However, with the safety guarantees provided by the type system, we can determine when these checks are unnecessary and remove them.
+This would allow low-level programs to be downloaded, checked, and executed in a safe and efficient manner.
+
+Browsers and Internet-of-Things (IoT) are established and widely used technologies.
+Both potentially require running untrusted code, usually code that has been downloaded from somewhere on the internet.
+Therefore, it is crucial to ensure the safety of the code being executed.
+Typically, this is accomplished using dynamic safety checks and sandboxing.
+However, dynamic safety checks introduce extra potentially unnecessary instructions, slowing down code.
+
+%% This transition is a bit rushed
+
+Type systems can be used to alleviate the need for safety checks, reducing overhead, by providing safety guarantees about programs before they are run.
+The idea of using type systems to ensure the safety of low-level code is not a new one.
+Several projects have attached expressive type systems to low-level languages to attach proofs of correctness to low-level programs.
+However, the focus in these cases is on correctness, not on performance.
+Further, the low-level languages in question were toy languages not used in practice.
+
+%% Meh, too blunt
+The eventual goal is to use types to maximize performance while ensuring safety in real-world low-level programs.
+A necessary intermediate step is to create a type system which guarantees safety and has potential to improve performance.

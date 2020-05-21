@@ -1,0 +1,140 @@
+\documentclass[draft,msc]{ubcthesis}
+\usepackage[usenames]{color}
+\usepackage{savesym}
+\usepackage{amsmath}
+\savesymbol{program}
+\savesymbol{@program}
+\usepackage{semantic}   % Tools for typesetting PL semantics
+\usepackage{braket}     % Easy angle-bracket notation
+\restoresymbol{}{program}
+\restoresymbol{}{@program}
+\usepackage{syntax}
+\usepackage[utf8]{inputenc}
+\usepackage{mathpartir}
+\usepackage{xspace}
+\usepackage{dblfloatfix}
+\usepackage{multicol}
+\usepackage{subcaption}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textit{(TODO: #1)}}}
+\newcommand{\feedback}[2]{#2}
+
+\newcommand{\prechk}[0]{$prechk$\xspace}
+\newcommand{\name}[0]{Wasm-prechk\xspace}
+\newcommand{\wasm}[0]{Wasm\xspace}
+\newcommand{\dtal}[0]{DTAL\xspace}
+\newcommand{\ie}[0]{\emph{i.e.,}\xspace}
+\newcommand{\eg}[0]{\emph{e.g.,}\xspace}
+\newcommand{\proof}[0]{\emph{Proof.}\xspace}
+
+% Stack formatting
+\newenvironment{stackTL}{
+    \setlength{\arraycolsep}{0pt}
+    \begin{array}[t]{l}\ignorespacesafterend
+} {
+    \end{array}\ignorespacesafterend
+}
+
+% Some custom notations for object language stuff
+% Typeset object language notation in blue with sans serif font
+\newcommand{\tbbf}[1]{\textbf{\color{blue}#1}}
+\reservestyle{\keywords}{\tbbf}
+\keywords{ithreetwo[i32\;], isixfour[i64\;], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], neq[neq\;], eqz[eqz\;], unreachable[unreachable\;], nop[nop\;], drop[drop\;], select[select\;], block[block\;], end[\;end\;], loop[loop\;], if[if\;], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], trap[trap]}
+
+\mathlig{|}{\mid}
+\mathlig{;}{\tbbf{;\;}}
+\mathlig{:}{:}
+
+\hyphenation{Web-Assembly}
+
+\newcommand{\typerule}[2]{C \vdash #1:#2}
+%% stack ; locals ; globals ; index context
+\newcommand{\ti}[2]{(#1\;#2)}
+\newcommand{\type}[4]{#1;#2;#3;#4}
+\newcommand{\insttype}[2]{#1 \rightarrow #2}
+
+\includeonly{
+    preamble/acknowledgements,
+    preamble/dedication,
+    preamble/abstract,
+    chapters/introduction,
+    chapters/related-work,
+    chapters/index-type-system,
+    chapters/wasm-prechk,
+    chapters/type-safety,
+    chapters/discussion,
+    chapters/conclusion,
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\author{Adam T. Geller}
+\title{An Indexed Type System for Faster and Safer WebAssembly}
+%% \subtitle{With a Subtitle}
+
+\institution{The University Of British Columbia}
+\faculty{The Faculty of Graduate Studies}
+\institutionaddress{Vancouver}
+\program{Computer Science}
+\department{Computer Science}
+
+\previousdegree{B.Sc., The University of Washington, 2018}
+
+\copyrightyear{2020}
+\submitdate{\monthname\ \number\year} % The "\ " is required after
+                                      % \monthname to prevent the
+                                      % command from eating the space.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\frontmatter
+
+\maketitle
+
+\begin{abstract}
+    Downloading and executing untrusted code is inherently unsafe, but also something that happens often on the internet.
+    Therefore, untrusted code often requires run-time checks to ensure safety during execution.
+    These checks compromise performance and may be unnecessary.
+    We present an indexed type system, called \name, for WebAssembly that is intended to ensure safety while justifying the static elimination of run-time checks. \\\\
+\end{abstract}
+
+\maketitle
+
+\include{preamble/acknowledgements}
+
+\include{preamble/dedication}
+
+\tableofcontents                %% Mandatory
+\listoftables                   %% Mandatory if thesis has tables
+\listoffigures                  %% Mandatory if thesis has figures
+
+\mainmatter
+
+\include{chapters/introduction}
+\include{chapters/related-work}
+
+\include{chapters/index-type-system}
+
+%%\begin{mathpar}
+%%a ::= variable-not-otherwise-mentioned
+%%(x y ::= a (t c) (binop x y))
+%%(P ::= (testop x) (relop x y) (not P) (and P P) (or P P))
+%%;(γ ::= t (a : γ P)) TODO: I don't think we really need these? Syntactic sugar
+%%(φ ::= empty (φ (t a)) (φ P))
+
+%%(ti ::= (t a))
+%%  (mut? ::= boolean)
+%%  (tgi ::= (mut? ti))
+%%  ;; Index-type pre/post-condition: types on stack, locals, globals, and constraint context
+%%  (locals ::= (ti ...))
+%%  (globals ::= (ti ...))
+%%  (ticond ::= ((ti ...) locals globals φ))
+%%  (tfi ::= (ticond -> ticond))
+%%\end{mathpar}
+
+\include{chapters/wasm-prechk}
+\include{chapters/type-safety}
+\include{chapters/discussion}
+\include{chapters/conclusion}
+
+\end{document}
