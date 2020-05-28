@@ -1,4 +1,6 @@
-\begin{figure}[ht]
+\subsection{Instructions}
+
+\begin{figure}[h]
     \begin{mathpar}
         \inferrule[]{ }{ %% const
             \typerule{t.\<const>c} {
@@ -48,7 +50,7 @@
         } \and
         \inferrule[]{ }{ %% select
             C \vdash \<select> : {\begin{stackTL}
-                \ti{t}{a_1}\ti{t}{a_2}\ti{i32}{a};l;g;\phi
+                \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;g;\phi
                 \\ \rightarrow \ti{t}{a_3};l;g;\phi,\ti{t}{a_3}, 
                 {\begin{stackTL}
                     ((\<eqz> a) \land (\<eq> a_3\;a_2)) 
@@ -79,25 +81,25 @@
             C \vdash \<if> tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
         } \and
         \inferrule[]{ %% br
-            C_{label}(i) = ti^{*};l_1;g_1;\phi_1
+            C_{\text{label}}(i) = ti^{*};l_1;g_1;\phi_1
         }
         {
             C \vdash \<br> i : s_1\;ti^{*};l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
         } \and
         \inferrule[]{ %% br_if
-            C_{label}(i) = s_1;l_1;g_1;\phi_1 
+            C_{\text{label}}(i) = s_1;l_1;g_1;\phi_1 
         }
         {
             C \vdash \<brif> i : s_1\;\index{i32}{a};l_1;g_1;\phi_1 \rightarrow s_1\;;l_1;g_1;\phi_1,\neg(\<eqz> a)
         } \and
         \inferrule[]{ %% br_table
-            (C_{label}(i) = ti^{*};l_1;g_1;\phi_1)^{+}
+            (C_{\text{label}}(i) = ti^{*};l_1;g_1;\phi_1)^{+}
         }
         {
             C \vdash \<brtable> i^{+} : s_1\;ti^{*}\;\index{i32}{a};l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
         } \and
         \inferrule[]{ %% return
-            C_{return}(i) = ti^{*};l;g_1;\phi \and
+            C_{\text{return}}(i) = ti^{*};l;g_1;\phi \and
             \phi_1 \implies \phi
         }
         {
@@ -107,7 +109,7 @@
     \label{fig:typerules}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \ContinuedFloat
     \begin{mathpar}
         \inferrule[]{ %% call
@@ -127,21 +129,21 @@
             C \vdash \<callindirect> tfi : ti_1^{*}\;\ti{i32}{a};l;g_1;\phi_1 \rightarrow ti_2^{*};l;g_2;\phi_3
         } \and
         \inferrule[]{ %% get_local
-            C_{local}(i) = t \and
+            C_{\text{local}}(i) = t \and
             l(i) = \ti{t}{a}
         }
         {
             C \vdash \<getlocal> i : \epsilon;l;g;\phi \rightarrow \ti{t}{a_2};l;g;\phi, \ti{t}{a_2}, (\<eq> a_2\; a)
         } \and
         \inferrule[]{ %% set_local
-            C_{local}(i) = t \and
+            C_{\text{local}}(i) = t \and
             l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
         }
         {
             C \vdash \<setlocal> i : \ti{t}{a};l_1;g;\phi \rightarrow \epsilon;l_2;g;\phi, \ti{t}{a_2}, (\<eq> a_2\; a)
         } \and
         \inferrule[]{ %% tee_local
-            C_{local}(i) = t \and
+            C_{\text{local}}(i) = t \and
             l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
         }
         {
@@ -154,26 +156,88 @@
             C \vdash \epsilon : \epsilon;l;g;\phi \rightarrow \epsilon;l;g;\phi
         } \and
         \inferrule[]{ %% extra vars
-            C \vdash e^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \and
+            C \vdash e^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
         }
         {
-            C \vdash e^{*} : ti^{*}\;s_1;l_1;g_1;\phi_1 \rightarrow ti^{*}\;s_2;l_2;g_2;\phi_2
+            C \vdash e^{*} : s\;s_1;l_1;g_1;\phi_1 \rightarrow s\;s_2;l_2;g_2;\phi_2
         } \and
         \inferrule[]{ %% combine
-            C \vdash e_1^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \and
+            C \vdash e_1^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \\
             C \vdash e_2 : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3
         }
         {
             C \vdash e_1^{*}\;e_2 : s_1;l_1;g_1;\phi_1 \rightarrow s_3;l_3;g_3;\phi_3
         } \and
         \inferrule[]{ %% strengthen precondition, weaken postcondition
-            C \vdash e^{*} : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3 \and
             \phi_1 \implies \phi_2 \and
-            \phi_3 \implies \phi_4 \and
+            \phi_3 \implies \phi_4 \\
+            C \vdash e^{*} : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3            
         }
         {
             C \vdash e^{*} : s_2;l_2;g_2;\phi_1 \rightarrow s_3;l_3;g_3;\phi_4
         } \and
     \end{mathpar}
     \label{fig:typerules}
+    \caption{Complete instruction type rules for the \name type system}
+\end{figure}
+
+
+\subsection{Modules}
+\begin{figure}[h]
+    \ContinuedFloat
+    \begin{mathpar}
+        \inferrule[]{ %% local function
+            tfi = \ti{t_1}{a_1}^{*};\epsilon ;g_1;\phi_1 \rightarrow ti_2^{*};\epsilon ;g_2;\phi_1 \\
+            C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*}),\text{return } (ti_2^{*}) \\
+            C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2
+        } {
+            C \vdash ex^{*}\; \<func> tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; tfi
+        } \and
+
+        \inferrule[]{ %% imported function, can't change globals
+            tfi = ti_1^{*};\epsilon ;g;\phi_1 \rightarrow ti_2^{*};\epsilon ;g;\phi_1
+        } {
+            C \vdash ex^{*}\; \<func> tfi\; im : ex^{*}\; tfi
+        } \\
+
+        \inferrule[]{ %% local global
+            tg = mut^{?}\;t \and
+            ex^{*} = \epsilon \lor tg = t \and
+            C \vdash e^{*} : \epsilon; \epsilon; g \; \phi_1 \rightarrow \ti{t}{a}; \epsilon; g \; \phi_2 \and
+        } {
+            C \vdash ex^{*}\; \<global> tg\; e^{*} : ex^{*}\; tg
+        } \and
+
+        \inferrule[]{ %% imported global
+            tg = t \and
+        } {
+            C \vdash ex^{*}\; \<global> tg\; im : ex^{*}\; tg
+        } \and
+
+        \inferrule[]{ %% local table
+            (C_{\text{func}}(i) = tfi)^n
+        } {
+            C \vdash ex^{*}\; \<table> n\; i^n : ex^{*}\; (n,tfi^n)
+        } \and
+
+        \inferrule[]{ %% imported table
+        } {
+            C \vdash ex^{*}\; \<table> (n,tfi^n) im : ex^{*}\; (n,tfi^n)
+        } \and
+
+        \inferrule[]{ %% local memory
+        } {
+            C \vdash ex^{*}\; \<memory> n : ex^{*}\; n
+        } \and
+
+        \inferrule[]{ %% imported memory
+        } {
+            C \vdash ex^{*}\; \<memory> n im : ex^{*}\; n
+        } \and
+
+        \inferrule[]{ %% imported memory
+        } {
+            C \vdash ex^{*}\; \<memory> n im : ex^{*}\; n
+        } \and    \end{mathpar}
+    \label{fig:modulerules}
 \end{figure}

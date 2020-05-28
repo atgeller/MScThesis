@@ -1,2 +1,23 @@
-\chapter{\name}
+\chapter{Using the Type System to Improve Performance}
 \label{chp:prechk}
+
+To use the additional type inforamtion to eliminate run-time checks, we have introduced new instructions to the \wasm language.
+Instructions that normally require run-time safety checks can be \emph{pre-checked} at compile time.
+If \name can use the type information to prove that an instruction will not trap, then it can tag the instruction with \prechk.
+A compiler can then see the \prechk tag and know not to generate runtime checks.
+
+\subsection{New Instructions}
+\name can currently eliminate checks for four types of instructions: memory loads and stores (similar to \dtal), integer division, and indirect function calls.
+Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid, and has been done before in \dtal.
+Integer division can be \prechk tagged if the second argument is provably non-zero.
+\todo{I think theoretically other arithmetic operators can trap on overflow}
+Indirect function calls are a particularly interesting case that is specific to \wasm: they are used to safely handle function pointers when compiling from C/C++ and require a dynamic check to ensure that the called function has a suitable type.
+Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
+
+Integer division simply requires that the second argument is non-zero.
+For example, the second rule in Figure \todo{figure} ensures that pre-checked division instructions can be safely executed.
+The premise $\phi \models (neq\ b\ 0)$ requires that the index constraints satisfy the proposition $b \neq 0$ for the pre-checked instruction to be safe.
+Therefore, since a divide-by-zero is provably absent, it is safe to add the \prechk tag.
+
+
+By reducing the number of (unnecessary) instructions in generated code, we make pre-checked instructions faster than their non-pre-checked counterparts.

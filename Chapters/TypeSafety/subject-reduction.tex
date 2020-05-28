@@ -1,17 +1,22 @@
 \section{Subject Reduction}
 We proceed by case analysis on the reduction rules.
+Note that the locals and globals are omitted where they are unnecessary and trivially unchanged.
+
+\todo{The formatting is all over the place because I kept running into problems. I'll try to continuously leave a comment by the last good formatting.}
 
 \begin{itemize}
-    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ $\land$
-    $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow t.\<const> c$ if $c=\<binop>(c_1,c_2)$
+    %% Binop -> const
+    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ 
+    \\ $\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow t.\<const> c$ if $c=\<binop>(c_1,c_2)$
 
-    \proof By $const$ and $binop$, we know that $s_2$ has the form $s_1 \ti{t}{a_3}$, $l_2=l_1$, $g_2=g_1$, and that
+    \begin{proof}
+    By $const$ and $binop$, we know that $s_2$ has the form $s_1 \ti{t}{a_3}$ and that
     \begin{align*}
         \phi_1&, 
         \begin{stackTL}
             \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c_1}), \\
             \ti{t}{a_2}, (\<eq> a_2 (t c_2)), \\
-            \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\;a_1 a_2))
+            \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\; a_1\; a_2))
         \end{stackTL} \\    
         &\implies \phi_2
     \end{align*}
@@ -22,7 +27,7 @@ We proceed by case analysis on the reduction rules.
             \rightarrow \ti{t}{a_3};l_1;g_1;\phi_1,\ti{t}{a_3},(\<eq> a_3\;\ti{t}{c})
         \end{stackTL}$.
 
-    Because $c=binop_t(c_1,c_2)$, then by \todo{Need a lemma to state this $\phi$s},
+    Because $c=binop_t(c_1,c_2)$, then by $\implies$,
     \begin{align*}
         \phi_1,\ti{t}{a},(\<eq> a\;\ti{t}{c}) &\implies \phi_1,
         \begin{stackTL}
@@ -32,45 +37,146 @@ We proceed by case analysis on the reduction rules.
         \end{stackTL}
     \end{align*}
 
-    Therefore, by $extension$ and $weakening$:
-    \[C \vdash (t.\<const> c) : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; \ti{t}{a_3};l_1;g_1;\phi_2\]
+    Therefore, $C \vdash (t.\<const> c) : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; \ti{t}{a_3};l_1;g_1;\phi_2$, by $extension$ and $weakening$
+    \end{proof}
 
-    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ $\land$
-    $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow \<trap>$
+    %% Binop -> trap
+    \item  $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow \<trap>$
 
+    \begin{proof}
+        Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
+    \end{proof}
+
+    %% Relop
+    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\$\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> \hookrightarrow t.\<const> c$ if $c=\<relop>(c_1,c_2)$
+
+    \begin{proof}
+        Similar to $\<binop>$.
+    \end{proof}
+
+    %% Testop
+    \item $C\vdash (t.\<const> c)\; t.\<testop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ 
+    \\ $\land$ $(t.\<const> c)\; (t.\<const> c)\; t.\<testop> \hookrightarrow t.\<const> c_2$ where $c_2=\<testop>(c)$
+
+    \begin{proof}
+        By $const$ and $testop$, we know that $s_2$ has the form $s_1 \ti{t}{a_2}$, $l_2=l_1$, $g_2=g_1$, and that
+        \begin{align*}
+            \phi_1&, 
+            \begin{stackTL}
+                \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c}), \\
+                \ti{t}{a_2}, (\<eq> a_2\;(\<testop>\;a_1))
+            \end{stackTL} \\
+            &\implies \phi_2
+        \end{align*}
+
+        By $const$, $C \vdash t.\<const> c :
+            \begin{stackTL}
+                \epsilon;l_1;g_1;\phi_1 \\ 
+                \rightarrow \ti{t}{a_2};l_1;g_1;\phi_1,\ti{t}{a_2},(\<eq> a_2\;\ti{t}{c_2})
+            \end{stackTL}$.
+
+        Because $c_2=testop_t(c)$, then by $\implies$,
+        \begin{align*}
+            \phi_1,\ti{t}{a},(\<eq> a\;\ti{t}{c_2}) &\implies \phi_1,
+            \begin{stackTL}
+                \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c}), \\
+                \ti{t}{a_2}, (\<eq> a_2\;(\<testop>\;a_1))
+            \end{stackTL}
+        \end{align*}
+    \end{proof}
+
+    %% Unreachable
+    \item $C\vdash \<unreachable> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $\<unreachable> \hookrightarrow \<trap>$
+    
     \proof Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
 
-    \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ $\land$
-    $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> \hookrightarrow t.\<const> c$ if $c=\<relop>(c_1,c_2)$
-
-    \proof Similar to $\<binop>$.
-
-    \item $C\vdash (t.\<const> c)\; t.\<testop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ 
-    \\$\land (t.\<const> c)\; (t.\<const> c)\; t.\<testop> \hookrightarrow t.\<const> c_2$ where $c_2=\<testop>(c)$
-
-    \proof By $const$ and $testop$, we know that $s_2$ has the form $s_1 \ti{t}{a_2}$, $l_2=l_1$, $g_2=g_1$, and that
-    \begin{align*}
-        \phi_1&, 
-        \begin{stackTL}
-            \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c}), \\
-            \ti{t}{a_2}, (\<eq> a_2\;(\<testop>\;a_1))
-        \end{stackTL} \\
-        &\implies \phi_2
-    \end{align*}
-
-    By $const$, $C \vdash t.\<const> c :
-        \begin{stackTL}
-            \epsilon;l_1;g_1;\phi_1 \\ 
-            \rightarrow \ti{t}{a_2};l_1;g_1;\phi_1,\ti{t}{a_2},(\<eq> a_2\;\ti{t}{c_2})
-        \end{stackTL}$.
-
-    Because $c_2=testop_t(c)$, then by \todo{Need a lemma to state this $\phi$s},
-    \begin{align*}
-        \phi_1,\ti{t}{a},(\<eq> a\;\ti{t}{c_2}) &\implies \phi_1,
-        \begin{stackTL}
-            \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c}), \\
-            \ti{t}{a_2}, (\<eq> a_2\;(\<testop>\;a_1))
-        \end{stackTL}
-    \end{align*}
+    %% Nop
+    \item $C\vdash \<nop> : \epsilon;l;g;\phi \rightarrow \epsilon;l;g;\phi$ 
+    \\ $\land$ $\<nop> \hookrightarrow \epsilon$
     
+    \begin{proof}
+        Trivially, $C\vdash \epsilon : \epsilon;l;g;\phi \rightarrow \epsilon;l;g;\phi$ by $empty$. \todo{Not quite this trivial: what about extension and weakening?}
+    \end{proof}
+
+    %% Drop
+    \item $C\vdash (t.\<const> c)\; \<drop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $(t.\<const> c)\; \<drop> \hookrightarrow \epsilon$
+
+    \begin{proof}
+        By $const$ and $drop$, we know that $s_2 = s_1$, $l_2 = l_1$, $g_2 = g_1$, and $\phi_1 \implies \phi_2$.
+
+        By $empty$, $C\vdash \epsilon : \epsilon;l_1;g_1;\phi_1 \rightarrow \epsilon;l_1;g_1;\phi_1$
+
+        By $extension$, $C\vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_1$
+
+        Since $\phi_1 \implies \phi_2$, then $C\vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_2$ by $weakening$.
+    \end{proof}
+
+    %% Select
+    \item Case: $C\; {\begin{stackTL}
+        \vdash (t.\<const> c_1)\;(t.\<const> c_2)\;(\<ithreetwo>.\<const> 0)\;\<select> 
+        \\ : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
+    \end{stackTL}}$
+    \\ $\land$ $(t.\<const> c_1)\;(t.\<const> c_2)\;(\<ithreetwo>.\<const> 0)\;\<select> \hookrightarrow (t.\<const> c_2)$
+
+    \todo{This is an acceptable format}
+
+    \begin{proof}
+        By $const$ and $select$, we know that $s_2$ has the form $s_1\;\ti{a_3}$, $l_2 = l_1$, $g_2 = g_1$, and
+        $
+        {\begin{stackTL}
+            \phi_1, {\begin{stackTL}
+                \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c_1}), \\
+                \ti{t}{a_2}, (\<eq> a_2\;\ti{t}{c_2}), \\
+                \ti{\<ithreetwo>}{a}, (\<eq> a\;\ti{\<ithreetwo>}{0}), \\
+                \ti{t}{a_3}, (
+                {\begin{stackTL}
+                    (\<eqz> a) \land (\<eq> a_3\;a_2)) \\
+                    \lor (\neg(\<eqz> a) \land (\<eq> a_3\;a_1)))
+                \end{stackTL}} \\
+            \end{stackTL}} \\
+            \implies \phi_2
+        \end{stackTL}}
+        $
+        
+        By $const$, \\
+        $ C \vdash (t.\<const> c_2) :
+            {\begin{stackTL}
+                \epsilon;l_1;g_1;\phi_1 \\
+                \rightarrow \ti{t}{a_3};l_1;g_1;\phi_1,\ti{t}{a_3},(\<eq> a_3\; \ti{t}{c_2}) \\
+            \end{stackTL}} $
+
+        Then, by $extension$,\\
+        $ C \vdash (t.\<const> c_2) : 
+            {\begin{stackTL}
+                s_1;l_1;g_1;\phi_1 \\
+                \rightarrow s_1\;\ti{t}{a_3};l_1;g_1;\phi_1,\ti{t}{a_3},(\<eq> a_3 \; \ti{t}{c_2}) \\
+            \end{stackTL}} $
+
+        By $implies$, we have \\
+        $\phi_1,\ti{t}{a_3},(\<eq> a_3\; \ti{t}{c_2}) \implies \phi_1, {\begin{stackTL}
+            \ti{t}{a_1}, (\<eq> a_1\; \ti{t}{c_1}), \\
+            \ti{t}{a_2}, (\<eq> a_2\; \ti{t}{c_2}), \\
+            \ti{\<ithreetwo>}{a}, (\<eq> a\;\ti{\<ithreetwo>}{0}), \\
+            \ti{t}{a_3}, (
+            {\begin{stackTL}
+                (\<eqz> a) \land (\<eq> a_3\;a_2)) \\
+                \lor (\neg(\<eqz> a) \land (\<eq> a_3\;a_1)))
+            \end{stackTL}} \\
+        \end{stackTL}} \\$
+
+        Therefore,
+        $ C \vdash (t.\<const> c_2) :
+            s_1;l_1;g_1;\phi_1 
+            \rightarrow s_1\;\ti{t}{a_3};l_1;g_1;\phi_2$, by $weakening$
+    \end{proof}
+
+    %% Block
+    \item Case: $C \vdash v^n \; \<block> \; tfi \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $v^n \; \<block> \; tfi \; e^{*} \<end> \hookrightarrow \; \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end>$
+
+    \todo{THIS SEEMS VERY WRONG }
 \end{itemize}

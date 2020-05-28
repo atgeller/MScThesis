@@ -32,6 +32,7 @@ For example, if the stack has the shape $t_2\; t\; t$, then stack polymorphism a
 Then the stack would look like $t$, at which point we add $t_2$ back to the postcondtion to get $t_2\; t$ after executing $t.binop$.
 
 \section{Extending The \wasm Type System With Indexed Types}
+\todo{I put this figure here cause why not, but honestly I think it should just be exposition getting us from WASM to indexed types and briefly setting up the avalanche of typing rules to follow.}
 \begin{figure}[ht]
     \begin{math}
         \begin{array}{rcl}
@@ -54,10 +55,8 @@ In \name, we extend \wasm's technique for handling the stack to include an index
 Now, a precondition on the stack would look like $(t\ a); \phi; L; G$, where $(t\ a)$ is an index type, and $L$ and $G$ map local and global variables, respectively, to index type variables.
 
 \section{The Complete \name Type System}
-
-The \name type system is an extension of the existing \wasm type system.
 Figure~\ref{fig:itsyntax} shows the syntax for the index type language.
-Syntax written in a \tbbf{blue, bold font} denotes a \wasm instruction.
+Syntax written in a \tbbf{blue, bold font} denotes a \wasm keyword.
 Below is a quick overview of each of the terms.
 
 \begin{itemize}
