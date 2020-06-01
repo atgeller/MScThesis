@@ -1,6 +1,8 @@
 .PHONY: all main clean distclean
 
-export OUTPUT_DIR ?= $(abspath ./)
+#export OUTPUT_DIR ?= $(abspath ./)
+# Looks like some pathing in latex doesn't like an alternative outdir
+export OUTPUT_DIR = $(abspath ./)
 DRAFT ?= false
 
 all: main
