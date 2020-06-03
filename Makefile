@@ -15,7 +15,7 @@ acmart.cls:
 ACM-Reference-Format.bst:
 	curl http://www.sigplan.org/sites/default/files/acmart/current/ACM-Reference-Format.bst -o $@
 
-$(OUTPUT_DIR)/%.pdf: %.tex *.tex
+$(OUTPUT_DIR)/%.pdf: %.tex *.tex Chapters/*.tex Chapters/*/*.tex
 ifeq ($(DRAFT), false)
 		latexmk -latexoption="-interaction=errorstopmode" -latexoption="-halt-on-error" -auxdir=$(OUTPUT_DIR) -outdir=$(OUTPUT_DIR) -pdf $<
 else
