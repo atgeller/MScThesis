@@ -1,5 +1,10 @@
 \section{Subject Reduction}
-We proceed by case analysis on the reduction rules.
+
+\begin{theorem}{Subject Reduction}
+  Bla bla bla
+\end{theorem}
+\begin{proof}
+By case analysis on the reduction rules.
 Note that the locals and globals are omitted where they are unnecessary and trivially unchanged.
 
 \todo{The formatting is all over the place because I kept running into problems. I'll try to continuously leave a comment by the last good formatting.}
@@ -9,7 +14,6 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ 
     \\ $\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow t.\<const> c$ if $c=\<binop>(c_1,c_2)$
 
-    \begin{proof}
     By $const$ and $binop$, we know that $s_2$ has the form $s_1 \ti{t}{a_3}$ and that
     \begin{align*}
         \phi_1&, 
@@ -38,29 +42,23 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \end{align*}
 
     Therefore, $C \vdash (t.\<const> c) : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; \ti{t}{a_3};l_1;g_1;\phi_2$, by $extension$ and $weakening$
-    \end{proof}
 
     %% Binop -> trap
     \item  $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
     \\ $\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow \<trap>$
 
-    \begin{proof}
         Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
-    \end{proof}
 
     %% Relop
     \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
     \\$\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> \hookrightarrow t.\<const> c$ if $c=\<relop>(c_1,c_2)$
 
-    \begin{proof}
         Similar to $\<binop>$.
-    \end{proof}
 
     %% Testop
     \item $C\vdash (t.\<const> c)\; t.\<testop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ 
     \\ $\land$ $(t.\<const> c)\; (t.\<const> c)\; t.\<testop> \hookrightarrow t.\<const> c_2$ where $c_2=\<testop>(c)$
 
-    \begin{proof}
         By $const$ and $testop$, we know that $s_2$ has the form $s_1 \ti{t}{a_2}$, $l_2=l_1$, $g_2=g_1$, and that
         \begin{align*}
             \phi_1&, 
@@ -85,27 +83,23 @@ Note that the locals and globals are omitted where they are unnecessary and triv
                 \ti{t}{a_2}, (\<eq> a_2\;(\<testop>\;a_1))
             \end{stackTL}
         \end{align*}
-    \end{proof}
 
     %% Unreachable
     \item $C\vdash \<unreachable> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
     \\ $\land$ $\<unreachable> \hookrightarrow \<trap>$
     
-    \proof Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
+    Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
 
     %% Nop
     \item $C\vdash \<nop> : \epsilon;l;g;\phi \rightarrow \epsilon;l;g;\phi$ 
     \\ $\land$ $\<nop> \hookrightarrow \epsilon$
     
-    \begin{proof}
         Trivially, $C\vdash \epsilon : \epsilon;l;g;\phi \rightarrow \epsilon;l;g;\phi$ by $empty$. \todo{Not quite this trivial: what about extension and weakening?}
-    \end{proof}
 
     %% Drop
     \item $C\vdash (t.\<const> c)\; \<drop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
     \\ $\land$ $(t.\<const> c)\; \<drop> \hookrightarrow \epsilon$
 
-    \begin{proof}
         By $const$ and $drop$, we know that $s_2 = s_1$, $l_2 = l_1$, $g_2 = g_1$, and $\phi_1 \implies \phi_2$.
 
         By $empty$, $C\vdash \epsilon : \epsilon;l_1;g_1;\phi_1 \rightarrow \epsilon;l_1;g_1;\phi_1$
@@ -113,7 +107,6 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         By $extension$, $C\vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_1$
 
         Since $\phi_1 \implies \phi_2$, then $C\vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_2$ by $weakening$.
-    \end{proof}
 
     %% Select
     \item Case: $C\; {\begin{stackTL}
@@ -124,7 +117,6 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
     \todo{This is an acceptable format}
 
-    \begin{proof}
         By $const$ and $select$, we know that $s_2$ has the form $s_1\;\ti{a_3}$, $l_2 = l_1$, $g_2 = g_1$, and
         $
         {\begin{stackTL}
@@ -172,7 +164,6 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         $ C \vdash (t.\<const> c_2) :
             s_1;l_1;g_1;\phi_1 
             \rightarrow s_1\;\ti{t}{a_3};l_1;g_1;\phi_2$, by $weakening$
-    \end{proof}
 
     %% Block
     \item Case: $C \vdash v^n \; \<block> \; tfi \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
@@ -180,3 +171,4 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
     \todo{THIS SEEMS VERY WRONG }
 \end{itemize}
+\end{proof}
