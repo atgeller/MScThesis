@@ -1,5 +1,4 @@
-\subsection{Instructions}
-
+\paragraph{Instructions}
 \begin{figure}[h]
     \begin{mathpar}
         \inferrule[]{ }{ %% const
@@ -72,6 +71,11 @@
         {
             C \vdash \<loop> tfi\; e^{*} \<end> : tfi
         } \and
+
+        \todo{Important (and kinda cool) note: if we have, for example, that $(\<eqz> a)$ in $\phi_1$, then when type-checking $e_1^{*}$ we assume false (in the form of $(\<eqz> a) \land \neg(<eqz> a)$), and therefore any postcondition can be satisfied. However, this requires that we set up $\implies$ correctly with z3.}
+        
+        \todo{I tested it and $\implies$ totally works that way and I am an awesome and smart person for setting it up that way!}
+        
         \inferrule[]{ %% if
             tfi = s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \\
             C_2,\text{label } (s_2;l_2;g_2;\phi_2) \vdash e_1^{*} : s_1;l_1;g_1;\phi_1, \neg(\<eqz> a) \rightarrow s_2;l_2;g_2;\phi_2 \\
@@ -181,8 +185,7 @@
     \caption{Complete instruction type rules for the \name type system}
 \end{figure}
 
-
-\subsection{Modules}
+\paragraph{Modules}
 \begin{figure}[h]
     \ContinuedFloat
     \begin{mathpar}

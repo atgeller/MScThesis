@@ -15,6 +15,7 @@
 \usepackage{dblfloatfix}
 \usepackage{multicol}
 \usepackage{subcaption}
+\usepackage{tikz}
 
 % Always Use these
 \usepackage{hyperref}
@@ -22,8 +23,21 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
-
-
+\newcommand{\shrug}[1][]{%
+\begin{tikzpicture}[baseline,x=0.8\ht\strutbox,y=0.8\ht\strutbox,line width=0.125ex,#1]
+\def\arm{(-2.5,0.95) to (-2,0.95) (-1.9,1) to (-1.5,0) (-1.35,0) to (-0.8,0)};
+\draw \arm;
+\draw[xscale=-1] \arm;
+\def\headpart{(0.6,0) arc[start angle=-40, end angle=40,x radius=0.6,y radius=0.8]};
+\draw \headpart;
+\draw[xscale=-1] \headpart;
+\def\eye{(-0.075,0.15) .. controls (0.02,0) .. (0.075,-0.15)};
+\draw[shift={(-0.3,0.8)}] \eye;
+\draw[shift={(0,0.85)}] \eye;
+% draw mouth
+\draw (-0.1,0.2) to [out=15,in=-100] (0.4,0.95); 
+\end{tikzpicture}}
+\newcommand{\thought}[1]{\textcolor{red}{\textit{(Thought: #1 \shrug)}}}
 \newcommand{\todo}[1]{\textcolor{red}{\textit{(TODO: #1)}}}
 \newcommand{\feedback}[2]{#2}
 
@@ -51,7 +65,7 @@
 % Typeset object language notation in blue with sans serif font
 \newcommand{\tbbf}[1]{\textbf{\color{blue}#1}}
 \reservestyle{\keywords}{\tbbf}
-\keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], neq[neq\;], eqz[eqz\;], unreachable[unreachable], nop[nop\;], drop[drop], select[select], block[block\;], end[\;end], loop[loop\;], if[if\;], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], trap[trap], func[func\;], local[local\;], global[global\;], table[table\;], memory[memory\;], label[label\;]}
+\keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], neq[neq\;], eqz[eqz\;], unreachable[unreachable], nop[nop\;], drop[drop], select[select], block[block\;], end[\;end], loop[loop\;], if[if\;], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], trap[trap], func[func\;], local[local\;], global[global\;], table[table\;], memory[memory\;], label[label], div[div]}
 
 \mathlig{|}{\mid}
 \mathlig{;}{\tbbf{;\;}}
@@ -69,13 +83,12 @@
     preamble/acknowledgements,
     preamble/dedication,
     preamble/abstract,
-    Chapters/introduction,
-    Chapters/related-work,
-    Chapters/index-type-system,
-    Chapters/wasm-prechk,
-    Chapters/type-safety,
-    Chapters/discussion,
-    Chapters/conclusion,
+    chapters/introduction,
+    chapters/related-work,
+    chapters/wasm-prechk,
+    chapters/type-safety,
+    chapters/discussion,
+    chapters/conclusion,
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -90,8 +103,8 @@
 \program{Computer Science}
 \department{Computer Science}
 
-\previousdegree{AAS-DTA (With High Distinction), Bellevue College, 2016}
-\previousdegree{B.Sc., The University of Washington, 2018}
+%%\previousdegree{AAS-DTA (With High Distinction), Bellevue College, 2016}
+%%\previousdegree{B.Sc., The University of Washington, 2018}
 
 \copyrightyear{2020}
 \submitdate{\monthname\ \number\year} % The "\ " is required after
@@ -118,10 +131,8 @@
 
 \mainmatter
 
-\include{Chapters/introduction}
-\include{Chapters/related-work}
-
-\include{Chapters/index-type-system}
+\include{chapters/introduction}
+\include{chapters/related-work}
 
 %%\begin{mathpar}
 %%a ::= variable-not-otherwise-mentioned
@@ -140,9 +151,9 @@
 %%  (tfi ::= (ticond -> ticond))
 %%\end{mathpar}
 
-\include{Chapters/wasm-prechk}
-\include{Chapters/type-safety}
-\include{Chapters/discussion}
-\include{Chapters/conclusion}
+\include{chapters/wasm-prechk}
+\include{chapters/type-safety}
+\include{chapters/discussion}
+\include{chapters/conclusion}
 
 \end{document}

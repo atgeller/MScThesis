@@ -1,2 +1,22 @@
 \chapter{Related Work}
 \label{chp:relwork}
+
+\todo{Move this to the end of related work? Provide this in a separate background chapter/section? Keep it here?}
+\subsection{The \wasm Type System}
+\wasm is a stack-based language, so the type of an instruction in \wasm consists of a precondition and postcondition on the shape of the stack.
+This can be viewed as though instructions \emph{consume} certain values from the stack and then \emph{produce} values to be pushed on the stack.
+For example, a binary operation of some type $t$ consumes two values of the given type $t$ on the stack and produces a value of type $t$:
+
+\[
+    \inferrule{ }{C \vdash t.binop : t\ t \rightarrow t}
+\]
+
+In the above rule, $C$ is the module type context, which keeps track of various module-level types.
+
+Because most instructions only manipulate the top of the stack, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
+\emph{Stack polymorphism} allows extending the precondition and postcondition with the same data to thread unmodified parts of the stack through a list of instructions.
+Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the instruction being checked, after which point the ``forgotten'' part can be re-added.
+
+\todo{The explanation of this example seems really clunky}
+For example, if the stack has the shape $t_2\; t\; t$, then stack polymorphism allows us to ignore $t_2$ and typecheck $t.binop$ with $t\;t$ on the stack.
+Then the stack would look like $t$, at which point we add $t_2$ back to the postcondtion to get $t_2\; t$ after executing $t.binop$.

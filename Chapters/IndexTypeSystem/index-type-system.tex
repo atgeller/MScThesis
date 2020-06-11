@@ -1,0 +1,42 @@
+\section{The \name Indexed Type System}
+\label{sec:typesys}
+\begin{figure}[ht]
+    \begin{math}
+        \begin{array}{rcl}
+            t &:: & \<ithreetwo> | \<isixfour> \\
+            a &::= & Var \\
+            x\;y &::=& a | (t\;c) | (binop\;x\;y) \\
+            P &::=& (testop\;x) | (relop\;x\;y) | \neg P | P \land P | P \lor P \\
+            \phi &::=& \circ | \phi, (t\;a) | \phi, P \\
+        \end{array}
+    \end{math}
+    \caption{Syntax of the \name index type language}
+    \label{fig:itsyntax}
+\end{figure}
+
+The \name type system was designed to provide sufficient information to safely eliminate dynamic checks (\ie to ensure that the required preconditions are met to \prechk-tag an instruction).
+It is based on the type system from \dtal, which is capable of proving similar properties.
+An indexed type language uses an index language in the type system to encode information within types.
+As in \dtal, we use the index language to encode linear constraints on program variables within types, giving us sufficient information to prove the desired properties of instructions.
+
+\subsection{Extending The \wasm Type System}
+\thought{This is fine to have, it provides more details and explanation, but I think the name is offputting. Also, I think it messes up the flow from the index language to the index type system.}
+
+In \name, we extend \wasm's technique for handling the stack to include an index context $\phi$ (which contains type index variable declarations and the constraints on indices) and the index types of local and global variables (similar to the Register file in \dtal) in the precondition and postcondition.
+Now, a precondition on the stack would look like $(t\ a); \phi; l; l$, where $(t\ a)$ is an index type, and $l$ and $g$ map local and global variables, respectively, to index type variables.
+
+\subsection{The Complete \name Type System}
+Figure~\ref{fig:itsyntax} shows the syntax for the index type language.
+Syntax written in a \tbbf{blue, bold font} denotes a \wasm keyword.
+Below is a quick overview of each of the terms.
+
+\begin{itemize}
+    \item $t$ represents a primitive \wasm type.
+    We do not reason about floating points, so it is either a 32-bit integer ($i32$) or a 64-bit integer ($i64$).
+    \item $a$ Is a type index variable which is associated with a program variable.
+\end{itemize}
+
+\input{chapters/IndexTypeSystem/typingrules.tex}
+
+\subsection{Constraint Satisfaction}
+\todo{The exact details and positioning of this section are TBD}

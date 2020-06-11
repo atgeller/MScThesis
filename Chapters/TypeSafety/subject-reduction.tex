@@ -5,43 +5,50 @@
 \end{theorem}
 \begin{proof}
 By case analysis on the reduction rules.
+\todo{I want to omit locals and globals, but I also think it's good to keep them for completeness.}
 Note that the locals and globals are omitted where they are unnecessary and trivially unchanged.
 
-\todo{The formatting is all over the place because I kept running into problems. I'll try to continuously leave a comment by the last good formatting.}
+\todo{I'm like 90\% sure that a good chunk of these proofs are only understandable by me, to the extent that I understand what I'm doing.}
+
+\thought{I keep appealing to basically an inversion lemma that is never stated but seems obvious. It would be a good idea to formalize this eventually (shouldn't be too difficult). In the meanwhile assume I mean that when I say "by x, we know y" where y is not a premise of the typing rule x or where I say "y is of the form z".}
+
+\todo{Type rule names based on code from William's dissertation to match those used here}
+
+\todo{I prefer "stack-poly" or "spoly" to "stack-poly"}
 
 \begin{itemize}
     %% Binop -> const
     \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ 
     \\ $\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> \hookrightarrow t.\<const> c$ if $c=\<binop>(c_1,c_2)$
 
-    By $const$ and $binop$, we know that $s_2$ has the form $s_1 \ti{t}{a_3}$ and that
-    \begin{align*}
-        \phi_1&, 
-        \begin{stackTL}
-            \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c_1}), \\
-            \ti{t}{a_2}, (\<eq> a_2 (t c_2)), \\
-            \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\; a_1\; a_2))
-        \end{stackTL} \\    
-        &\implies \phi_2
-    \end{align*}
+        By $const$ and $binop$, we know that $s_2$ has the form $s_1 \ti{t}{a_3}$ and that
+        \begin{align*}
+            \phi_1&, 
+            \begin{stackTL}
+                \ti{t}{a_1}, (\<eq> a_1\;\ti{t}{c_1}), \\
+                \ti{t}{a_2}, (\<eq> a_2 (t c_2)), \\
+                \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\; a_1\; a_2))
+            \end{stackTL} \\    
+            &\implies \phi_2
+        \end{align*}
 
-    By $const$, $C \vdash t.\<const> c :
-        \begin{stackTL}
-            \epsilon;l_1;g_1;\phi_1 \\ 
-            \rightarrow \ti{t}{a_3};l_1;g_1;\phi_1,\ti{t}{a_3},(\<eq> a_3\;\ti{t}{c})
-        \end{stackTL}$.
+        By $const$, $C \vdash t.\<const> c :
+            \begin{stackTL}
+                \epsilon;l_1;g_1;\phi_1 \\ 
+                \rightarrow \ti{t}{a_3};l_1;g_1;\phi_1,\ti{t}{a_3},(\<eq> a_3\;\ti{t}{c})
+            \end{stackTL}$.
 
-    Because $c=binop_t(c_1,c_2)$, then by $\implies$,
-    \begin{align*}
-        \phi_1,\ti{t}{a},(\<eq> a\;\ti{t}{c}) &\implies \phi_1,
-        \begin{stackTL}
-            \ti{t}{a_1}, (\<eq> a_1\; \ti{t}{c_1}), \\
-            \ti{t}{a_2}, (\<eq> a_2\; \ti{t}{c_2}), \\
-            \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\;a_1 a_2))
-        \end{stackTL}
-    \end{align*}
+        Because $c=binop_t(c_1,c_2)$, then by $\implies$,
+        \begin{align*}
+            \phi_1,\ti{t}{a},(\<eq> a\;\ti{t}{c}) &\implies \phi_1,
+            \begin{stackTL}
+                \ti{t}{a_1}, (\<eq> a_1\; \ti{t}{c_1}), \\
+                \ti{t}{a_2}, (\<eq> a_2\; \ti{t}{c_2}), \\
+                \ti{t}{a_3}, (\<eq> a_3\;(\<binop>\;a_1 a_2))
+            \end{stackTL}
+        \end{align*}
 
-    Therefore, $C \vdash (t.\<const> c) : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; \ti{t}{a_3};l_1;g_1;\phi_2$, by $extension$ and $weakening$
+        Therefore, $C \vdash (t.\<const> c) : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; \ti{t}{a_3};l_1;g_1;\phi_2$, by $stack-poly$ and $weakening$
 
     %% Binop -> trap
     \item  $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<binop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
@@ -53,6 +60,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
     \\$\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.\<relop> \hookrightarrow t.\<const> c$ if $c=\<relop>(c_1,c_2)$
 
+        \todo{I think right now it gets translated a little differently because the redex-model typing rule expands the index constraint a bit more to resemble what gets passed to Z3. I think this is better to fix in the redex-model so it resembles WASM execution more closely than Z3 constraints.}
         Similar to $\<binop>$.
 
     %% Testop
@@ -88,7 +96,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \item $C\vdash \<unreachable> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
     \\ $\land$ $\<unreachable> \hookrightarrow \<trap>$
     
-    Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
+        Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
 
     %% Nop
     \item $C\vdash \<nop> : \epsilon;l;g;\phi \rightarrow \epsilon;l;g;\phi$ 
@@ -104,7 +112,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $empty$, $C\vdash \epsilon : \epsilon;l_1;g_1;\phi_1 \rightarrow \epsilon;l_1;g_1;\phi_1$
 
-        By $extension$, $C\vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_1$
+        By $stack-poly$, $C\vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_1$
 
         Since $\phi_1 \implies \phi_2$, then $C\vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_2$ by $weakening$.
 
@@ -114,8 +122,6 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         \\ : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
     \end{stackTL}}$
     \\ $\land$ $(t.\<const> c_1)\;(t.\<const> c_2)\;(\<ithreetwo>.\<const> 0)\;\<select> \hookrightarrow (t.\<const> c_2)$
-
-    \todo{This is an acceptable format}
 
         By $const$ and $select$, we know that $s_2$ has the form $s_1\;\ti{a_3}$, $l_2 = l_1$, $g_2 = g_1$, and
         $
@@ -141,7 +147,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
                 \rightarrow \ti{t}{a_3};l_1;g_1;\phi_1,\ti{t}{a_3},(\<eq> a_3\; \ti{t}{c_2}) \\
             \end{stackTL}} $
 
-        Then, by $extension$,\\
+        Then, by $stack-poly$,\\
         $ C \vdash (t.\<const> c_2) : 
             {\begin{stackTL}
                 s_1;l_1;g_1;\phi_1 \\
@@ -166,9 +172,124 @@ Note that the locals and globals are omitted where they are unnecessary and triv
             \rightarrow s_1\;\ti{t}{a_3};l_1;g_1;\phi_2$, by $weakening$
 
     %% Block
-    \item Case: $C \vdash v^n \; \<block> \; tfi \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $v^n \; \<block> \; tfi \; e^{*} \<end> \hookrightarrow \; \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end>$
+    \item Case: $C \vdash v^n \; \<block> tfi \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $v^n \; \<block> tfi \; e^{*} \<end> \hookrightarrow \; \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end>$
 
-    \todo{THIS SEEMS VERY WRONG }
+        \thought{Technically we can't yet have $\ti{t}{a}^n=ti_1^{n}$ as we will derive that by $composition$ on $const$ and $block$. However, I'm lazy and will address this later because it is a minor detail and I want to focus on major details right now.}
+
+        Let $ti_1^n;l_3;g_3;\phi_3 \rightarrow ti_2^m;l_4;g_4;\phi_4=tfi$, $(t.\<const> c)^n=v^n$, and $\ti{t}{a}^n=ti_1^{n}$.
+
+        $C \vdash (t.\<const> c)^n : \epsilon;l_1;g_1;\phi_1 \rightarrow \\ \; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n$ by $const$.
+
+        $C \vdash (t.\<const> c)^n : s_1;l_1;g_1;\phi_1 \rightarrow \\ \; s_1\; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n$ by $stack-poly$.
+    
+        $C \vdash \<block> tfi \; e^{*} \<end> : s_1 \; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n \rightarrow s_2;l_2;g_2;\phi_2$ by $composition$.
+
+        \todo{1: we should derive $l_1=l_3$,$g_1=g_3$, etc... and 2: add a parenthetical about usage}.
+
+        $C \vdash \<block> tfi \; e^{*} \<end> : s_1 \; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n \rightarrow s_1\; ti_2^{m};l_2;g_2;\phi_2$ by inversion, and therefore $s_2=s_1\; ti_2^{m}$.
+
+        Further, $\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n \implies \phi_3$ by $weakening$, and $\phi_4 \implies \phi_2$ by $block$ and $weakening$.
+
+        $C,\text{label}(t_2^{m};l_4;g_4;\phi_4) \vdash (t.\<const> c)^n : \epsilon;l_1;g_1;\phi_1 \rightarrow \\ \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n$ by $const$.
+
+        $C,\text{label}(t_2^{m};l_4;g_4;\phi_4) \vdash e^{*} : ti_1^n;l_1;g_1;\phi_3 \rightarrow ti_2^m;l_4;g_4;\phi_4$ because it is a sub-derivation of $block$ which we have already assumed to hold.
+
+        Then $C,\text{label}(t_2^{m};l_4;g_4;\phi_4) \vdash (t.\<const> c)^n\; e^{*} : \epsilon;l_1;g_1;\phi_1 \rightarrow \\ ti_2^m;l_4;g_4;\phi_4$ by $composition$.
+
+        By $empty$ and $stack-poly$, $C \vdash \epsilon : ti_2^m;l_4;g_4;\phi_4 \rightarrow ti_2^m;l_4;g_4;\phi_4$.
+
+        Therefore, $C \vdash \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti_2^m;l_4;g_4;\phi_4$ by $label$.
+
+        Since $s_2 = s_1\; ti_2^m$, $l_2 = l_4$, $g_2 = g_4$, and $\phi_4 \implies \phi_2$, then by $stack-poly$ and $weakening$ we have: $C \vdash \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow ti_2^m;l_2;g_2;\phi_2$
+
+    \item Case: $C \vdash v^n \; \<loop> tfi \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $v^n \; \<loop> tfi \; e^{*} \<end> \hookrightarrow \; \<label>_n \{ \<loop> tfi \; e^{*} \<end> \} \; v^n \; e^{*} \<end>$
+
+        \thought{Same as above about $\ti{t}{a}^n=ti_1^{n}$.}
+
+        Let $ti_1^n;l_3;g_3;\phi_3 \rightarrow ti_2^m;l_3;g_3;\phi_4=tfi$, $(t.\<const> c)^n=v^n$, and $\ti{t}{a}^n=ti_1^{n}$.
+
+        $C \vdash (t.\<const> c)^n : \epsilon;l_1;g_1;\phi_1 \rightarrow \\ \; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n$ by $const$.
+
+        $C \vdash (t.\<const> c)^n : s_1;l_1;g_1;\phi_1 \rightarrow \\ \; s_1\; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n$ by $stack-poly$.
+    
+        $C \vdash \<loop> tfi \; e^{*} \<end> : s_1 \; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n \rightarrow s_2;l_2;g_2;\phi_2$ by $composition$, and therefore $l_1=l_3$ and $g_1=g_3$ (Note: since $l_1=l_3$ and $g_1=g_3$, I will use $l_1$ and $g_1$ in place of $l_3$ and $g_3$, respectively, for the rest of the proof).
+
+        \thought{Do we need this next type rule statement? We can just get rid of it and have ``By inversion ...''}
+
+        $C \vdash \<loop> tfi \; e^{*} \<end> : s_1 \; \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n \rightarrow s_1\; ti_2^{m};l_2;g_2;\phi_2$ by inversion, and therefore $s_2=s_1\; ti_2^{m}$, $l_4=l_2$, and $g_4=g_2$ (Note: since $l_2=l_4$ and $g_2=g_4$, I will use $l_4$ and $g_4$ in place of $l_2$ and $g_2$, respectively, for the rest of the proof).
+
+        Further, $\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n \implies \phi_3$ by $weakening$, and $\phi_4 \implies \phi_2$ by $loop$ and $weakening$.
+
+        $C,\text{label}(t_1^{n};l_1;g_1;\phi_1) \vdash (t.\<const> c)^n : \epsilon;l_1;g_1;\phi_1 \rightarrow \\ \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n$ by $const$.
+
+        $C,\text{label}(t_1^{n};l_1;g_1;\phi_1) \vdash e^{*} : ti_1^n;l_1;g_1;\phi_3 \rightarrow ti_2^m;l_1;g_1;\phi_4$ because it is a sub-derivation of $loop$ which we have already assumed to hold.
+
+        Then $C,\text{label}(t_1^{n};l_1;g_1;\phi_1) \vdash (t.\<const> c)^n\; e^{*} : \epsilon;l_1;g_1;\phi_1 \rightarrow \\ ti_2^m;l_4;g_4;\phi_4$ by $composition$.
+
+        $C \vdash \<loop> tfi \; e^{*} \<end> : \ti{t}{a}^n;l_1;g_1;\phi_1,\ti{t}{a}^n,(\<eq> a \; \ti{t}{c})^n \rightarrow ti_2^{m};l_4;g_4;\phi_4$ by $loop$.
+
+        Therefore, $C \vdash \<label>_m \{ \<loop> tfi \; e^{*} \<end> \} \; v^n \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti_2^m;l_4;g_4;\phi_4$ by $label$.
+
+        Since $s_2 = s_1\; ti_2^m$, $l_2 = l_4$, $g_2 = g_4$, and $\phi_4 \implies \phi_2$, then by $stack-poly$ and $weakening$ we have: $C \vdash \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow ti_2^m;l_2;g_2;\phi_2$
+
+    \item Case: $C \vdash (\<ithreetwo>.\<const> 0) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $(\<ithreetwo>.\<const> 0) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \; \<block> tfi \; e_2^{*} \<end>$
+
+        Let $tfi = ti_1^n \; \ti{<ithreetwo>}{a};l_3;g_3;\phi_3 \rightarrow ti_2^m;l_4;g_4;\phi_4$, \\ $tfi_1 = ti_1^n;l_3;g_3;\phi_3,\neg(\<eqz> a) \rightarrow ti_2^m;l_4;g_4;\phi_4$, \\
+        and $tfi_2 = ti_1^n;l_3;g_3;\phi_3,(\<eqz> a) \rightarrow ti_2^m;l_4;g_4;\phi_4$.
+
+        $C \vdash \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> : tfi_1$ by $if$.
+
+        By $inversion$, $s_1=s \; ti_1^{n}$ and $s_2=s \; ti_2^{m}$ for some $s$, $l_1=l_3$, $g_1=g_3$, $l_2=l_4$, $g_2=g_4$, $\phi_1,\ti{\<ithreetwo>}{a},(\<eq> a\; 0) \implies \phi_3$, and $\phi_4 \implies \phi_2$.
+
+        \todo{Might want to spell this out a bit more, there's like three different levels of $inversion$ used to get here, which is valid but might be overly obfuscated}
+
+        $C,\text{label}(ti_2^m;l_4;g_4;\phi_4) \vdash e_2^{*} : tfi_2$ because it is a sub-derivation of $if$ which we have assumed to hold by $inversion$.
+
+        Then, $C \vdash \<block> tfi_2 \; e_2^{*} \<end>$ by $block$.
+
+        \thought{We can appeal to implication because $\ti{\<ithreetwo>}{a}$ is freshly introduced by $const$, this is an important point that should be mentioned somewhere, also, since $a$ is fresh, we know this won't cause a contradiction in $\phi$}.
+
+        \thought{That being said, maybe we want use $\equiv$ instead of $\implies$ to handle this just as a presentation detail.}
+
+        $\phi_1 \implies \phi_1,\ti{t}{a},(\<eqz> a)$ by $\implies$.
+
+        Therefore, $C \vdash \<block> tfi_2\; e_2^{*} \<end> : \\ s \; ti_1^n;l_1;g_1;\phi_1,\ti{t}{a},(\<eqz> a) \rightarrow s\; ti_2^m;l_2;g_2;\phi_2$ by $extension$ and $weakening$.
+
+    \item Case: $C \vdash (\<ithreetwo>.\<const> k+1) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $(\<ithreetwo>.\<const> k+1) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \; \<block> tfi \; e_1^{*} \<end>$
+
+        Similar to above.
+
+    \item Case: $C \vdash \<label>_n \{ e^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $\<label>_n \{ e^{*} \} \; v^n \<end> \hookrightarrow \; v^n$
+
+        $C \vdash \<label>_n \{ e^{*} \} \; v^n \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$ by $label$ and $inversion$.
+
+        By $inversion$, we know $s_2=s_1\;ti_2^{*}$.
+
+        $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$ because it is a premise of $label$ which we have assumed to hold.
+
+        Therefore, $C \vdash v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; ti_2^{*};l_1;g_1;\phi_2$ by $stack-poly$.
+
+    \item Case: $C \vdash \<label>_n \{ e^{*} \} \; \<trap> \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $\<label>_n \{ e^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
+
+        Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
+
+    \item Case: $C \vdash \<label>_n \{ e^{*} \} \; L^k [v^n \; (\<br> j)] \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $\<label>_n \{ e^{*} \} \; L^k [v^n \; (\<br> j)] \hookrightarrow \; v^n \; e^{*}$
+
+        \thought{Intuitively, this follows because \<br> is typed based on the label in $C$ from the $label$ rule, and everything follows from that. I'm not sure exactly how hand-wavy I can get away with being describing that though.}
+        
+        \todo{The original \wasm proof addresses this using a lemma about labels which will be easy to recreate. In the meantime I will refer to that (which is the precise description of what I just said).}
+
+        By $inversion$, $s_2=s_1\;ti_2^{*}$.
+
+        $C \vdash e^{*} : ti_1^n;l_1;g_1;\phi_3 \rightarrow ti_2^{*};l_2;g_2;\phi_4$ since it is a premise of $label$ which we have assumed to hold, and $\phi_4 \implies \phi_2$ by $inversion$.
+
+
 \end{itemize}
 \end{proof}
