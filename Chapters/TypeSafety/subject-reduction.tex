@@ -8,13 +8,11 @@ By case analysis on the reduction rules.
 \todo{I want to omit locals and globals, but I also think it's good to keep them for completeness.}
 Note that the locals and globals are omitted where they are unnecessary and trivially unchanged.
 
-\todo{I'm like 90\% sure that a good chunk of these proofs are only understandable by me, to the extent that I understand what I'm doing.}
+\thought{I'm like 90\% sure that a good chunk of these proofs are only understandable by me, to the extent that I understand what I'm doing.}
 
 \thought{I keep appealing to basically an inversion lemma that is never stated but seems obvious. It would be a good idea to formalize this eventually (shouldn't be too difficult). In the meanwhile assume I mean that when I say "by x, we know y" where y is not a premise of the typing rule x or where I say "y is of the form z".}
 
 \todo{Type rule names based on code from William's dissertation to match those used here}
-
-\todo{I prefer "stack-poly" or "spoly" to "stack-poly"}
 
 \begin{itemize}
     %% Binop -> const
@@ -173,7 +171,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
     %% Block
     \item Case: $C \vdash v^n \; \<block> tfi \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $v^n \; \<block> tfi \; e^{*} \<end> \hookrightarrow \; \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end>$
+    \\ $\land$ $v^n \; \<block> tfi \; e^{*} \<end> \hookrightarrow \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end>$
 
         \thought{Technically we can't yet have $\ti{t}{a}^n=ti_1^{n}$ as we will derive that by $composition$ on $const$ and $block$. However, I'm lazy and will address this later because it is a minor detail and I want to focus on major details right now.}
 
@@ -204,7 +202,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         Since $s_2 = s_1\; ti_2^m$, $l_2 = l_4$, $g_2 = g_4$, and $\phi_4 \implies \phi_2$, then by $stack-poly$ and $weakening$ we have: $C \vdash \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow ti_2^m;l_2;g_2;\phi_2$
 
     \item Case: $C \vdash v^n \; \<loop> tfi \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $v^n \; \<loop> tfi \; e^{*} \<end> \hookrightarrow \; \<label>_n \{ \<loop> tfi \; e^{*} \<end> \} \; v^n \; e^{*} \<end>$
+    \\ $\land$ $v^n \; \<loop> tfi \; e^{*} \<end> \hookrightarrow \<label>_n \{ \<loop> tfi \; e^{*} \<end> \} \; v^n \; e^{*} \<end>$
 
         \thought{Same as above about $\ti{t}{a}^n=ti_1^{n}$.}
 
@@ -235,7 +233,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         Since $s_2 = s_1\; ti_2^m$, $l_2 = l_4$, $g_2 = g_4$, and $\phi_4 \implies \phi_2$, then by $stack-poly$ and $weakening$ we have: $C \vdash \<label>_m \{ \epsilon \} \; v^n \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow ti_2^m;l_2;g_2;\phi_2$
 
     \item Case: $C \vdash (\<ithreetwo>.\<const> 0) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $(\<ithreetwo>.\<const> 0) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \; \<block> tfi \; e_2^{*} \<end>$
+    \\ $\land$ $(\<ithreetwo>.\<const> 0) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \<block> tfi \; e_2^{*} \<end>$
 
         Let $tfi = ti_1^n \; \ti{<ithreetwo>}{a};l_3;g_3;\phi_3 \rightarrow ti_2^m;l_4;g_4;\phi_4$, \\ $tfi_1 = ti_1^n;l_3;g_3;\phi_3,\neg(\<eqz> a) \rightarrow ti_2^m;l_4;g_4;\phi_4$, \\
         and $tfi_2 = ti_1^n;l_3;g_3;\phi_3,(\<eqz> a) \rightarrow ti_2^m;l_4;g_4;\phi_4$.
@@ -259,12 +257,12 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         Therefore, $C \vdash \<block> tfi_2\; e_2^{*} \<end> : \\ s \; ti_1^n;l_1;g_1;\phi_1,\ti{t}{a},(\<eqz> a) \rightarrow s\; ti_2^m;l_2;g_2;\phi_2$ by $extension$ and $weakening$.
 
     \item Case: $C \vdash (\<ithreetwo>.\<const> k+1) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $(\<ithreetwo>.\<const> k+1) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \; \<block> tfi \; e_1^{*} \<end>$
+    \\ $\land$ $(\<ithreetwo>.\<const> k+1) \; \<if> tfi \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \<block> tfi \; e_1^{*} \<end>$
 
         Similar to above.
 
     \item Case: $C \vdash \<label>_n \{ e^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $\<label>_n \{ e^{*} \} \; v^n \<end> \hookrightarrow \; v^n$
+    \\ $\land$ $\<label>_n \{ e^{*} \} \; v^n \<end> \hookrightarrow v^n$
 
         $C \vdash \<label>_n \{ e^{*} \} \; v^n \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$ by $label$ and $inversion$.
 
@@ -275,12 +273,12 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         Therefore, $C \vdash v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_1\; ti_2^{*};l_1;g_1;\phi_2$ by $stack-poly$.
 
     \item Case: $C \vdash \<label>_n \{ e^{*} \} \; \<trap> \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $\<label>_n \{ e^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
+    \\ $\land$ $\<label>_n \{ e^{*} \} \; \<trap> \<end> \hookrightarrow \<trap>$
 
         Trivially, $C\vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
 
     \item Case: $C \vdash \<label>_n \{ e^{*} \} \; L^k [v^n \; (\<br> j)] \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    \\ $\land$ $\<label>_n \{ e^{*} \} \; L^k [v^n \; (\<br> j)] \hookrightarrow \; v^n \; e^{*}$
+    \\ $\land$ $\<label>_n \{ e^{*} \} \; L^k [v^n \; (\<br> j)] \hookrightarrow v^n \; e^{*}$
 
         \thought{Intuitively, this follows because \<br> is typed based on the label in $C$ from the $label$ rule, and everything follows from that. I'm not sure exactly how hand-wavy I can get away with being describing that though.}
         
@@ -288,8 +286,57 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $inversion$, $s_2=s_1\;ti_2^{*}$.
 
+        $C,\text{label}(ti_1^n;l_1;g_1;\phi_3)^j \vdash v^n\; (\<br> j) : \epsilon;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ since it is a premise of $label$ which we have assumed to hold.
+
+        $C,\text{label}(ti_1^n;l_1;g_1;\phi_3)^j \vdash (\<br> j) : ti_1^n;l_1;g_1;\phi_3 \rightarrow s_2;l_2;g_2;\phi_2$, by $label-filled$.
+
+        Then, $C,\text{label}(ti_1^n;l_1;g_1;\phi_3)^j \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti_1^n;l_1;g_1;\phi_3$ since it is a premise of $composition$ which we have assumed to hold.
+
         $C \vdash e^{*} : ti_1^n;l_1;g_1;\phi_3 \rightarrow ti_2^{*};l_2;g_2;\phi_4$ since it is a premise of $label$ which we have assumed to hold, and $\phi_4 \implies \phi_2$ by $inversion$.
 
+        Then, $C \vdash v^n \; e^{*} : \epsilon;l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_4$ by $composition$.
+
+        Finally, $C \vdash v^n \; e^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_1\;ti_2^{*};l_2;g_2;\phi_2$ by $stack-poly$ and $weakening$.
+
+    \item Case: $C \vdash (\<ithreetwo>.\<const> 0)\;(\<brif> j) : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $(\<ithreetwo>.\<const> 0)\;(\<brif> j) \hookrightarrow \epsilon$
+
+        By $br \_ if$, $C \vdash (\<brif> j) : s_1\; \ti{\<ithreetwo>}{a};l_1;g_1;\phi_1,\ti{t}{a},(\<eq> a\; \ti{\<ithreetwo>}{0}) \rightarrow s_1;l_1;g_1;\phi_1,\ti{t}{a},(\<eq> a\; \ti{\<ithreetwo>}{0}),(\<eqz> a)$.
+
+        $C \vdash (\<ithreetwo>.\<const> 0) : s_1;l_1;g_1;\phi_1 \rightarrow s\;\ti{\<ithreetwo>}{a};l;g;\phi,\ti{\<ithreetwo>}{a},(\<eq> a\; \ti{\<ithreetwo>}{0})$ by $const$.
+
+        By $composition$, $C \vdash (\<ithreetwo>.\<const> 0)\;(\<brif> j) : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_1,\ti{\<ithreetwo>}{a},(\<eq> a\; \ti{\<ithreetwo>}{0}),(\<eqz> a)$.
+
+        Then, by $inversion$, $s_1=s_2$, $l_1=l_2$, $g_1=g_2$, and $\phi_1,\ti{\<ithreetwo>}{a},(\<eq> a\; \ti{\<ithreetwo>}{0}),(\<eqz> a) \implies \phi_2$.
+
+        $C \vdash \epsilon : \epsilon;l_1;g_1;\phi_1 \rightarrow \epsilon;l_1;g_1;\phi_1$ by $empty$.
+
+        $C \vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_1$ by $stack-poly$.
+
+        \thought{I'm not super keen on this way of presenting because the two completely different universes used before and after reduction may be easily muddled into one by a reader. I think the key is to just be really explicit that these are two different type universes and different things fly in different places.}
+
+        $\phi_1 \implies \phi_1,\ti{\<ithreetwo>}{a},(\<eq> a\; \ti{\<ithreetwo>}{0}),(\<eqz> a)$ because $a$ is fresh, and therefore $\phi_1 \implies \phi_2$.
+
+        Then, $C \vdash \epsilon : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_2$ by $weakening$.
+
+    \item Case: $C \vdash (\<ithreetwo>.\<const> k+1)\;(\<brif> j) : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \\ $\land$ $(\<ithreetwo>.\<const> k+1)\;(\<brif> j) \hookrightarrow \<br> j$
+
+        $C \vdash (\<ithreetwo>.\<const> k+1) : s_1;l_1;g_1;\phi_1 \rightarrow s\;\ti{\<ithreetwo>}{a};l;g;\phi,\ti{\<ithreetwo>}{a},(\<eq> a\; \ti{\<ithreetwo>}{k+1})$ by $const$.
+
+        By $br \_ if$, $C \vdash (\<brif> j) : s_1\; \ti{\<ithreetwo>}{a};l_1;g_1;\phi_1,\ti{t}{a},(\<eq> a\; \ti{\<ithreetwo>}{k+1}) \rightarrow s_1;l_1;g_1;\phi_1,\ti{t}{a},(\<eq> a\; \ti{\<ithreetwo>}{k+1}),(\<eqz> a)$.
+
+        \thought{We're not rederiving the type of $br\_if$ above, we already have it as part of the derivation.}
+
+        By $composition$, $C \vdash (\<ithreetwo>.\<const> k+1)\;(\<brif> j) : s_1;l_1;g_1;\phi_1 \rightarrow s_1;l_1;g_1;\phi_1,\ti{\<ithreetwo>}{a},(\<eq> a\; \ti{\<ithreetwo>}{k+1}),(\<eqz> a)$.
+
+        $C_label(j)=s_1;l_1;g_1;\phi_1,\ti{t}{a},\neq(\<eqz> a)$ because it is a side condition of $br\_if$ which we have assumed to hold by $inversion$.
+
+        $C \vdash \<br> j : s_1;l_1;g_1;\phi_1,\ti{t}{a},\neq(\<eqz> a) \rightarrow s_2;l_2;g_2;\phi_2$ by $br$.
+
+        Because $a$ is fresh, $\phi_1 \implies \phi_1,\ti{\<ithreetwo>}{a},\neg(\<eqz> a)$.
+
+        Therefore, $C \vdash \<br> j : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $weakening$.
 
 \end{itemize}
 \end{proof}
