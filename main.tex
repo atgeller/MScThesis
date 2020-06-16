@@ -80,15 +80,15 @@
 \newcommand{\insttype}[2]{#1 \rightarrow #2}
 
 \includeonly{
-    preamble/acknowledgements,
-    preamble/dedication,
-    preamble/abstract,
-    chapters/introduction,
-    chapters/related-work,
-    chapters/wasm-prechk,
-    chapters/type-safety,
-    chapters/discussion,
-    chapters/conclusion,
+    Preamble/acknowledgements,
+    Preamble/dedication,
+    Preamble/abstract,
+    Chapters/introduction,
+    Chapters/related-work,
+    Chapters/wasm-prechk,
+    Chapters/type-safety,
+    Chapters/discussion,
+    Chapters/conclusion,
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -117,13 +117,13 @@
 
 \maketitle
 
-\include{preamble/abstract}
+\include{Preamble/abstract}
 
 \maketitle
 
-\include{preamble/acknowledgements}
+\include{Preamble/acknowledgements}
 
-\include{preamble/dedication}
+\include{Preamble/dedication}
 
 \tableofcontents                %% Mandatory
 \listoftables                   %% Mandatory if thesis has tables
@@ -131,8 +131,8 @@
 
 \mainmatter
 
-\include{chapters/introduction}
-\include{chapters/related-work}
+\include{Chapters/introduction}
+\include{Chapters/related-work}
 
 %%\begin{mathpar}
 %%a ::= variable-not-otherwise-mentioned
@@ -151,9 +151,9 @@
 %%  (tfi ::= (ticond -> ticond))
 %%\end{mathpar}
 
-\include{chapters/wasm-prechk}
-\include{chapters/type-safety}
-\include{chapters/discussion}
-\include{chapters/conclusion}
+\include{Chapters/wasm-prechk}
+\include{Chapters/type-safety}
+\include{Chapters/discussion}
+\include{Chapters/conclusion}
 
 \end{document}
