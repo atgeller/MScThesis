@@ -4,8 +4,29 @@ The goal of \name is to be used to eliminate unnecessary dynamic checks.
 To accomplish this, it must be able to 1) facilitate removing dynamic checks on instructions 2) statically prove that certain instructions do not require dynamic checks.
 We extended \wasm with new instructions that explicitly do not require dynamic checks, and designed an indexed type system to figure out when it is provably safe to remove checks. 
 
-\section{Facilitating Dynamic Check Removal Via the Introduction Of Additional Instructions}
+\section{\prechk Tagged Instructions}
 \label{sec:newinstructions}
+\begin{figure}[ht]
+    \todo{YUCK}
+    
+    \begin{math}
+        \arraycolsep=1.4pt
+        \begin{array}{rcl}
+            (t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc> & \hookrightarrow & c \\
+            && \text{where } c_2 \neq 0 \land c=c_1/c_2 \\
+            &&\\
+            s;(t.\<const> j)\; t.\<callindirectpc> & \hookrightarrow_i & \<call> s_{tab}(i,j) \\
+            &&\text{where } s_{tab}(i,j) = \\
+            && \<func> tfi\; \<local> t^{*}\;e^{*} \\
+            &&\\
+            s;(\<ithreetwo>.\<const> k).(t.\<loadpc> a\;o) & \hookrightarrow_i & t.\<const> const_t(b^{*}) \\
+            && \text{where } s_{mem}(i,k+o,|t|)=b^{*} \\
+        \end{array}
+    \end{math}
+    \caption{Behavior of new \prechk-tagged instructions versus behavior of non-tagged equivalents}
+    \label{fig:itsyntax}
+\end{figure}
+
 In \wasm, instructions may have preconditions for their behavior to be defined. If those preconditions are not met then the instructions will instead \emph{trap} (what \wasm calls an error).
 The \wasm type system is not expressive enough to ensure these preconditions statically, so they instead must be checked at runtime.
 If these preconditions can be proven statically, then the runtime behavior of the instructions will always be well-defined and they will not trap.
@@ -21,16 +42,6 @@ Tagging memory loads and stores with \prechk requires ensuring that the memory i
 The integer division instruction can be \prechk tagged if the second argument is provably non-zero.
 Indirect function calls are a particularly interesting case that is specific to \wasm: they are used to safely handle function pointers when compiling from C/C++ and require a dynamic check to ensure that the called function has a suitable type.
 Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
-
-\begin{figure}[ht]
-    \begin{math}
-        \begin{array}{rclr}
-            (t.\<const> c_1)\;(t.\<const> c_2)\;t.\<div> \backslash \prechk & \hookrightarrow & c & where \\
-        \end{array}
-    \end{math}
-    \caption{Behavior of new \prechk-tagged instructions versus behavior of non-tagged equivalents}
-    \label{fig:itsyntax}
-\end{figure}
 
 \todo{Move to next section.}
 Integer division simply requires that the second argument is non-zero.

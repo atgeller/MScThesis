@@ -1,8 +1,8 @@
 \chapter{The \name Type System}
 \label{chp:typesys}
 
-The goal of \name is to be used to eliminate unecessary dynamic checks.
-To acclomplish this, it must be able to 1) Statically identify instructions which may require dynamic checks, and 2) Prove that certain instructions do not require dynamic checks.
+The goal of \name is to be used to eliminate unnecessary dynamic checks.
+To accomplish this, it must be able to 1) Statically identify instructions which may require dynamic checks, and 2) Prove that certain instructions do not require dynamic checks.
 With these challenges in mind, we designed an indexed type system based on the type system presented in \dtal, modified to fit \wasm.
 To understand the modifications we made to the \name type system to work with \wasm, we must first discuss how the \wasm type system works.
 
