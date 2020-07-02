@@ -346,19 +346,23 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
                 By $inversion$, $s_2=s_1\;ti^n$.
 
-                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;l_3;g_1;\phi_1 \rightarrow ti^n;l_4;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
+                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
 
-                $S;S_{inst}(i),\text{local} t_v^{*}, \text{return} (t^n) \vdash v^n : \epsilon;l_3;g_1;\phi_3 \rightarrow ti^n;l_4;g_2;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold, and $\phi_3 \implies \phi_1$.
+                $S;S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (t^n) \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
 
-                $C \vdash v^n : \epsilon;l_3;g_1;\phi_1 \rightarrow ti^n;l_4;g_2;\phi_2$ because values have the same type under any context.
+                $C \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2$ because values have the same type under any context.
+                \\\thought{lemma?}
 
-                $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ becuase \\\todo{justification}.
+                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*}$.
+                \\\thought{might not be able to appeal just to freshness? could need justification that the fresh variables are never referenced by values.}
 
-                \thought{Well, the rules for consts assumes nothing about the pre-/post-conditions on the locals and globals, as long as they are the same.}
+                $C \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $weakening$.
 
-                \thought{To do it a little more formal, you appeal to inversion to get from $v^n$ to the exact post-condition ($\phi_1$ extended with the consts, which you also know implies $\phi_2$), then you can just use the const rule to derive the second part.}
+                $l_2 = \ti{t}{a}^{*}$ by $const$ and $inversion$.
+                \\\todo{Is this needed?}
 
-                \thought{Maybe we could just use the rule for typing consts to show that if the expression is well-typed, $g_1 = g_2$, and $\phi_1 = \phi_2$?}
+                $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
+                \\\thought{lemma that the locals can be swapped since $const$ only requires pre and post condition locals are the same?}
 
                 Therefore, $C \vdash v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
@@ -367,17 +371,26 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
                 By $inversion$, $s_2=s_1\;ti^n$.
 
-                $S;(t^n) \vdash_j v_l^{*};v^n : \epsilon;l_3;g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
+                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
 
-                $S;S_{\text{inst}}(i),\text{local} t_v^{*}, \text{return} (t^n) \vdash v^n : \epsilon;l_3;g_3;\phi_3 \rightarrow ti^n;l_4;g_4;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold, and $\phi_3 \implies \phi_1$.
+                \thought{$g_3$ and $g_4$ here refer to globals in instance $i$, which is kinda weird?}
 
-                $C \vdash v^n : \epsilon;l_3;g_3;\phi_3 \rightarrow ti^n;l_4;g_4;\phi_2$ because values have the same type under any context.
+                $S;S_{\text{inst}}(i),\text{local} t_v^{*}, \text{return} (t^n) \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_4;g_4;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
 
-                $C \vdash v^n : \epsilon;l_1;g_1;\phi_3 \rightarrow ti^n;l_1;g_2;\phi_2$ because \\\todo{justification}.
+                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_4;g_4;\phi_2$ because values have the same type under any context.
 
-                \thought{Note, the same principle as above could be applied to showing that $l_3 = l_4$ and $g_3 = g_4$, but this isn't helpful.}
+                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*}$.
 
-                $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $weakening$? \\\todo{This doesn't work, can replace $\phi_3$ with $\phi_1$ if $\phi_1 \implies \phi_3$, we have $\phi_3 \implies \phi_1$}
+                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ by $weakening$.
+
+                $\ti{t}{a}^{*} = l_4$, and $g_3 = g_4$ by $const$ and $inversion$.
+
+                $C \vdash_i v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
+                \\\thought{same lemma as in $i = j$ case, but also changing globals}
+                \\\thought{this is really weird, since we swap out the global stores, but are still typing in instance $i$? Like if we can do that what does typing under a given instance number even mean?}
+
+                Therefore, $C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $???$.
+                \\\thought{this shows something very weird about using the instance number in the typing, like what kind of claim would this even be?}
 
         \end{itemize}
 
