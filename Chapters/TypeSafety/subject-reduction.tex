@@ -338,62 +338,53 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         Therefore, $C \vdash \<br> j : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $weakening$.
 
-    % \item Case: $S;C \vdash_i \<local>_n \{ i;v^{*}_l \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    % \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_i \; v^n$
-
-    % \item Case: $S;C \vdash_i \<local>_n \{ i;v^{*}_l \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    % \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
-    % \\ $\land$ $i \neq j$
-
     \item Case: $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
 
         \begin{itemize}
             \item Case: $i = j$
-            \\ $\land$ $S;C \vdash_i \<local>_n \{ i;v^{*}_l \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
+            \\ $\land$ $S;C \vdash_i \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
 
                 By $inversion$, $s_2=s_1\;ti^n$.
 
-                $S;(t^n) \vdash_i v^{*};v^n : ti^n;l_3;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
+                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;l_3;g_1;\phi_1 \rightarrow ti^n;l_4;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
 
-                $S;C \vdash_i \<local>_n \{ i;v^{*}_l \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+                $S;S_{inst}(i),\text{local} t_v^{*}, \text{return} (t^n) \vdash v^n : \epsilon;l_3;g_1;\phi_3 \rightarrow ti^n;l_4;g_2;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold, and $\phi_3 \implies \phi_1$.
+
+                $C \vdash v^n : \epsilon;l_3;g_1;\phi_1 \rightarrow ti^n;l_4;g_2;\phi_2$ because values have the same type under any context.
+
+                $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ becuase \\\todo{justification}.
+
+                \thought{Well, the rules for consts assumes nothing about the pre-/post-conditions on the locals and globals, as long as they are the same.}
+
+                \thought{To do it a little more formal, you appeal to inversion to get from $v^n$ to the exact post-condition ($\phi_1$ extended with the consts, which you also know implies $\phi_2$), then you can just use the const rule to derive the second part.}
+
+                \thought{Maybe we could just use the rule for typing consts to show that if the expression is well-typed, $g_1 = g_2$, and $\phi_1 = \phi_2$?}
+
+                Therefore, $C \vdash v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
             \item Case: $i \neq j$
-            \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v^{*}_l \} \; v^n \<end> : s_1;l_1;g_1\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
+            \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
+
+                By $inversion$, $s_2=s_1\;ti^n$.
+
+                $S;(t^n) \vdash_j v_l^{*};v^n : \epsilon;l_3;g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
+
+                $S;S_{\text{inst}}(i),\text{local} t_v^{*}, \text{return} (t^n) \vdash v^n : \epsilon;l_3;g_3;\phi_3 \rightarrow ti^n;l_4;g_4;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold, and $\phi_3 \implies \phi_1$.
+
+                $C \vdash v^n : \epsilon;l_3;g_3;\phi_3 \rightarrow ti^n;l_4;g_4;\phi_2$ because values have the same type under any context.
+
+                $C \vdash v^n : \epsilon;l_1;g_1;\phi_3 \rightarrow ti^n;l_1;g_2;\phi_2$ because \\\todo{justification}.
+
+                \thought{Note, the same principle as above could be applied to showing that $l_3 = l_4$ and $g_3 = g_4$, but this isn't helpful.}
+
+                $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $weakening$? \\\todo{This doesn't work, can replace $\phi_3$ with $\phi_1$ if $\phi_1 \implies \phi_3$, we have $\phi_3 \implies \phi_1$}
 
         \end{itemize}
-
-    % \item Case: $S;C \vdash \<local>_n \{ i;v^{*}_l \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    % \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
-
-    %     $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $local$ and $inversion$.
-
-    %     By $inversion$, we know $s_2=s_1\;ti^n$.
-
-    %     $S;(ti^n) \vdash_i v_l^{*};v^n : ti^n;ti_l^{*};g_2;\phi_2$ from the premise of $local$ which we have assumed to hold.
-
-    %     \todo{Create a typing rule for \<local> so that it can be invoked with inversion in this case (this requires store typing rules).}
-
-    %     \todo{Prove that since $v^n$ cannot depend on the value of locals, $S;\epsilon \vdash_i v^n : ti^n;l_2;g_2;\phi_2$}
-
-    %     \todo{What rule do we invoke to replace $\epsilon$ with $C$? $weakening$?}
-
-    %     Therefore, $S;C \vdash v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_1\;ti^n;l_1;g_1;\phi_2$ by $stack-poly$.
-
-    %     \thought{$\phi_2$ maybe should be $\phi_3$ where $\phi_3 \implies \phi_2$ and contains no references to local values in $l_2$ not in $l_1$.}
-
-    %     \thought{Might also need to use the fact that local blocks can only reference local values inside their local block}
 
     \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
 
         Trivially, $S;C \vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
-
-    % \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; L^k [v^n \; \<return>] \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
-    % \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; L^k [v^n \; \<return>] \<end> \hookrightarrow \; v^n$
-
-    %     By $inversion$, we know $s_2=s_1\;ti^n$.
-
-    %     $S;(ti^n) \vdash_i v_l^{*}; L^k [v^n \; \<return>] \<end> : ti^n;l_2 \; v_l^{*};g_2;\phi_2$ from the premise of $local$ which we have assumed to hold.
 
 \end{itemize}
 \end{proof}
