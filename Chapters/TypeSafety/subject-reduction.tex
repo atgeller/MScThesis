@@ -344,53 +344,40 @@ Note that the locals and globals are omitted where they are unnecessary and triv
             \item Case: $i = j$
             \\ $\land$ $S;C \vdash_i \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
 
-                By $inversion$, $s_2=s_1\;ti^n$.
-
                 $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
 
                 $S;S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (t^n) \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
 
-                $C \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2$ because values have the same type under any context.
-                \\\thought{lemma?}
+                $C \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2$ by $const$.
 
                 Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*}$.
-                \\\thought{might not be able to appeal just to freshness? could need justification that the fresh variables are never referenced by values.}
 
                 $C \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $weakening$.
 
-                $l_2 = \ti{t}{a}^{*}$ by $const$ and $inversion$.
-                \\\todo{Is this needed?}
-
                 $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
-                \\\thought{lemma that the locals can be swapped since $const$ only requires pre and post condition locals are the same?}
+
+                By $inversion$, $s_2=s_1\;ti^n$.
 
                 Therefore, $C \vdash v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
             \item Case: $i \neq j$
             \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
 
-                By $inversion$, $s_2=s_1\;ti^n$.
-
                 $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
-
-                \thought{$g_3$ and $g_4$ here refer to globals in instance $i$, which is kinda weird?}
 
                 $S;S_{\text{inst}}(i),\text{local} t_v^{*}, \text{return} (t^n) \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_4;g_4;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
 
-                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_4;g_4;\phi_2$ because values have the same type under any context.
+                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_4;g_4;\phi_2$ by $const$.
 
                 Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*}$.
 
                 $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ by $weakening$.
 
-                $\ti{t}{a}^{*} = l_4$, and $g_3 = g_4$ by $const$ and $inversion$.
+                $C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
 
-                $C \vdash_i v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
-                \\\thought{same lemma as in $i = j$ case, but also changing globals}
-                \\\thought{this is really weird, since we swap out the global stores, but are still typing in instance $i$? Like if we can do that what does typing under a given instance number even mean?}
+                By $inversion$, $s_2=s_1\;ti^n$.
 
-                Therefore, $C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $???$.
-                \\\thought{this shows something very weird about using the instance number in the typing, like what kind of claim would this even be?}
+                Therefore, $C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $???$.
 
         \end{itemize}
 
