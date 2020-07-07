@@ -252,20 +252,14 @@
 \begin{figure}[h]
     \ContinuedFloat
     \begin{mathpar}
-        \inferrule{ %% run time program typing
+        \inferrule{ %% admin program
             \vdash s : S \and
             (\vdash s_{\text{glob}}(i) : \ti{t}{a};\epsilon;\epsilon;\phi_g)^{*} \and\\
             S;\epsilon \vdash_i v^{*};e^{*} : \epsilon;\epsilon;\ti{t}{a}^{*};\phi_g^{*} \rightarrow ti^{*};l_2;g_2;\phi_2
         } {
             \vdash_i s;v^{*};e^{*} : ti^{*};l_2;g_2;\phi_2
         } \and
-        \inferrule{ %% ??? v1
-            C = S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (ti^n;l_2;g_2;\phi_2)^{?} \and\\
-            S;C \vdash e^{*} : \epsilon;\ti{t_v}{a}^{*};g_1;\phi_1,\ti{t_v}{a}^{*},(\<eq> a \; \ti{t_v}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2
-        } {
-            S;(ti^n;l_2;g_2;\phi_2)^{?} \vdash_i (t_v.\<const> c)^{*};e^{*} : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2
-        } \and
-        \inferrule{ %% ??? v2
+        \inferrule{ %% admin code
             C = S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (ti^n;l_2;g_2;\phi_2)^{?} \and\\
             (\vdash v : \ti{t_v}{a};\epsilon;\epsilon;\phi_v)^{*} \and\\
             S;C \vdash e^{*} : \epsilon;\ti{t_v}{a}^{*};g_1;\phi_1,\phi_v^{*} \rightarrow ti^n;l_2;g_2;\phi_2
@@ -281,9 +275,9 @@
             C \vdash \<trap> : tfi
         } \and
         \inferrule[]{ %% local same instance
-            S;(ti^n;l_2;g_2;\phi_2) \vdash_i v_l^{*};e^{*} : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2
+            S;(ti^n;l_2;g_2;\phi_2) \vdash_j v_l^{*};e^{*} : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2
         } {
-            S;C \vdash_i \<local>_n \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2
+            S;C \vdash_j \<local>_n \{ j;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2
         } \and
         \inferrule[]{ %% local different instance
             S;(ti^n;l_2;g_4;\phi_2) \vdash_i v_l^{*};e^{*} : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2 \and

@@ -342,42 +342,44 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         \begin{itemize}
             \item Case: $i = j$
-            \\ $\land$ $S;C \vdash_i \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
-
-                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
-
-                $S;S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (t^n) \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
-
-                $C \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_2;\phi_2$ by $const$.
-
-                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*}$.
-
-                $C \vdash v^n : \epsilon;\ti{t}{a}^{*};g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $weakening$.
-
-                $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
+            \\ $\land$ $S;C \vdash_j \<local>_n \{ j;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
 
                 By $inversion$, $s_2=s_1\;ti^n$.
 
-                Therefore, $C \vdash v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
+                $S;(ti^n;l_2;g_2;\phi_2) \vdash_j v_l^{*};v^n : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
+
+                $(\vdash v_l : ti_l;\epsilon;\epsilon;\phi_v)^{*}$\\ $\land$
+                $S;C_l \vdash_j v^n : \epsilon;ti_l^{*};g_1;\phi_1,\phi_v^{*} \rightarrow ti^n;l_2;g_2;\phi_2$ because they are premises of $admin-code$ which we have assumed to hold.
+
+                $\phi_v^{*} = (\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$, where $\ti{t}{a}^{*} = ti_l^{*}$, $(t.\<const> c)^{*} = v_l^{*}$ by $admin-const$.
+
+                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$.
+
+                $S;C_l \vdash_j v^n : \epsilon;ti_l^{*};g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $weakening$.
+
+                $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
+
+                Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
             \item Case: $i \neq j$
             \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
 
-                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
-
-                $S;S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (t^n) \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_4;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
-
-                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_4;\phi_2$ by $const$.
-
-                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*}$.
-
-                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ by $weakening$.
-
-                $C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
-
                 By $inversion$, $s_2=s_1\;ti^n$.
 
-                Therefore, $C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
+                $S;(ti^n;l_2;g_4;\phi_2) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
+
+                $(\vdash v_l : ti_l;\epsilon;\epsilon;\phi_v)^{*}$\\ $\land$
+                $S;C_l \vdash_i v^n : \epsilon;ti_l^{*};g_1;\phi_1,\phi_v^{*} \rightarrow ti_n;l_2;g_4;\phi_2$ because they are premises of $admin-code$ which we have assumed to hold.
+
+                $\phi_v^{*} = (\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$, where $\ti{t}{a}^{*} = ti_l^{*}$, $(t.\<const> c)^{*} = v_l^{*}$ by $admin-const$.
+
+                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$.
+
+                $S;C_l \vdash_i v^n : \epsilon;ti_l^{*};g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ by $weakening$.
+
+                $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
+
+                Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
         \end{itemize}
 
