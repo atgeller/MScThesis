@@ -363,15 +363,15 @@ Note that the locals and globals are omitted where they are unnecessary and triv
             \item Case: $i \neq j$
             \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
 
-                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
+                $S;(t^n) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
 
-                $S;S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (t^n) \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_4;g_4;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
+                $S;S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (t^n) \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_4;\phi_2$, because it is a premise of $with-return$ which we have assumed to hold.
 
-                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_4;g_4;\phi_2$ by $const$.
+                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*} \rightarrow ti^n;l_2;g_4;\phi_2$ by $const$.
 
                 Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,\ti{t}{a}^{*},(\<eq> a\; \ti{t}{c})^{*}$.
 
-                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1 \rightarrow ti^n;l_4;g_4;\phi_2$ by $weakening$.
+                $C \vdash_i v^n : \epsilon;\ti{t}{a}^{*};g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ by $weakening$.
 
                 $C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
 
@@ -385,6 +385,13 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
 
         Trivially, $S;C \vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
+
+    \item Case: $\<local>_n \{ i;v^{*}_l \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
+
+        \begin{itemize}
+            \item Case: $i = j$
+            \item Case: $i \neq j$
+        \end{itemize}
 
 \end{itemize}
 \end{proof}
