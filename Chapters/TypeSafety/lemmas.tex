@@ -1,0 +1,54 @@
+\begin{lemma}{(Inversion)}
+    \todo{So many cases to write out}
+\end{lemma}
+\begin{proof}
+    Proof omitted, but follows from induction over typing derivations.
+\end{proof}
+
+\begin{lemma}{(Label-filled)}
+    \todo{Is this needed? What should it say?}
+\end{lemma}
+\begin{proof}
+    \todo{QED}
+\end{proof}
+
+\begin{lemma}{(Nested-Type-Preserved)}
+
+    If $C \vdash v^n : \epsilon;l_3;g_3;\phi_3 \rightarrow ti^n;l_3;g_3,\phi_4$ is a subderivation of $C \vdash  L^j [v^n] : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$,
+    \\then $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_1;\phi_4$ after reduction
+\end{lemma}
+\begin{proof}
+    By induction on $j$.
+    \begin{itemize}
+        \item Base case: $j=0$
+
+            $C \vdash v_0^{*} \; v^n \; e^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ for some $v_0^{*}$ and $e^{*}$ by expanding $L^0$.
+
+            $C \vdash (t.\<const> c)^{*} : \epsilon;l_1;g_1;\phi_0 \rightarrow \ti{t}{a}^{*};l_1;g_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$ where $v_0^{*}=(t.\<const> c)^{*}$ and $\phi_1 \implies \phi_0$ by $inversion$.
+
+            Then, $\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \implies \phi_3$, $l_1=l_3$, and $g_1=g_3$ by $inversion$.
+
+            $C \vdash v^n : \ti{t}{a}^{*};l_3;g_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*},\ti{t}{a}^{*}\;ti^n;l_3;g_3;\phi_4$, by $subtyping$.
+
+            $C \vdash v^n : \epsilon;l_3;g_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;g_3;\phi_4$, by $inversion$.
+
+            If $v_0^{*}$ are not executed (\ie they are not part of the reduced expression), then $a^{*}$ are fresh, so $\phi_0 \implies \phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$, and therefore $C \vdash v^n : \epsilon;l_1;g_1;\phi_0 \rightarrow ti^n;l_1;g_1;\phi_4$ by $subtyping$ and since $l_1=l_3$ and $g_1=g_3$.
+
+            Then, $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;g_3;\phi_3$ by $subtyping$.
+
+        \item Induction case: $j=k+1$
+
+            $C \vdash \<label>_n \{ e_0^{*} \} \; v_0^{*} \; L^k[v^n] \; e_1^{*} \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ for some $v_0^{*}$, $e_0^{*}$, and $e_1^{*}$ by expanding $L^j$.
+
+            $C \vdash (t.\<const> c)^{*} : \epsilon;l_1;g_1;\phi_0 \rightarrow \ti{t}{a}^{*};l_1;g_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$ where $v_0^{*}=(t.\<const> c)^{*}$ and $\phi_1 \implies \phi_0$ by $inversion$.
+
+            Then, $C \vdash L^k[v^n] : \ti{t}{a}^{*};l_1;g_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow s_5,l_5,g_5,\phi_5$ for some $s_5,l_5,g_5,\phi_5$ by $inversion$.
+
+            $C \vdash v^n : \epsilon;l_1;g_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow ti^n;l_1;g_1,\phi_4$ by the inductive hypothesis.
+
+            If $v_0^{*}$ are not executed (\ie after one reduction step), $a^{*}$ are fresh, so $\phi_0 \implies \ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$, and therefore $C \vdash v^n : \epsilon;l_1;g_1;\phi_0 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;g_3;\phi_5$ by $subtyping$ and since $l_1=l_3$ and $g_1=g_3$.
+
+            Then, $C \vdash v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;g_3;\phi_3$ by $subtyping$.
+
+    \end{itemize}
+\end{proof}
