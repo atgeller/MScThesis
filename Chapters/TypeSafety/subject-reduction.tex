@@ -362,7 +362,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
                 Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
             \item Case: $i \neq j$
-            \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
+            \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
 
                 By $inversion$, $s_2=s_1\;ti^n$.
 
@@ -392,7 +392,46 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         \begin{itemize}
             \item Case: $i = j$
+            \\ $\land$ $S;C \vdash_j \<local>_n \{ j;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
+
+            By $inversion$, $s_2=s_1\;ti^n$.
+
+            $S;(ti^n;l_2;g_2;\phi_2) \vdash_j v_l^{*};L^k[v^n \; \<return>] : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
+
+            $(\vdash v_l : ti_l;\epsilon;\epsilon;\phi_v)^{*}$\\ $\land$
+            $S;C_l \vdash_j L^k[v^n \; \<return>] : \epsilon;ti_l^{*};g_1;\phi_1,\phi_v^{*} \rightarrow ti_n;l_2;g_4;\phi_2$,
+            where $C_l = S_{\text{inst}}(j),\text{local} \; t_v^{*}, \text{return} \; ti^n;l_2;g_2;\phi_2$
+            because they are premises of $admin-code$ which we have assumed to hold.
+
+            $\phi_v^{*} = \circ,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$, where $\ti{t}{a}^{*} = ti_l^{*}$, $(t.\<const> c)^{*} = v_l^{*}$ by $admin-const$.
+
+            Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$.
+
+            $S;C_l \vdash_j L^k[v^n \; \<return>] : \epsilon;ti_l^{*};g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $weakening$.
+
+            $S;C_l \vdash_j \<return> : s_3 \; ti^n;l_2;g_2;\phi_3 \rightarrow s_4;l_4;g_4;\phi_4$, and $\phi_3 \implies \phi_2$ by $return$.
+
+            \thought{We know such a $\phi_3$ exists because the expression is well-typed?}
+
+            $S;C_l \vdash_j v^n \; \<return> : s_3;l_2;g_2;\phi_5 \rightarrow s_3 \; ti^n;l_2;g_2;\phi_3$ by $composition$.
+
+            $S;C_l \vdash_j v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $const$.
+
+            $S;C_l \vdash_j v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $subtyping$.
+
+            $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $const$.
+
+            \todo{...}
+
+            Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
+
             \item Case: $i \neq j$
+            \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$
+
+            \todo{...}
+
+            Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by \todo{}.
+
         \end{itemize}
 
 \end{itemize}
