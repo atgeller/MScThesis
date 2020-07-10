@@ -167,6 +167,13 @@
         {
             C \vdash e^{*} : s\;s_1;l_1;g_1;\phi_1 \rightarrow s\;s_2;l_2;g_2;\phi_2
         } \and
+        \inferrule[]{ %% fresh globals
+            C \vdash e^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
+            C_\text{globals} = (\text{mut}^{?} \; t)^{*}
+        }
+        {
+            C \vdash e^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;\ti{t}{a}^{*};\phi_2,\ti{t}{a}^{*}
+        } \and
         \inferrule[]{ %% combine
             C \vdash e_1^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \\
             C \vdash e_2 : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3
@@ -177,7 +184,7 @@
         \inferrule[]{ %% strengthen precondition, weaken postcondition
             \phi_1 \implies \phi_2 \and
             \phi_3 \implies \phi_4 \\
-            C \vdash e^{*} : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3            
+            C \vdash e^{*} : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3
         }
         {
             C \vdash e^{*} : s_2;l_2;g_2;\phi_1 \rightarrow s_3;l_3;g_3;\phi_4
@@ -280,10 +287,11 @@
             S;C \vdash_j \<local>_n \{ j;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2
         } \and
         \inferrule[]{ %% local different instance
-            S;(ti^n;l_2;g_4;\phi_2) \vdash_i v_l^{*};e^{*} : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2 \and
+            S;(ti^n;l_2;g_4;\phi_2) \vdash_i v_l^{*};e^{*} : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2 \and\\
+            S_\text{global}(j) = (\text{mut}^{?} \; t)^{*} \and
             i \neq j
         } {
-            S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2
+            S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;\ti{t}{a}^{*};\phi_2
         } \and
     \end{mathpar}
     \label{fig:adminrules}
