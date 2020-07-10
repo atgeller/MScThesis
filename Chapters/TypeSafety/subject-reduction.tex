@@ -357,6 +357,8 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
                 $S;C_l \vdash_j v^n : \epsilon;ti_l^{*};g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $weakening$.
 
+                By $const$, $g_1 = g_2$.
+
                 $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
 
                 Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
@@ -377,7 +379,11 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
                 $S;C_l \vdash_i v^n : \epsilon;ti_l^{*};g_3;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ by $weakening$.
 
-                $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
+                $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_1;\phi_2$ by $const$.
+
+                \thought{$g_1$ and $g_2$ are not provably the same, so the above substitution might not be valid.}
+
+                \todo{That substitution is not valid, need to appeal to new $fresh-globals$ rule.}
 
                 Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
@@ -396,10 +402,10 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
             By $inversion$, $s_2=s_1\;ti^n$.
 
-            $S;(ti^n;l_2;g_2;\phi_2) \vdash_j v_l^{*};L^k[v^n \; \<return>] : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_4;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
+            $S;(ti^n;l_2;g_2;\phi_2) \vdash_j v_l^{*};L^k[v^n \; \<return>] : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
 
             $(\vdash v_l : ti_l;\epsilon;\epsilon;\phi_v)^{*}$\\ $\land$
-            $S;C_l \vdash_j L^k[v^n \; \<return>] : \epsilon;ti_l^{*};g_1;\phi_1,\phi_v^{*} \rightarrow ti_n;l_2;g_4;\phi_2$,
+            $S;C_l \vdash_j L^k[v^n \; \<return>] : \epsilon;ti_l^{*};g_1;\phi_1,\phi_v^{*} \rightarrow ti_n;l_2;g_2;\phi_2$,
             where $C_l = S_{\text{inst}}(j),\text{local} \; t_v^{*}, \text{return} \; ti^n;l_2;g_2;\phi_2$
             because they are premises of $admin-code$ which we have assumed to hold.
 
@@ -411,17 +417,15 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
             $S;C_l \vdash_j \<return> : s_3 \; ti^n;l_2;g_2;\phi_3 \rightarrow s_4;l_4;g_4;\phi_4$, and $\phi_3 \implies \phi_2$ by $return$.
 
-            \thought{We know such a $\phi_3$ exists because the expression is well-typed?}
+            \thought{We know such a $\phi_3$ exists because the expression is well-typed? Do we need to appeal to $inversion$ since we're gaining information?}
 
-            $S;C_l \vdash_j v^n \; \<return> : s_3;l_2;g_2;\phi_5 \rightarrow s_3 \; ti^n;l_2;g_2;\phi_3$ by $composition$.
+            $S;C_l \vdash_j v^n : \epsilon;l_2;g_2;\phi_5 \rightarrow ti^n;l_2;g_2;\phi_3$ by $const$ and $composition$.
 
-            $S;C_l \vdash_j v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $const$.
+            $S;C_l \vdash_j v^n : \epsilon;ti_l^{*};g_1;\phi_1 \rightarrow ti^n;ti_l^{*};g_1;\phi_3$, and $g_1 = g_2$ by (Nested-Type-Preserved).
 
-            $S;C_l \vdash_j v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $subtyping$.
+            $S;C_l \vdash_j v^n : \epsilon;ti_l^{*};g_1;\phi_1 \rightarrow ti^n;ti_l^{*};g_1;\phi_2$ by $subtyping$.
 
-            $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $const$.
-
-            \todo{...}
+            $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2$ by $const$.
 
             Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_1;g_2;\phi_2$ by $stack-poly$.
 
