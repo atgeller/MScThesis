@@ -252,45 +252,31 @@
 \begin{figure}[h]
     \ContinuedFloat
     \begin{mathpar}
-        \inferrule[]{ %% state entailment
-            s_\text{glob}(i) = (t_g.\<const> c_g)^{*}\\
-            v^{*} = (t_l.\<const> c_l)^{*}\\
-            \phi = \circ,\ti{t_l}{a_l}^{*},(\<eq> a_l \; \ti{t_l}{c_l})^{*},\ti{t_g}{a_g}^{*},(\<eq> a_g \; \ti{t_g}{c_g})^{*} \\
-        } {
-            s;v^{*} \models_i \ti{t_l}{a_l}^{*};\ti{t_g}{a_g};\phi
-        } \and
         \inferrule{ %% admin program
             \vdash s : S \and
-            S;\epsilon \vdash_i s;v^{*};e^{*} : ti^{*};l;g;\phi
+            S;\epsilon \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
         } {
-            \vdash_i s;v^{*};e^{*} : ti^{*};l;g;\phi
+            \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
         } \and
-        \inferrule{ %% admin code
-            s;v^{*} \models_i l_1;g_1;\phi_1\\
-            C = S_{\text{inst}}(i),\text{local} \; t_v^{*}, \text{return} \; (ti^n;l_2;g_2;\phi_2)^{?}\\
-            S;C \vdash_i s;v^{*};e^{*} : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2
+        \inferrule[]{ %% admin code
+            (\vdash v : \ti{t}{a};\phi_v)^{*}
+            C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
+            S;C \vdash s;v^{*};e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
         } {
-            S;(ti^n;l_2;g_2;\phi_2)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l_2;g_2;\phi_2
+            S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi
         } \and
         \inferrule[]{ %% admin const
         } {
-            \vdash t.\<const> c : \ti{t}{a};\ti{t}{a},(\<eq> a \; \ti{t}{c})
+            \vdash t.\<const> c : \ti{t}{a};\circ,\ti{t}{a},(\<eq> a \; \ti{t}{c})
         } \and
         \inferrule[]{ %% trap
         } {
             C \vdash \<trap> : tfi
         } \and
-        \inferrule[]{ %% local same instance
-            S;(ti^n;l_2;g_2;\phi_2) \vdash_j s;v_l^{*};e^{*} : ti^n;l_2;g_2;\phi_2
+        \inferrule[]{ %% local
+            S;(ti^n;l_2;\phi_2) \vdash_i s;v_l^{*};e^{*} : ti^n;l_2;\phi_2
         } {
-            S;C \vdash_j s;v^{*};\<local>_n \{ j;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;g_2;\phi_2
-        } \and
-        \inferrule[]{ %% local different instance
-            S;(ti^n;l_2;g_2;\phi_2) \vdash_i s;v_l^{*};e^{*} : ti^n;l_2;g_2;\phi_2\\
-            S_\text{global}(j) = (\text{mut}^{?} \; t)^{*} \and
-            i \neq j
-        } {
-            S;C \vdash_j s;v^{*};\<local>_n \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_1;\ti{t}{a}^{*};\phi_2
+            S;C \vdash s;v^{*};\<local> \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_1;\phi_1,\phi_2
         } \and
     \end{mathpar}
     \label{fig:adminrules}
