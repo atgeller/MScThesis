@@ -342,63 +342,80 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         \begin{itemize}
             \item Case: $i = j$
-            \\ $\land$ $S;C \vdash_j \<local>_n \{ j;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+            \\ $\land$ $S;C \vdash_j s;v^{*};\<local>_n \{ j;v_l^{*} \} \; v^n \<end> : ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$
 
-                By $inversion$, $s_2=s_1\;ti^n$ and $l_1 = l_2$.
+                By $inversion$, $ti_2^{*}=ti_1^{*}\;ti^n$ and $l_1 = l_2$.
 
-                \todo{Cannot claim that $l_1 = l_2$. I think we need to do a proof by cases that either they are equal or the information loss rules will apply.}
+                $S;(ti^n;l_3;g_2;\phi_2) \vdash_j s;v_l^{*};v^n : ti^n;l_3;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
 
-                $S;(ti^n;l_3;g_2;\phi_2) \vdash_j v_l^{*};v^n : \epsilon;\epsilon;g_1;\phi_1 \rightarrow ti^n;l_3;g_2;\phi_2$ because it is a premise of $local-same-inst$ which we have assumed to hold.
+                $s;v_l^{*} \models_i l_4;g_3;\phi_3$, and\\
+                $S;C_l \vdash_i s;v_l^{*};v^n : \epsilon;l_4;g_3;\phi_3 \rightarrow ti^n;l_3;g_2;\phi_2$ because they are premises of $admin-code$ which we have assumed to hold.
 
-                $(\vdash v_l : ti_l;\epsilon;\epsilon;\phi_v)^{*}$\\ $\land$
-                $S;C_l \vdash_j v^n : \epsilon;ti_l^{*};g_1;\phi_1,\phi_v^{*} \rightarrow ti^n;l_3;g_2;\phi_2$ because they are premises of $admin-code$ which we have assumed to hold.
+                By $state-models$, $\phi_3 = \circ,\ti{t_{vl}}{a_{vl}}^{*},(\<eq> a_{vl} \; \ti{t_{vl}}{c_{vl}})^{*},\ti{t_g}{a_g}^{*},(\<eq> a_g \; \ti{t_g}{c_g})^{*}$.
 
-                $\phi_v^{*} = (\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$, where $\ti{t}{a}^{*} = ti_l^{*}$, $(t.\<const> c)^{*} = v_l^{*}$ by $admin-const$.
+                By $inversion$ on $const$ and $subtyping$, $\phi_3,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*} \implies \phi_2$.
 
-                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$.
+                \thought{Does this require a lemma? It holds no matter how subtyping appears in the derivation tree (or if it doesn't appear). (Diamond lemma?)}
 
-                $S;C_l \vdash_j v^n : \epsilon;ti_l^{*};g_1;\phi_1 \rightarrow ti^n;l_3;g_2;\phi_2$ by $weakening$.
+                By $inversion$ on $const$, $S;C_l \vdash_i s;v_l^{*};v^n : \epsilon;l_3;g_2;\phi_3 \rightarrow ti^n;l_3;g_2;\phi_3,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^n$, and $l_4 = l_3$, $g_3 = g_2$.
 
-                By $const$, $g_1 = g_2$.
+                $S;C \vdash_i s;v^{*};v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_3,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))$ by $const$.
 
-                \todo{Either $g_1 = g_2$ or $g_2$ matches new typing rule.}
+                $S;C \vdash_i s;v^{*};v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $subtyping$.
 
-                $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $const$.
+                By $???$, $\phi_1 = \phi_4,\ti{t_v}{a_v}^{*},(\<eq> a_v \; \ti{t_v}{c_v})^{*}$, where $\ti{t_v}{a_v}^{*} = ti_1^{*}$, and $s;v^{*} \models_j l_1;g_1;\phi_4$.
 
-                Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $stack-poly$.
+                \todo{This probably requires a lemma, claiming that the local must appear only after values, labels, and other locals, so the stack only has constants, the constraint store is structured a certain way, etc.}
+
+                \thought{Because of $subtyping$, might need to claim that $\phi_1 \implies ...$ instead of $\phi_1 = ...$.}
+
+                By $state-models$, $\phi_4 = \circ,\ti{t_l}{a_l}^{*},(\<eq> a_l \; \ti{t_l}{c_l})^{*},\ti{t_g}{a_g}^{*},(\<eq> a_g \; \ti{t_g}{c_g})^{*}$.
+
+                Because $a_{vl}^{*}$ are fresh with respect to $l_2$ and $g_2$, $\circ,(\ti{t_g}{a_g},(\<eq> a_g \; \ti{t_g}{c_g})^{*} \implies \phi_3$.
+
+                $S;C \vdash_i s;v^{*};v^n : \epsilon;l_2;g_2;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $subtyping$.
+
+                \thought{Might be doing too much in a single step, using the above line and the ability to arbitrarily extend the store.}
+
+                By $state-models$, $g_2 = \ti{t_g}{a_g}^{*}$, and $g_1 = \ti{t_g}{a_g}$, therefore $g_1 = g_2$.
+
+                Therefore, $S;C \vdash_j s;v^{*};v^n : ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$ by $stack-poly$.
 
             \item Case: $i \neq j$
-            \\ $\land$ $S;C \vdash_j \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+            \\ $\land$ $S;C \vdash_j s;v^{*};\<local>_n \{ i;v_l^{*} \} \; v^n \<end> : ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$
 
-                By $inversion$, $s_2=s_1\;ti^n$ and $l_1 = l_2$.
+                By $inversion$, $ti_2^{*}=ti_1^{*}\;ti^n$, $l_1 = l_2$, and $g_2 = \ti{t_g}{a_g}^{*}$.
 
-                $S;(ti^n;l_3;g_4;\phi_2) \vdash_i v_l^{*};v^n : \epsilon;\epsilon;g_3;\phi_1 \rightarrow ti^n;l_3;g_4;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
+                $S;(ti^n;l_3;g_3;\phi_2) \vdash_i s;v_l^{*};v^n : ti^n;l_3;g_3;\phi_2$ because it is a premise of $local-diff-inst$ which we have assumed to hold.
 
-                $(\vdash v_l : ti_l;\epsilon;\epsilon;\phi_v)^{*}$\\ $\land$
-                $S;C_l \vdash_i v^n : \epsilon;ti_l^{*};g_3;\phi_1,\phi_v^{*} \rightarrow ti_n;l_3;g_4;\phi_2$ because they are premises of $admin-code$ which we have assumed to hold.
+                % $(\vdash v_l : ti_l;\phi_v)^{*}$\\ $\land$
+                % $S;C_l \vdash_i s;v_l^{*};v^n : \epsilon;ti_l^{*};g_3;\phi_1,\phi_v^{*} \rightarrow ti_n;l_3;g_4;\phi_2$ because they are premises of $admin-code$ which we have assumed to hold.
 
-                $\phi_v^{*} = (\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$, where $\ti{t}{a}^{*} = ti_l^{*}$, $(t.\<const> c)^{*} = v_l^{*}$ by $admin-const$.
+                $s;v_l^{*} \models_i l_4;g_4;\phi_3$ and\\
+                $S;C_l \vdash_i s;v_l^{*};v^n : \epsilon;l_4;g_4;\phi_3 \rightarrow ti^n;l_3;g_3;\phi_2$ because they are premises of $admin-code$ which we have assumed to hold.
 
-                Because $a^{*}$ are fresh, $\phi_1 \implies \phi_1,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*}$.
+                By $state-models$, $\phi_3 = \circ,\ti{t_{vl}}{a_{vl}}^{*},(\<eq> a_{vl} \; \ti{t_{vl}}{c_{vl}})^{*},\ti{t_g}{a_g}^{*},(\<eq> a_g \; \ti{t_g}{c_g})^{*}$.
 
-                $S;C_l \vdash_i v^n : \epsilon;ti_l^{*};g_3;\phi_1 \rightarrow ti^n;l_3;g_4;\phi_2$ by $weakening$.
+                By $inversion$ on $const$ and $subtyping$, $\phi_3,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^{*} \implies \phi_2$.
 
-                $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_2;g_1;\phi_2$ by $const$.
+                By $inversion$ on $const$, $S;C_l \vdash_i s;v_l^{*};v^n : \epsilon;l_3;g_3;\phi_3 \rightarrow ti^n;l_3;g_3;\phi_3,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))^n$, and $l_4 = l_3$, $g_4 = g_3$.
 
-                By $inversion$ and $local-diff-inst$, $g_2 = \ti{t}{a}^{*}$, where $a^{*}$ are fresh.
+                $S;C \vdash_j s;v^{*};v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_3,(\ti{t}{a},(\<eq> a \; \ti{t}{c}))$ by $const$.
 
-                $S;C \vdash_j v^n : \epsilon;l_1;g_1;\phi_1 \rightarrow ti^n;l_2;g_2;\phi_2$ by $fresh-globals$.
+                $S;C \vdash_j s;v^{*};v^n : \epsilon;l_2;g_2;\phi_3 \rightarrow ti^n;l_2;g_2;\phi_2$ by $subtyping$.
 
-                \todo{Use the generic global information loss rule instead of $fresh-globals$ when we make it}.
+                By $???$, $\phi_1 = \phi_4,\ti{t_v}{a_v}^{*},(\<eq> a_v \; \ti{t_v}{c_v})^{*}$, where $\ti{t_v}{a_v}^{*} = ti_1^{*}$, and $s;v^{*} \models_j l_1;g_1;\phi_4$.
 
-                Therefore, $S;C \vdash_j v^n : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $stack-poly$.
+                \todo{Use the lemma once it exists.}
+
+                \todo{Show that $s;v^{*} \models_j l_1;g_2;\phi_4$.}
 
         \end{itemize}
 
-    \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$
+    \item Case: $S;C \vdash_j s;v^{*};\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> : ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
 
-        Trivially, $S;C \vdash \<trap> : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2$ by $trap$.
+        Trivially, $S;C \vdash_j s;v^{*};\<trap> : ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2$ by $trap$.
 
     \item Case: $\<local>_n \{ i;v^{*}_l \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
 
