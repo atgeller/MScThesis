@@ -281,7 +281,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \\ $\land$ $\<label>_n \{ e^{*} \} \; L^j [v^n \; (\<br> j)] \hookrightarrow v^n \; e^{*}$
 
         \thought{Intuitively, this follows because \<br> is typed based on the label in $C$ from the $label$ rule, and everything follows from that. I'm not sure exactly how hand-wavy I can get away with being describing that though.}
-        
+
         \todo{The original \wasm proof addresses this using a lemma about labels which will be easy to recreate. In the meantime I will refer to that (which is the precise description of what I just said).}
 
         By $inversion$, $s_2=s_1\;ti_2^{*}$.
@@ -436,6 +436,46 @@ Note that the locals and globals are omitted where they are unnecessary and triv
                 $S;C \vdash_i \<local>_m\{j;v^n \; (t.\<const> 0)^k\} \; \<block> tfi_2\; e^{*} \<end> \<end> : tfi_0$ by $sub-typing$.
 
         \end{itemize}
+
+    \item Case: $S;C \vdash s;v^{*};\<local>_n \{ i;v_l^{*} \} \; v^n \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
+
+        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_2 = \phi_1,\phi_3$, and $l_1 = l_2$.
+
+        $S;(ti^n;l_3;\phi_3) \vdash_i s;v^{*};v^n : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
+
+        $(\vdash v_l : ti_l;\phi_l)^{*}$, and\\
+        $S;C_l \vdash s;v_l^{*};v^n : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$ because they are premises of $admin-code$ which we have assumed to hold.
+
+        $\phi_l^{*} = \circ,\ti{t}{a}^{*},(\<eq> a \ti{t}{c})^{*}$ by $admin-const$.
+
+        By $inversion$ on $const$ and $subtyping$, $\phi_l^{*},\phi_v \implies \phi_3$.
+
+        Because $a^{*}$ are fresh, $\phi_v \implies \phi_l^{*},\phi_v$.
+
+        $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v$ by $const$.
+
+        \thought{Using $l_1 = l_2$.}
+
+        $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$ by $subtyping$.
+
+        \thought{Using $\phi_2 = \phi_1,\phi_3$.}
+
+        Therefore $S;C \vdash s;v^{*};v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+
+    \item Case: $S;C \vdash s;v^{*};\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
+
+        Trivially, $S;C \vdash s;v^{*};\<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $trap$.
+
+    \item Case: $S;C \vdash s;v^{*};\<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
+
+        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_2 = \phi_1,\phi_3$, and $l_1 = l_2$.
+
+        \todo{...}
+
+        Therefore $S;C \vdash s;v^{*};v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
 \end{itemize}
 \end{proof}

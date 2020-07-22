@@ -105,7 +105,7 @@
             C \vdash \<brtable> i^{+} : s_1\;ti^{*}\;\index{i32}{a};l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
         } \and
         \inferrule[]{ %% return
-            C_{\text{return}}(i) = ti^{*};l;g_1;\phi \and
+            C_{\text{return}} = ti^{*};l_1;g_1;\phi \and
             \phi_1 \implies \phi
         }
         {
@@ -177,7 +177,7 @@
         \inferrule[]{ %% strengthen precondition, weaken postcondition
             \phi_1 \implies \phi_2 \and
             \phi_3 \implies \phi_4 \\
-            C \vdash e^{*} : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3            
+            C \vdash e^{*} : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3
         }
         {
             C \vdash e^{*} : s_2;l_2;g_2;\phi_1 \rightarrow s_3;l_3;g_3;\phi_4
@@ -243,6 +243,41 @@
         \inferrule[]{ %% imported memory
         } {
             C \vdash ex^{*}\; \<memory> n im : ex^{*}\; n
-        } \and    \end{mathpar}
+        } \and
+    \end{mathpar}
     \label{fig:modulerules}
+\end{figure}
+
+\paragraph{Administrative Typing Rules}
+\begin{figure}[h]
+    \ContinuedFloat
+    \begin{mathpar}
+        \inferrule{ %% admin program
+            \vdash s : S \and
+            S;\epsilon \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
+        } {
+            \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
+        } \and
+        \inferrule[]{ %% admin code
+            (\vdash v : \ti{t}{a};\phi_v)^{*}\\
+            C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
+            S;C \vdash s;v^{*};e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
+        } {
+            S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi
+        } \and
+        \inferrule[]{ %% admin const
+        } {
+            \vdash t.\<const> c : \ti{t}{a};\circ,\ti{t}{a},(\<eq> a \; \ti{t}{c})
+        } \and
+        \inferrule[]{ %% trap
+        } {
+            C \vdash \<trap> : tfi
+        } \and
+        \inferrule[]{ %% local
+            S;(ti^n;l_2;\phi_2) \vdash_i s;v_l^{*};e^{*} : ti^n;l_2;\phi_2
+        } {
+            S;C \vdash s;v^{*};\<local> \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_1;\phi_1,\phi_2
+        } \and
+    \end{mathpar}
+    \label{fig:adminrules}
 \end{figure}
