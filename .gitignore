@@ -1,0 +1,12 @@
+*.bak
+**/compiled
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex*
+*.lof
+*.lot
+*.pdf
+*.toc
