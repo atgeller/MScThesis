@@ -440,7 +440,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \item Case: $S;C \vdash s;v^{*};\<local>_n \{ i;v_l^{*} \} \; v^n \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
 
-        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_2 = \phi_1,\phi_3$, and $l_1 = l_2$.
+        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_1,\phi_3 \implies \phi_2$, and $l_1 = l_2$.
 
         $S;(ti^n;l_3;\phi_3) \vdash_i s;v^{*};v^n : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
 
@@ -453,13 +453,13 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         Because $a^{*}$ are fresh, $\phi_v \implies \phi_l^{*},\phi_v$.
 
+        \thought{This uses the fact that constants cannot reference locals, since $v^n$ can contain no $\<setlocal>$ instructions.}
+
         $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v$ by $const$.
 
-        \thought{Using $l_1 = l_2$.}
+        $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by $subtyping$.
 
         $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$ by $subtyping$.
-
-        \thought{Using $\phi_2 = \phi_1,\phi_3$.}
 
         Therefore $S;C \vdash s;v^{*};v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
@@ -471,7 +471,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \item Case: $S;C \vdash s;v^{*};\<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
 
-        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_2 = \phi_1,\phi_3$, and $l_1 = l_2$.
+        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_1,\phi_3 \implies \phi_2$, and $l_1 = l_2$.
 
         \todo{...}
 
