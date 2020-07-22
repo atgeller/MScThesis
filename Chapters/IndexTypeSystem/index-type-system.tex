@@ -1,19 +1,19 @@
 \section{The \name Indexed Type System}
 \label{sec:typesys}
-The \name type system was designed to provide sufficient information to safely eliminate dynamic checks (\ie to ensure that the required preconditions are met to \prechk-tag an instruction).
-It is based on the type system from \dtal, which is capable of proving similar properties.
+The \name type system is designed to provide sufficient information to safely eliminate dynamic checks (\ie to ensure that the required preconditions are met to \prechk-tag an instruction).
+It is based on the type system from \dtal, which is capable of ensuring similar properties to those we desire to prove.
 An indexed type language uses an index language in the type system to encode information within types.
 As in \dtal, we use the index language to encode linear constraints on program variables within types, giving us sufficient information to prove the desired properties of instructions.
 
-\subsection{The \name Index Type Language}
+\subsection{The \name Index Language}
 \begin{figure}[ht]
     \begin{math}
         \begin{array}{rcl}
             t &:: & \<ithreetwo> \mid \<isixfour> \\
             a &::= & Var \\
-            x\;y &::=& a \mid (t\;c) \mid (binop\;x\;y) \\
-            P &::=& (testop\;x) \mid (relop\;x\;y) \mid \neg P \mid P \land P \mid P \lor P \\
-            \phi &::=& \circ \mid \phi, (t\;a) \mid \phi, P \\
+            x\;y &::=& a \mid \ti{t}{c} \mid (binop\;x\;y) \mid (testop\;x) \mid (relop\;x\;y) \\
+            P &::=& (=\; x \; y) \mid \neg P \mid P \land P \mid P \lor P \\
+            \phi &::=& \circ \mid \phi, \ti{t}{a} \mid \phi, P \\
         \end{array}
     \end{math}
     \caption{Syntax of the \name index type language}
@@ -27,23 +27,114 @@ Below is a quick overview of each of the terms.
 \begin{itemize}
     \item $t$ represents a primitive \wasm type.
     We do not reason about floating points, so it is either a 32-bit integer ($i32$) or a 64-bit integer ($i64$).
-    \item $a$ is a type index variable which is associated with a program variable.
-    \item $x$ and $y$ are type indices, they can be an index type variable, a constant with an explicit type, or an operation on a type index.
-    \item $P$ is a proposition (constraint) on type indices.
-    \item $\phi$ is the index type context which stores index type variable declarations and propositions (constraints).
+    \item $a$ is a type index variable, which is used to track constraints on program variables.
+    \item $x$ and $y$ are type indices, they can be an index type variable, a constant with an explicit type, or a \wasm operation on a type index.
+    \item $P$ is a proposition about type indices which can encode equality constraints on type indices, or combine propositions using common first-order logic operators.
+    \item $\phi$ is the type index context which stores index type variable declarations and propositions.
 \end{itemize}
 
-\subsection{Extending The \wasm Type System}
-\thought{The overall hope is that the exposition suffices to make most of the typing rules appear straightforward once one understands all of the magic symbols. The section aims to provide a little more insight into how exactly the type system was magically conceived.}
-
+\subsection{Tracking Program Variables}
 In \name, we extend \wasm's technique for handling the stack to include an index context $\phi$ (which contains type index variable declarations and the constraints on indices) and the index types of local and global variables (similar to the Register file in \dtal) in the precondition and postcondition.
-Now, a precondition on the stack would look like $(t\ a); \phi; l; l$, where $(t\ a)$ is an index type, and $l$ and $g$ map local and global variables, respectively, to index type variables.
 
-\todo{Examples!}
+
+To understand how \name index variables are associated with \name program values, we must first explain more about how the \wasm type system works.
+
+\paragraph{The \wasm type system}
+\wasm is a stack-based language, so the type of an instruction consists of a precondition and postcondition on the shape of the stack.
+This can be viewed as though instructions \emph{consume} certain values from the stack and then \emph{produce} values to be pushed on the stack.
+For example, a binary operation of some type $t$ consumes two values of the given type $t$ on the stack and produces a value of type $t$:
+
+\[
+    \inferrule{ }{C \vdash t.binop : t\ t \rightarrow t}
+\]
+
+The above example shows what a typical \wasm typing rule looks like.
+$C$ is the module type context, which keeps track of various module-level types.
+The type associated with the instruction $t.binop$ is a \wasm function type, which is just the precondition (on the left of the $\rightarrow$) and postcondition (on the right of the $\rightarrow$) on the stack.
+
+In the \name type system, the shape of the stack is represented by indexed types, $ti ::= \ti{t}{a}$, which include both the expected \wasm type $t$, and the index variable $a$ that is then associated with the value on the stack.
+Further, the precondition and postcondition are extended to include the index local store $l$ and the index type context $\phi$.
+The index local store associates index variables with \wasm local variables.
+It has an identical form to the stack (a list of indexed types),but  we use the shorthand $l$ since we rarely reason about the shape of the local index store beyond threading it through typing rules.
+Then, \name preconditions and postconditions look like $ti^{*}; l; \phi$:
+
+\[
+    \inferrule{ }{C \vdash t.binop : \ti{t}{a_1}\; \ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(=\; a_3\; (binop\; a_1\; a_2))}
+\]
+
+We retain $C$ to refer to the module type context in \name, except that we replace \wasm function types with \name indexed function types.
+Further, certain \wasm instructions (such as $\<block>$, $\<label>$, and $\<if>$), include \wasm function types to declare the expected types of their bodies, in \name, we replace those function types with indexed function types.
+
+\subsection{Stack Polymorphism}
+Because most instructions only manipulate the top of the stack, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
+We follow \wasm's approach to solving this issue, \emph{stack polymorphism}.
+Stack polymorphism allows extending the precondition and postcondition on the shape of the stack with the same arbitrary data to thread unmodified parts of the stack through a list of instructions.
+Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the current instruction being checked, after which point the ``forgotten'' part can be re-added.
+
+\todo{The explanation of this example seems really clunky}
+For example, if the stack has the shape $\ti{t_0}{a_0}\; \ti{t_1}{a_1}\; \ti{t_1}{a_2}$, then stack polymorphism allows us to ignore $\ti{t_0}{a_0}$ and typecheck $t.binop$ with $\ti{t_1}{a_1}\; \ti{t_1}{a_2}$ on the stack.
+Then the stack would look like $\ti{t_1}{a_3}$, at which point we add $t_2$ back to the postcondtion to get $\ti{t_0}{a_0}\; \ti{t_1}{a_3}$ after executing $t.binop$.
+
+In practice, stack polymorphism is supported by the $stack-poly$ typing rule.
+The $stack-poly$ rule allows an arbitrary sequence of indexed types to be prepended to both the precondition and postcondition of the stack:
+
+\[
+    \inferrule{C \vdash e^{*} :ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2}{C \vdash e^{*} : ti_0^{*}\;ti_1^{*};l_1;\phi_1 \rightarrow ti_0^{*}\;ti_2^{*};l_2;\phi_2}
+\]
+
+\subsection{Subtyping, Implication, and Constraint Satisfaction}
+One issue with adding the index type context $\phi$ to preconditions and postconditions is that the postcondition of one instruction and the precondition of the next instruction might not match up exactly.
+For example, one instruction may ensure a value is greater than ten, but the next just wants the value to be greater than zero.
+Intuitively, if a value, ``x'', is greater than ten it must also be greater than zero, and we want the \name type system to be able to figure this out as well.
+However, computers as of yet are unable to use intuition, so we must instead formalize this intuition such that a computer can reason about it.
+
+Our formalization of this problem is based on Hoare logic \todo{find proper citation}.
+Hoare logic similarly has preconditions and postconditions on statements, and allows those preconditions to be \emph{strengthened} and postconditions to be \emph{weakened}.
+Strengthening and weakening is based on implication ($\implies$).
+We say that $\phi_1 \implies \phi_2$ when the following holds: if $\phi_1$ is satisfied, then $\phi_2$ must also be satisfied.
+If $\phi_1 \implies \phi_2$, then we consider $\phi_1$ to be stronger than $\phi_2$, and $\phi_2$ to be weaker than $\phi_1$.
+This solves the aforementioned problem because we can weaken ``x is greater than 10'' to ``x is greater than 0'' (or equivalently strengthen ``x is greater than 0'' to ``x is greater than 10'').
+
+In practice, we reason about implication using the Z3 theorem prover \todo{citation needed}.
+To test whether the satisfiability of one index type context $\phi_1$ implies that some other index type context $\phi_2$ is satisfiable, we first generate Z3 constraints based on the propositions in both contexts.
+Then, we assert that the constraints generated for the first context must hold.
+Finally, we ask Z3 to find an assignment to the variables declared in the type index contexts where the constraints from the second context do not hold (a counterexample).
+If a counterexample cannot be found then the implication must hold, otherwise it does not hold.
+
+\todo{Need to format the digression to set it apart}
+\paragraph{Digression about impact of using Z3.}
+Our choice of using Z3 has impacted \name in several ways.
+\begin{itemize}
+    \item The biggest impact is that we currently do not supporting floating point values and certain unary and binary operators because Z3 is unable to reason about them.
+    \item Because of how we test implication, we require that the index type contexts use the same names to refer to the same index variables.
+    \item The requirement of adding explicit type annotations for index variables and constants that appear in type indices comes from needing to know what width the variable will be when we convert it to a Z3 bitvector.
+\end{itemize}
+
+\todo{End of digression}
+
+To fit strengthening and weakening into the type system, we define a subtyping judgment based on implication.
+The subtyping judgement says that if an indexed function type $tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $tfi_2$, and is otherwise equivalent, then $tfi_1$ is a subtype of $tfi_2$:
+
+\[
+    \inferrule{
+        \phi_0 \implies \phi_1 \and
+        \phi_2 \implies \phi_3
+    }{
+        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+\]
+
+We then use this in the \name type system by adding a typing rule that allows the indexed function type for a list of instructions to be replaced by a subtype of that indexed function type:
+
+\[
+    \inferrule{
+        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \and
+        C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }{
+        C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
+    }
+\]
 
 \subsection{The Complete \name Type System}
 
 \input{Chapters/IndexTypeSystem/typingrules.tex}
-
-\subsection{Constraint Satisfaction}
-\todo{The exact details and positioning of this section are TBD}
