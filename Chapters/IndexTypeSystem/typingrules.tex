@@ -1,5 +1,3 @@
-\todo{Don't use $s$ as stack type}
-\todo{Get rid of globals}
 \todo{Move admin rules to type safety section}
 
 \paragraph{Instructions}
@@ -7,111 +5,105 @@
     \begin{mathpar}
         \inferrule[]{ }{ %% const
             \typerule{t.\<const>c} {
-                \insttype{\type{\epsilon}{l}{g}{\phi}}
-                    {\type{\ti{t}{a}}{l}{g}{\phi,\ti{t}{a},(\<eq>a\;(t\;c))}}}
+                \insttype{\type{\epsilon}{l}{\phi}}
+                    {\type{\ti{t}{a}}{l}{\phi,\ti{t}{a},(= a \;(t\;c))}}}
         } \and
         %% unop unsupported
         \inferrule[]{ }{ %% binop
             \typerule{t.binop} {
-                \insttype{\type{\ti{t}{a_1}\ti{t}{a_2}}{l}{g}{\phi}}
-                      {\type{\ti{t}{a_3}}{l}{g}{\phi,\ti{t}{a_3},(\<eq>a_3\;(binop\;a_1\;a_2))}
+                \insttype{\type{\ti{t}{a_1}\ti{t}{a_2}}{l}{\phi}}
+                      {\type{\ti{t}{a_3}}{l}{\phi,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2))}
                 }
             }
         } \and
         \inferrule[]{ }{ %% testop
             \typerule{t.testop} {
-                \insttype{\type{\ti{t}{a_1}}{l}{g}{\phi}}
-                      {\type{\ti{t}{a_2}}{l}{g}{\phi,\ti{t}{a_2},(\<eq>a_2\;(testop\;a_1))}
+                \insttype{\type{\ti{t}{a_1}}{l}{\phi}}
+                      {\type{\ti{t}{a_2}}{l}{\phi,\ti{t}{a_2},(= a_2\;(testop\;a_1))}
                 }
             }
         } \and
         \inferrule[]{ }{ %% relop
             \typerule{t.relop} {
-                \insttype{\type{\ti{t}{a_1}\ti{t}{a_2}}{l}{g}{\phi}}
-                      {\type{\ti{t}{a_3}}{l}{g}{\phi,\ti{t}{c},(\<eq>a_3\;(relop\;a_1\;a_2))}
+                \insttype{\type{\ti{t}{a_1}\ti{t}{a_2}}{l}{\phi}}
+                      {\type{\ti{t}{a_3}}{l}{\phi,\ti{t}{c},(= a_3\;(relop\;a_1\;a_2))}
                 }
             }
         } \and
         %% convert, reinterpret unsupported
         \inferrule[]{ }{ %% unreachable
             \typerule{\<unreachable>} {
-                \insttype{\type{s_1}{l_1}{g_1}{\phi_1}}
-                      {\type{s_2}{l_2}{g_2}{\phi_2}}
+                tfi
             }
         } \and 
         \inferrule[]{ }{ %% nop
             \typerule{\<nop>} {
-                \insttype{\type{\epsilon}{l}{g}{\phi}}
-                      {\type{\epsilon}{l}{g}{\phi}}
+                \insttype{\type{\epsilon}{l}{\phi}}
+                      {\type{\epsilon}{l}{\phi}}
             }
         } \and 
         \inferrule[]{ }{ %% drop
             \typerule{\<drop>} {
-                \insttype{\type{\ti{t}{a}}{l}{g}{\phi}}
-                      {\type{\epsilon}{l}{g}{\phi}}
+                \insttype{\type{\ti{t}{a}}{l}{\phi}}
+                      {\type{\epsilon}{l}{\phi}}
             }
         } \and
         \inferrule[]{ }{ %% select
             C \vdash \<select> : {\begin{stackTL}
-                \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;g;\phi
-                \\ \rightarrow \ti{t}{a_3};l;g;\phi,\ti{t}{a_3}, 
-                {\begin{stackTL}
-                    ((\<eqz> a) \land (\<eq> a_3\;a_2)) 
-                    \\ \lor (\neg(\<eqz> a) \land (\<eq> a_3\;a_1)))
-                \end{stackTL}} \\
+                \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;\phi
+                \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},
+                    (if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))
             \end{stackTL}}
         } \and
         \inferrule[]{ %% block
-            tfi = s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \\
-            C_2,\text{label } (s_2;l_2;g_2;\phi_2) \vdash e^{*} : tfi \\
+            tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e^{*} : tfi \\
         }
         {
             C \vdash \<block> tfi\; e^{*} \<end> : tfi
         } \and
         \inferrule[]{ %% loop
-            tfi = s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \\
-            C_2,\text{label } (s_1;l_1;g_1;\phi_1) \vdash e^{*} : tfi \\
+            tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C_2,\text{label } (ti_1^{*};l_1;\phi_1) \vdash e^{*} : tfi \\
         }
         {
             C \vdash \<loop> tfi\; e^{*} \<end> : tfi
         } \and
 
-        \todo{Important (and kinda cool) note: if we have, for example, that $(\<eqz> a)$ in $\phi_1$, then when type-checking $e_1^{*}$ we assume false (in the form of $(\<eqz> a) \land \neg(<eqz> a)$), and therefore any postcondition can be satisfied. However, this requires that we set up $\implies$ correctly with z3.}
-        
-        \todo{I tested it and $\implies$ totally works that way and I am an awesome and smart person for setting it up that way!}
+        \thought{Important (and kinda cool) note: if we have, for example, that $(\<eqz> a)$ in $\phi_1$, then when type-checking $e_1^{*}$ we assume false (in the form of $(\<eqz> a) \land \neg(<eqz> a)$), and therefore any postcondition can be satisfied.}
         
         \inferrule[]{ %% if
-            tfi = s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \\
-            C_2,\text{label } (s_2;l_2;g_2;\phi_2) \vdash e_1^{*} : s_1;l_1;g_1;\phi_1, \neg(\<eqz> a) \rightarrow s_2;l_2;g_2;\phi_2 \\
-            C_2,\text{label } (s_2;l_2;g_2;\phi_2) \vdash e_2^{*} : s_1;l_1;g_1;\phi_1, (\<eqz> a) \rightarrow s_2;l_2;g_2;\phi_2 \\
+            tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_1^{*} : ti_1^{*};l_1;\phi_1, \neg(= a\; (\<ithreetwo> 0)) \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_2^{*} : ti_1^{*};l_1;\phi_1, (= a\; (\<ithreetwo> 0)) \rightarrow ti_2^{*};l_2;\phi_2 \\
         }
         {
             C \vdash \<if> tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
         } \and
         \inferrule[]{ %% br
-            C_{\text{label}}(i) = ti^{*};l_1;g_1;\phi_1
+            C_{\text{label}}(i) = ti^{*};l_1;\phi_1
         }
         {
-            C \vdash \<br> i : s_1\;ti^{*};l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
+            C \vdash \<br> i : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } \and
         \inferrule[]{ %% br_if
-            C_{\text{label}}(i) = s_1;l_1;g_1;\phi_1 
+            C_{\text{label}}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
         }
         {
-            C \vdash \<brif> i : s_1\;\index{i32}{a};l_1;g_1;\phi_1 \rightarrow s_1\;;l_1;g_1;\phi_1,\neg(\<eqz> a)
+            C \vdash \<brif> i : ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti^{*};l_1;\phi_1,(= a\; \ti{\<ithreetwo>}{0})
         } \and
         \inferrule[]{ %% br_table
-            (C_{\text{label}}(i) = ti^{*};l_1;g_1;\phi_1)^{+}
+            (C_{\text{label}}(i) = ti^{*};l_1;\phi_i)^{+} \and
+            (\phi_1 \implies \phi_i)^n
         }
         {
-            C \vdash \<brtable> i^{+} : s_1\;ti^{*}\;\index{i32}{a};l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
+            C \vdash \<brtable> i^{+} : ti_1^{*}\;ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } \and
         \inferrule[]{ %% return
-            C_{\text{return}} = ti^{*};l_1;g_1;\phi \and
-            \phi_1 \implies \phi
+            C_{\text{return}} = ti^{*};l_1;\phi_1
         }
         {
-            C \vdash \<return> : s_1\;ti^{*};l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
+            C \vdash \<return> : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         }
     \end{mathpar}
     \label{fig:typerules}
@@ -121,68 +113,64 @@
     \ContinuedFloat
     \begin{mathpar}
         \inferrule[]{ %% call
-            C_{func}(i) = ti_1^{*};l_1;g_1;\phi_2 \rightarrow ti_2^{*};l_2;g_2;\phi_3 \and
-            \phi_4 = \phi_1,\phi_3 \and
-            \phi_1 \implies \phi_2
+            C_{func}(i) = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         }
         {
-            C \vdash \<call> i : ti_1^{*};l;g_1;\phi_1 \rightarrow ti_2^{*};l;g_2;\phi_4
+            C \vdash \<call> i : ti_1^{*};l;\phi_1 \rightarrow ti_2^{*};l;\phi_2
         } \and
         \inferrule[]{ %% call_indirect
-            C_{table}(i) = (j_1, j_2^{*}) \and
-            tfi = ti_1^{*};l_1;g_1;\phi_2 \rightarrow ti_2^{*};l_2;g_2;\phi_3 \and
-            \phi_1 \implies \phi_2
+            C_{table}(i) = (j, tfi_2^{*}) \and
+            tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         }
         {
-            C \vdash \<callindirect> tfi : ti_1^{*}\;\ti{i32}{a};l;g_1;\phi_1 \rightarrow ti_2^{*};l;g_2;\phi_3
+            C \vdash \<callindirect> tfi : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_3
         } \and
         \inferrule[]{ %% get_local
             C_{\text{local}}(i) = t \and
             l(i) = \ti{t}{a}
         }
         {
-            C \vdash \<getlocal> i : \epsilon;l;g;\phi \rightarrow \ti{t}{a_2};l;g;\phi, \ti{t}{a_2}, (\<eq> a_2\; a)
+            C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi, \ti{t}{a_2}, (= a_2\; a)
         } \and
         \inferrule[]{ %% set_local
             C_{\text{local}}(i) = t \and
             l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
         }
         {
-            C \vdash \<setlocal> i : \ti{t}{a};l_1;g;\phi \rightarrow \epsilon;l_2;g;\phi, \ti{t}{a_2}, (\<eq> a_2\; a)
+            C \vdash \<setlocal> i : \ti{t}{a};l_1;\phi \rightarrow \epsilon;l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
         } \and
         \inferrule[]{ %% tee_local
             C_{\text{local}}(i) = t \and
             l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
         }
         {
-            C \vdash \<teelocal> i : \ti{t}{a};l_1;g;\phi \rightarrow \ti{t}{a};l_2;g;\phi, \ti{t}{a_2}, (\<eq> a_2\; a)
+            C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a};l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
         } \and
         %% TODO: need typing rules for safe load and store
         \inferrule[]{ %% empty
         }
         {
-            C \vdash \epsilon : \epsilon;l;g;\phi \rightarrow \epsilon;l;g;\phi
+            C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi
         } \and
         \inferrule[]{ %% extra vars
-            C \vdash e^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2
+            C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         }
         {
-            C \vdash e^{*} : s\;s_1;l_1;g_1;\phi_1 \rightarrow s\;s_2;l_2;g_2;\phi_2
+            C \vdash e^{*} : ti^{*}\;ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti^{*}\;ti_2^{*};l_2;\phi_2
         } \and
         \inferrule[]{ %% combine
-            C \vdash e_1^{*} : s_1;l_1;g_1;\phi_1 \rightarrow s_2;l_2;g_2;\phi_2 \\
-            C \vdash e_2 : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3
+            C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C \vdash e_2 : ti_2^{*};l_2;\phi_2 \rightarrow ti_3^{*};l_3;\phi_3
         }
         {
-            C \vdash e_1^{*}\;e_2 : s_1;l_1;g_1;\phi_1 \rightarrow s_3;l_3;g_3;\phi_3
+            C \vdash e_1^{*}\;e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3
         } \and
         \inferrule[]{ %% strengthen precondition, weaken postcondition
-            \phi_1 \implies \phi_2 \and
-            \phi_3 \implies \phi_4 \\
-            C \vdash e^{*} : s_2;l_2;g_2;\phi_2 \rightarrow s_3;l_3;g_3;\phi_3
+            ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_1;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2 \\
+            C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2
         }
         {
-            C \vdash e^{*} : s_2;l_2;g_2;\phi_1 \rightarrow s_3;l_3;g_3;\phi_4
+            C \vdash e^{*} : ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_1;\phi_3
         } \and
     \end{mathpar}
     \label{fig:typerules}
@@ -194,15 +182,14 @@
     \ContinuedFloat
     \begin{mathpar}
         \inferrule[]{ %% local function
-            tfi = \ti{t_1}{a_1}^{*};\epsilon ;g_1;\phi_1 \rightarrow ti_2^{*};\epsilon ;g_2;\phi_1 \\
-            C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*}),\text{return } (ti_2^{*}) \\
-            C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};g_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2
+            tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*};l_2;\phi_2),\text{return } (ti_2^{*},l_2,\phi_2) \\
+            C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } {
             C \vdash ex^{*}\; \<func> tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; tfi
         } \and
 
-        \inferrule[]{ %% imported function, can't change globals
-            tfi = ti_1^{*};\epsilon ;g;\phi_1 \rightarrow ti_2^{*};\epsilon ;g;\phi_1
+        \inferrule[]{ %% imported function
         } {
             C \vdash ex^{*}\; \<func> tfi\; im : ex^{*}\; tfi
         } \\
@@ -210,7 +197,7 @@
         \inferrule[]{ %% local global
             tg = mut^{?}\;t \and
             ex^{*} = \epsilon \lor tg = t \and
-            C \vdash e^{*} : \epsilon; \epsilon; g \; \phi_1 \rightarrow \ti{t}{a}; \epsilon; g \; \phi_2 \and
+            C \vdash e^{*} : \epsilon; \epsilon; \phi_1 \rightarrow \ti{t}{a}; \; \phi_2 \and
         } {
             C \vdash ex^{*}\; \<global> tg\; e^{*} : ex^{*}\; tg
         } \and
