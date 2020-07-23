@@ -12,7 +12,7 @@ As in \dtal, we use the index language to encode linear constraints on program v
             t &:: & \<ithreetwo> \mid \<isixfour> \\
             a &::= & Var \\
             x\;y &::=& a \mid \ti{t}{c} \mid (binop\;x\;y) \mid (testop\;x) \mid (relop\;x\;y) \\
-            P &::=& (=\; x \; y) \mid \neg P \mid P \land P \mid P \lor P \\
+            P &::=& (=\; x \; y) \mid (if\; P\; P\; P) \mid \neg P \mid P \land P \mid P \lor P \\
             \phi &::=& \circ \mid \phi, \ti{t}{a} \mid \phi, P \\
         \end{array}
     \end{math}
