@@ -442,7 +442,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_1,\phi_3 \implies \phi_2$, and $l_1 = l_2$.
 
-        $S;(ti^n;l_3;\phi_3) \vdash_i s;v^{*};v^n : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
+        $S;(ti^n;l_3;\phi_3) \vdash_i s;v_l^{*};v^n : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
 
         $(\vdash v_l : ti_l;\phi_l)^{*}$, and\\
         $S;C_l \vdash s;v_l^{*};v^n : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$ because they are premises of $admin-code$ which we have assumed to hold.
@@ -469,11 +469,37 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         Trivially, $S;C \vdash s;v^{*};\<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $trap$.
 
     \item Case: $S;C \vdash s;v^{*};\<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-    \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
+    \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
 
         By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_1,\phi_3 \implies \phi_2$, and $l_1 = l_2$.
 
-        \todo{...}
+        $S;(ti^n;l_3;\phi_3) \vdash_i s;v_l^{*};L^k[v^n \; \<return>] : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
+
+        $(\vdash v_l : ti_l;\phi_l)^{*}$, and\\
+        $S;C_l \vdash s;v_l^{*};L^k[v^n \; \<return>] : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$, where\\
+        $C_l = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l_3;\phi_3)$ because they are premises of $admin-code$ which we have assumed to hold.
+
+        $S;C_l \vdash s;v_l^{*};\<return> : ti_3^{*} \; ti^n;l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$ by $return$.
+
+        $S;C_l \vdash s;v_l^{*};v^n : \epsilon;l_3;\phi_5 \rightarrow ti^n;l_3;\phi_6$, where $\phi_6 \implies \phi_3$ by $inversion$ on $const$, $composition$, and $subtyping$.
+
+        $S;C_l \vdash s;v_l^{*};v^n : \epsilon;l_3;\phi_l^{*} \rightarrow ti^n;l_3;\phi_6$ by (Nested-Type-Preserved).
+
+        $\phi_l^{*} = \circ,\ti{t}{a}^{*},(\<eq> a \ti{t}{c})^{*}$ by $admin-const$.
+
+        By $inversion$ on $const$, $\phi_6 = \phi_l^{*},\phi_v$.
+
+        \thought{Don't have to account for subtyping here because $\phi_6$ is an existential claim.}
+
+        Because $a^{*}$ are fresh, $\phi_v \implies \phi_l^{*},\phi_v$.
+
+        \thought{Uses the same idea from the values case.}
+
+        $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v$ by $const$.
+
+        $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by $subtyping$.
+
+        $S;C \vdash s;v^{*};v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$ by $subtyping$.
 
         Therefore $S;C \vdash s;v^{*};v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
