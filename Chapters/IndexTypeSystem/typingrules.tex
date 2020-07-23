@@ -243,14 +243,14 @@
     \begin{mathpar}
         \inferrule{ %% admin program
             \vdash s : S \and
-            S;\epsilon \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
+            S;\epsilon \vdash_i v^{*};e^{*} : ti^{*};l;\phi
         } {
             \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
         } \and
         \inferrule[]{ %% admin code
             (\vdash v : \ti{t}{a};\phi_v)^{*}\\
             C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
-            S;C \vdash s;v^{*};e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
+            S;C \vdash v^{*};e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
         } {
             S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi
         } \and
@@ -263,9 +263,9 @@
             C \vdash \<trap> : tfi
         } \and
         \inferrule[]{ %% local
-            S;(ti^n;l_2;\phi_2) \vdash_i s;v_l^{*};e^{*} : ti^n;l_2;\phi_2
+            S;(ti^n;l_2;\phi_2) \vdash_i v_l^{*};e^{*} : ti^n;l_2;\phi_2
         } {
-            S;C \vdash s;v^{*};\<local> \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_1;\phi_1,\phi_2
+            S;C \vdash \<local> \{ i;v_l^{*} \} \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_1;\phi_1,\phi_2
         } \and
     \end{mathpar}
     \label{fig:adminrules}
