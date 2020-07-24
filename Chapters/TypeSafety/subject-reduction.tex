@@ -458,5 +458,23 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         Therefore $S;C \vdash v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
+    \item Case: $C \vdash \<getglobal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    $\land$ $\vdash s : S$
+    \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
+
+        By $inversion$, $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, and $\phi_1,\ti{t}{a} \implies \phi_2$, where $C_\text{global}(j) = \text{mut}^{?} \; t$.
+
+        By $inversion$ on $store$ and $instance$, $\vdash s_\text{glob}(i,j) : \ti{t_2}{a_2};\phi_v$.
+
+        Since the context globals are never overwritten in the premises of any typing rules, $C_\text{global} = S_\text{inst}(i)_\text{global}$, and $t = t_2$.
+
+        \thought{This feels too hand-wavy.}
+
+        $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_1,\ti{t}{a},(= a \; \ti{t}{c})$ by $const$.
+
+        $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_2$ by $subtyping$.
+
+        Therefore, $C \vdash s_\text{glob}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+
 \end{itemize}
 \end{proof}

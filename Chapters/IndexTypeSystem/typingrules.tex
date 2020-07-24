@@ -146,6 +146,18 @@
         {
             C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a};l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
         } \and
+        \inferrule[]{ %% get_global
+            C_\text{global}(i) = \text{mut}^{?} t
+        }
+        {
+            C \vdash \<getglobal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a}
+        } \and
+        \inferrule[]{ %% set_global
+            C_\text{global}(i) = \text{mut} t
+        }
+        {
+            C \vdash \<setglobal> i : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
+        }
         %% TODO: need typing rules for safe load and store
         \inferrule[]{ %% empty
         }
@@ -241,7 +253,29 @@
 \begin{figure}[h]
     \ContinuedFloat
     \begin{mathpar}
-        \inferrule{ %% admin program
+        \inferrule[]{ %% store
+            S = \{ \text{inst} \; C^{*}, \text{tab} \; n^{*}, \text{mem} \; m^{*} \}\\
+            (S \vdash inst : C)^{*} \and
+            ((S \vdash cl : tf)^{*})^{*} \and
+            (n \leq |cl^{*}|)^{*} \and
+            (m \leq |b^{*}|)^{*}
+        } {
+            \vdash \{ \text{inst} \; inst^{*}, \text{tab} \; (cl^{*})^{*}, \text{mem} \; (b^{*})^{*} \} : S
+        } \and
+        \inferrule[]{ %% closure
+            S_\text{inst}(i) \vdash f : tfi
+        } {
+            S \vdash \{ \text{inst} \; i, \text{code} \; f \} : tfi
+        } \and
+        \inferrule[]{ %% instance
+            (S \vdash cl : tfi)^{*} \and
+            (\vdash v : \ti{t}{a},\phi_v)^{*} \and
+            (S_\text{tab}(i) = n)^{?} \and
+            (S_\text{mem}(j) = m)^{?}
+        } {
+            S \vdash \{ \text{func} \; cl^{*}, \text{glob} \; v^{*}, \text{tab} \; i^{?}, \text{mem} \; j^{?} \} : \{ \text{func} \; tfi^{*}, \text{global} \; (\text{mut}^{?} \; t)^{*}, \text{table} \; n^{?}, \text{memory} \; m^{?} \}
+        } \and
+        \inferrule[]{ %% admin program
             \vdash s : S \and
             S;\epsilon \vdash_i v^{*};e^{*} : ti^{*};l;\phi
         } {
