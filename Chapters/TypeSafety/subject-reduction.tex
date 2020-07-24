@@ -464,11 +464,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $inversion$, $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, and $\phi_1,\ti{t}{a} \implies \phi_2$, where $C_\text{global}(j) = \text{mut}^{?} \; t$.
 
-        By $inversion$ on $store$ and $instance$, $\vdash s_\text{glob}(i,j) : \ti{t_2}{a_2};\phi_v$.
-
-        Since the context globals are never overwritten in the premises of any typing rules, $C_\text{global} = S_\text{inst}(i)_\text{global}$, therefore $t = t_2$.
-
-        \thought{This feels too hand-wavy.}
+        $\vdash s_\text{glob}(i,j) : \ti{t}{a_2};\phi_v$ because it is a premise of $S vdash s_\text{inst}(i) : C$, which is a sub-derivation of $\vdash s : S$.
 
         $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_1,\ti{t}{a},(= a \; \ti{t}{c})$ by $const$.
 
