@@ -1,22 +1,47 @@
 \chapter{Related Work}
 \label{chp:relwork}
 
-\todo{Move this to the end of related work? Provide this in a separate background chapter/section? Keep it here?}
-\subsection{The \wasm Type System}
-\wasm is a stack-based language, so the type of an instruction in \wasm consists of a precondition and postcondition on the shape of the stack.
-This can be viewed as though instructions \emph{consume} certain values from the stack and then \emph{produce} values to be pushed on the stack.
-For example, a binary operation of some type $t$ consumes two values of the given type $t$ on the stack and produces a value of type $t$:
+%% TIL
+Using type information to improve compiler optimizations is not a new idea.
+In 1996, a paper by Tarditi et al. used strongly typed intermediate languages (TIL) to improve optimizations of SML code ~\cite{TIL}.
+Compiling SML involves many translations to intermediate languages, and by preserving type information through those translations and in the intermediate language Tarditi et al. were able to safely perform additional compiler operations.
+Using TIL in the compilation of programs led to significantly faster programs.
+TIL focuses on compiler optimizations and eventually translates into untyped languages and finally runnable assembly, so the guarantees of the type system are lost along the way.
 
-\[
-    \inferrule{ }{C \vdash t.binop : t\ t \rightarrow t}
-\]
+%% FToTAL
+\todo{Is TAL actually the first typed assembly language? From what I remember of 539B this is true, but I may be forgetting something}
+The idea of a typed assembly language was first introduced in 1999 by Morrisett et al. with the strongly typed assembly language (TAL) ~\cite{FToTAL}.
+Morrisett et al. showed how types could provably be preserved during five different compilation passes to get from System F to TAL.
+The purpose of TAL was much more focused on safety than on optimizations.
+Although Morrisett et al. argued that the type-preserving compilation passes would permit similar optimizations to TIL, they didn't include further optimizations based on TAL.
+However, Morrisett et al. did argue that the guarantees of TAL were sufficient to allow untrusted code to be safely executed.
 
-In the above rule, $C$ is the module type context, which keeps track of various module-level types.
+%% LTAL
+\todo{LTAL}
 
-Because most instructions only manipulate the top of the stack, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
-\emph{Stack polymorphism} allows extending the precondition and postcondition with the same data to thread unmodified parts of the stack through a list of instructions.
-Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the instruction being checked, after which point the ``forgotten'' part can be re-added.
+%% PC
+\todo{Blah}
+Proof carrying code (PCC) was an idea introduced in 1997 by Necula et al. ~\cite{PCC}.
+While typed assembly languages carry implicit proofs in their types, PCC attached explicit proofs that low-level code satisfies some safety properties.
+The proof can then be quickly checked to ensure the safety of the code before it is run.
+This provides a way to verify that untrusted code will not violate correctness or security invariants of a program.
+The author provides a detailed example of invariants for extensions to TIL to ensure type safety of compiled code.
+The example uses the Edinburgh Logical Framework (LF) to encode the proof.
+A type safety proof of a LF program is a proof of correctness.
+However, PCC puts a burden on developers to formally specify safety and correctness properties.
 
-\todo{The explanation of this example seems really clunky}
-For example, if the stack has the shape $t_2\; t\; t$, then stack polymorphism allows us to ignore $t_2$ and typecheck $t.binop$ with $t\;t$ on the stack.
-Then the stack would look like $t$, at which point we add $t_2$ back to the postcondtion to get $t_2\; t$ after executing $t.binop$.
+%% DTAL
+Xi and Harper created a much more expressive type system for an assembly language which had the potential to allow more compiler optimizations ~\cite{dtal}.
+Their language, a dependently typed assembly language (\dtal), used a limited dependent type system to safely remove some run-time checks, including array bounds checks.
+The goal of \dtal, similar to TAL, was to support type-preserving compilation from a high-level language for both optimizations and safety.
+\dtal intended to support type-preserving compilation from Dependent ML as well as SML.
+However, these goals were never realized in a practical system.
+
+%% Wasm
+After almost two decades of JavaScript being the dominant language in browsers, it was decided that an alternative was necessary for performance-critical code.
+The alternative that was jointly created by the major browser developers was WebAssembly (\wasm) ~\cite{Wasm}.
+\wasm is a stack-based assembly language with structured control flow.
+It is designed to be safe as well as performant.
+The \wasm type system is simple, only encoding primitive types, but strong enough to ensure type safety.
+Memory safety in \wasm is enforced using run-time checks.
+\wasm is supported by most major browsers, and is increasingly used in IoT devices due to its portability and safety.

@@ -1,0 +1,79 @@
+\chapter{Background}
+\section{\wasm}
+\label{sec:wasm}
+Here we present an overview of \wasm so reader's have some familiarity with it for when we present \name.
+
+\subsection{\wasm Syntax}
+\wasm is a stack-based assembly language.
+The primitive \wasm types and values include 32 and 64-bit floats and integers.
+There are many instructions:
+\begin{itemize}
+    \item Constants
+    \item Memory load and store
+    \item Binary and unary arithmetic operations (different ones for floats and ints)
+    \item Comparison operations (different ones for floats and ints)
+    \item Unary equal to zero operator (only for ints)
+    \item Unreachable: an instruction that triggers a ``trap'', a \wasm run-time error (think: assert false)
+    \item No-op
+    \item An instruction to discard the value on top of the stack
+    \item Several control flow blocks that introduce labels for branching
+    \item Several branch operators, including unconditional and conditional branches
+    \item Function calls and return
+    \item Indirect function calls
+    \item Get/set instructions for local and global variables
+\end{itemize}
+
+The \wasm syntax uses the Kleene star within its BNF to refer to possibly empty sequences.
+For example, instructions, $e$, are usually grouped into sequences $e^{*}$, which are possibly empty $\epsilon$.
+$e_1$ and $e_2$ refer to different instructions (although the actual instruction they represent may be the same).
+Similarly, $e_1^{*}$ and $e_2^{*}$ refer to different sequences of instructions (again, the sequences may be the same).
+There is no requirement that a sequence of non-terminals, $e_1^{*}$, be made up of entirely the same pattern, unless it is explicitly written out as in $(t.const c)^{*}$.
+For example, $e_1^{*}$ matches $(t.\<const> c_1)\; (t.\<const> c_2)\; (t.binop)$.
+Further, we may separate out subsequences: from $(t.const c)^{*}$ we may separate out $t^{*}$ and $c^{*}$ to refer to the sequences of types and constant values respectively.
+
+\wasm has modules that include linear memory, function tables, global variables, and functions.
+Linear memory is simply a very large continuous chunk of memory.
+Memory load and store operations require run-time bounds checks to ensure that they operate within the chunk of memory.
+Function tables store references to functions that can be called using indirect function calls, they are used to more safely represent function pointers.
+Indirect function calls must supply a function type that gets checked against the table function that ends up being called at run-time.
+Global variables may be mutable, and are initialized via a sequence of instructions.
+Functions include a list of local variable declarations to use within the body (a sequence of instructions).
+Additionally, function arguments are accessible as local variables within the body of functions.
+
+\subsection{\wasm Semantics}
+\label{subsec:wasmsemantics}
+\wasm uses a mixed reduction and small-step operational semantics.
+\todo{In-place stack}
+
+\todo{Admin instructions}
+
+\todo{Branching and labels}
+
+\todo{Run-time checks}
+
+\subsection{The \wasm Type System}
+\wasm is a stack-based language, so the type of an instruction in \wasm consists of a precondition and postcondition on the shape of the stack.
+This can be viewed as though instructions \emph{consume} certain values from the stack and then \emph{produce} values to be pushed on the stack.
+For example, a binary operation of some type $t$ consumes two values of the given type $t$ on the stack and produces a value of type $t$:
+
+\[
+    \inferrule{ }{C \vdash t.binop : t\ t \rightarrow t}
+\]
+
+In the above rule, $C$ is the module type context, which keeps track of various module-level types.
+
+\todo{Extract the nice writeup of stack polymorphism back from the \name indexed type system section}
+
+\paragraph{Stack Polymorphism.}
+Because most instructions only manipulate the top of the stack, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
+\emph{Stack polymorphism} allows extending the precondition and postcondition with the same data to thread unmodified parts of the stack through a list of instructions.
+Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the instruction being checked, after which point the ``forgotten'' part can be re-added.
+
+\todo{Run through an example using concrete values}
+For example, if the stack has the shape $t_2\; t\; t$, then stack polymorphism allows us to ignore $t_2$ and typecheck $t.binop$ with $t\;t$ on the stack.
+Then the stack would look like $t$, at which point we add $t_2$ back to the postcondtion to get $t_2\; t$ after executing $t.binop$.
+
+\todo{Anything else to add here?}
+
+\section{DTAL}
+\todo{How much of this do we actually want to go through since we cover much of it again in explaining the \name indexed type system}

@@ -5,38 +5,8 @@ It is based on the type system from \dtal, which is capable of ensuring similar 
 An indexed type language uses an index language in the type system to encode information within types.
 As in \dtal, we use the index language to encode linear constraints on program variables within types, giving us sufficient information to prove the desired properties of instructions.
 
-\subsection{The \name Index Language}
-\begin{figure}[ht]
-    \begin{math}
-        \begin{array}{rcl}
-            t &:: & \<ithreetwo> \mid \<isixfour> \\
-            a &::= & Var \\
-            x\;y &::=& a \mid \ti{t}{c} \mid (binop\;x\;y) \mid (testop\;x) \mid (relop\;x\;y) \\
-            P &::=& (=\; x \; y) \mid (if\; P\; P\; P) \mid \neg P \mid P \land P \mid P \lor P \\
-            \phi &::=& \circ \mid \phi, \ti{t}{a} \mid \phi, P \\
-        \end{array}
-    \end{math}
-    \caption{Syntax of the \name index type language}
-    \label{fig:itsyntax}
-\end{figure}
-
-Figure~\ref{fig:itsyntax} shows the syntax for the index type language.
-Syntax written in a \tbbf{blue, bold font} denotes a \wasm keyword.
-Below is a quick overview of each of the terms.
-
-\begin{itemize}
-    \item $t$ represents a primitive \wasm type.
-    We do not reason about floating points, so it is either a 32-bit integer ($i32$) or a 64-bit integer ($i64$).
-    \item $a$ is a type index variable, which is used to track constraints on program variables.
-    \item $x$ and $y$ are type indices, they can be an index type variable, a constant with an explicit type, or a \wasm operation on a type index.
-    \item $P$ is a proposition about type indices which can encode equality constraints on type indices, or combine propositions using common first-order logic operators.
-    \item $\phi$ is the type index context which stores index type variable declarations and propositions.
-\end{itemize}
-
 \subsection{Tracking Program Variables}
-In \name, we extend \wasm's technique for handling the stack to include an index context $\phi$ (which contains type index variable declarations and the constraints on indices) and the index types of local and global variables (similar to the Register file in \dtal) in the precondition and postcondition.
-
-
+\todo{Get rid of this section, certain parts may be useful to use in background about \wasm's type system}
 To understand how \name index variables are associated with \name program values, we must first explain more about how the \wasm type system works.
 
 \paragraph{The \wasm type system}
@@ -49,29 +19,23 @@ For example, a binary operation of some type $t$ consumes two values of the give
 \]
 
 The above example shows what a typical \wasm typing rule looks like.
-$C$ is the module type context, which keeps track of various module-level types.
+$C$ is the module type context, which keeps track of various module-level types: functions, globals, the table, memory, locals, the label stack (\ie the expected types for branching instructions), and the return stack (\ie the expected type of the return instruction).
 The type associated with the instruction $t.binop$ is a \wasm function type, which is just the precondition (on the left of the $\rightarrow$) and postcondition (on the right of the $\rightarrow$) on the stack.
 
-In the \name type system, the shape of the stack is represented by indexed types, $ti ::= \ti{t}{a}$, which include both the expected \wasm type $t$, and the index variable $a$ that is then associated with the value on the stack.
-Further, the precondition and postcondition are extended to include the index local store $l$ and the index type context $\phi$.
-The index local store associates index variables with \wasm local variables.
-It has an identical form to the stack (a list of indexed types),but  we use the shorthand $l$ since we rarely reason about the shape of the local index store beyond threading it through typing rules.
 Then, \name preconditions and postconditions look like $ti^{*}; l; \phi$:
 
 \[
     \inferrule{ }{C \vdash t.binop : \ti{t}{a_1}\; \ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(=\; a_3\; (binop\; a_1\; a_2))}
 \]
 
-We retain $C$ to refer to the module type context in \name, except that we replace \wasm function types with \name indexed function types.
-Further, certain \wasm instructions (such as $\<block>$, $\<label>$, and $\<if>$), include \wasm function types to declare the expected types of their bodies, in \name, we replace those function types with indexed function types.
-
+\todo{Move to background}
 \subsection{Stack Polymorphism}
-Because most instructions only manipulate the top of the stack, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
+To compose together the types of many instructions, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
 We follow \wasm's approach to solving this issue, \emph{stack polymorphism}.
 Stack polymorphism allows extending the precondition and postcondition on the shape of the stack with the same arbitrary data to thread unmodified parts of the stack through a list of instructions.
 Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the current instruction being checked, after which point the ``forgotten'' part can be re-added.
 
-\todo{The explanation of this example seems really clunky}
+\todo{Use concrete values to walk through this example}
 For example, if the stack has the shape $\ti{t_0}{a_0}\; \ti{t_1}{a_1}\; \ti{t_1}{a_2}$, then stack polymorphism allows us to ignore $\ti{t_0}{a_0}$ and typecheck $t.binop$ with $\ti{t_1}{a_1}\; \ti{t_1}{a_2}$ on the stack.
 Then the stack would look like $\ti{t_1}{a_3}$, at which point we add $t_2$ back to the postcondtion to get $\ti{t_0}{a_0}\; \ti{t_1}{a_3}$ after executing $t.binop$.
 
@@ -102,6 +66,7 @@ Finally, we ask Z3 to find an assignment to the variables declared in the type i
 If a counterexample cannot be found then the implication must hold, otherwise it does not hold.
 
 \todo{Need to format the digression to set it apart}
+\thought{Maybe this is better moved to the discussion section to discuss as part of the implementation?}
 \paragraph{Digression about impact of using Z3.}
 Our choice of using Z3 has impacted \name in several ways.
 \begin{itemize}
@@ -128,7 +93,7 @@ We then use this in the \name type system by adding a typing rule that allows th
 
 \[
     \inferrule{
-        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \and
+        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
         C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }{
         C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
@@ -137,4 +102,18 @@ We then use this in the \name type system by adding a typing rule that allows th
 
 \subsection{The Complete \name Type System}
 
-\input{Chapters/IndexTypeSystem/typingrules.tex}
+\todo{Find a place for this}
+At compile time, \name can \emph{pre-check} instructions that normally require dynamic safety checks.
+If \name can prove that an instruction will not trap, then it ``tags'' the instruction with \prechk.
+A compiler can then know not to generate run-time checks for \prechk-tagged instructions.
+
+\name can currently eliminate checks for four types of instructions: memory loads and stores (similar to \dtal), integer division, and indirect function calls.
+Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid.
+The integer division instruction can be \prechk tagged if the second argument is provably non-zero.
+Indirect function calls are a particularly interesting case that is specific to \wasm: they are used to safely handle function pointers when compiling from C/C++ and require a dynamic check to ensure that the called function has a suitable type.
+Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
+
+Integer division simply requires that the second argument is non-zero.
+For example, the second rule in Figure \todo{figure} ensures that pre-checked division instructions can be safely executed.
+The premise $\phi \implies (neq\ b\ 0)$ requires that the index constraints satisfy the proposition $b \neq 0$ for the pre-checked instruction to be safe.
+Therefore, since a divide-by-zero is provably absent, it is safe to replace the division operator instruction with the \prechk-tagged version.
