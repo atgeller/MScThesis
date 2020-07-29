@@ -462,7 +462,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     $\land$ $\vdash s : S$
     \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
 
-        By $inversion$, $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, and $\phi_1,\ti{t}{a} \implies \phi_2$, where $C_\text{global}(j) = \text{mut}^{?} \; t$.
+        By $inversion$, $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a} \implies \phi_2$, where $C_\text{global}(j) = \text{mut}^{?} \; t$.
 
         $\vdash s_\text{glob}(i,j) : \ti{t}{a_2};\phi_v$ because it is a premise of $S \vdash s_\text{inst}(i) : C$, which is a sub-derivation of $\vdash s : S$.
 
@@ -471,6 +471,34 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_2$ by $subtyping$.
 
         Therefore, $C \vdash s_\text{glob}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+
+    \item Case: $C \vdash v \; (\<setglobal> j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    $\land$ $\vdash s : S$
+    \\ $\land$ $s;v \; (\<setglobal> j) \hookrightarrow_i s';\epsilon$, where $s' = s$ with $\text{glob}(i,j) = v$
+
+        By $inversion$, $ti_2^{*} = ti_1^{*}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a},(= a \; \ti{t}{c}) \implies \phi_2$, where $(t.\<const> c) = v$.
+
+        Because $a$ is fresh in $ti_2^{*}$, $l_2$, and $\phi_1$, $\phi_1 \implies \phi_1,\ti{t}{a},(= \; \ti{t}{c})$.
+
+        $C \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_2;\phi_1$ by $empty$.
+
+        $C \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_2;\phi_2$ by $subtyping$.
+
+        Therefore, $C \vdash \epsilon : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+
+        $C_\text{global}(j) = \text{mut} t$ because it is a premise of $set-global$ which we have assumed to hold.
+
+        $\vdash v_0 : \ti{t}{a_0};\phi_0$, where $v_0 = s_\text{glob}(i,j)$ because it is a premise of $S \vdash s_\text{inst}(i) : C$, which is a sub-derivation of $\vdash s : S$.
+
+        $\vdash v : \ti{t}{a_1};\phi_v$ by $admin-const$.
+
+        $S \vdash s'_\text{inst}(i) : C$ by $instance$ and the premises of $S \vdash s_\text{inst}(i) : C$.
+
+        \thought{Maybe I should explicitly invoke the other premises?}
+
+        Therefore, $\vdash s' : S$ by $store$ and the premises of $\vdash s : S$.
+
+        \thought{Ditto here.}
 
 \end{itemize}
 \end{proof}
