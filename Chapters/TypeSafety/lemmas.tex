@@ -1,6 +1,32 @@
 \subsection{Lemmas Used in Subject-Reduction Proof}
 \begin{lemma}{(Inversion)}
     \todo{So many cases to write out}
+
+    %% const
+    If $C \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*}\;\ti{t}{a};l_1;\phi_1,\ti{t}{a},(= a \; \ti{t}{c}) <: ti_2^{*};l_2;\phi_2$.
+
+    %% binop
+    If $C \vdash t.binop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$,
+    and $ti^{*} \; \ti{t}{a_3};l_1;\phi_1,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2)) <: ti_2^{*};l_2;\phi_2$.
+
+    %% testop
+    If $C \vdash t.testop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1}$,
+    and $ti^{*} \; \ti{\<ithreetwo>}{a_2};l_1;\phi_1,\ti{\<ithreetwo>}{a_2},(= a_2\;(testop\;a_1)) <: ti_2^{*};l_2;\phi_2$.
+
+    %% relop
+    If $C \vdash t.relop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$,
+    and $ti^{*} \; \ti{\<ithreetwo>}{a_3};l_1;\phi_1,\ti{\<ithreetwo>}{a_3},(= a_3\;(relop\;a_1\;a_2)) <: ti_2^{*};l_2;\phi_2$.
+
+    %% composition
+    If $C \vdash e_1^{*} \; e_2 : tfi_1 \rightarrow tfi_2$,
+    then $C \vdash e_1^{*} : tfi_3 \rightarrow tfi_4$,
+    and $C \vdash e_2 : tfi_4 \rightarrow tfi_5$,
+    where $tfi_1 <: tfi_3$, and $tfi_5 <: tfi_2$.
+
 \end{lemma}
 \begin{proof}
     Proof omitted, but follows from induction over typing derivations.
