@@ -19,6 +19,7 @@
 \usepackage{stmaryrd}
 \usepackage{changepage}
 \usepackage{multirow}
+\usepackage{mathtools}
 
 % Always Use these
 \usepackage{hyperref}
@@ -70,7 +71,7 @@
 % Typeset object language notation in blue with sans serif font
 \newcommand{\tbbf}[1]{\textbf{\color{blue}#1}}
 \reservestyle{\keywords}{\tbbf}
-\keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], neq[neq\;], eqz[eqz\;], unreachable[unreachable], nop[nop\;], drop[drop], select[select], block[block\;], end[\;end], loop[loop\;], if[if\;], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], getglobal[get\rule{1ex}{.4pt}global\;], setglobal[set\rule{1ex}{.4pt}global\;], trap[trap], func[func\;], local[local], global[global\;], table[table\;], memory[memory\;], label[label], div[div], load[load\;], store[store\;], divpc[div\textsubscript{prechk}], callindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], loadpc[load\textsubscript{prechk}\;], storepc[store\textsubscript{prechk}\;]}
+\keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], neq[neq\;], eqz[eqz\;], unreachable[unreachable], nop[nop], drop[drop], select[select], block[block\;], end[\;end], loop[loop\;], if[if\;], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], getglobal[get\rule{1ex}{.4pt}global\;], setglobal[set\rule{1ex}{.4pt}global\;], trap[trap], func[func\;], local[local], global[global\;], table[table\;], memory[memory\;], label[label], div[div], load[load\;], store[store\;], divpc[div\textsubscript{prechk}], callindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], loadpc[load\textsubscript{prechk}\;], storepc[store\textsubscript{prechk}\;]}
 
 \mathlig{;}{\tbbf{;\;}}
 \mathlig{:}{:}
@@ -137,24 +138,6 @@
 
 \include{Chapters/introduction}
 \include{Chapters/background}
-
-%%\begin{mathpar}
-%%a ::= variable-not-otherwise-mentioned
-%%(x y ::= a (t c) (binop x y))
-%%(P ::= (testop x) (relop x y) (not P) (and P P) (or P P))
-%%;(γ ::= t (a : γ P)) TODO: I don't think we really need these? Syntactic sugar
-%%(φ ::= empty (φ (t a)) (φ P))
-
-%%(ti ::= (t a))
-%%  (mut? ::= boolean)
-%%  (tgi ::= (mut? ti))
-%%  ;; Index-type pre/post-condition: types on stack, locals, globals, and constraint context
-%%  (locals ::= (ti ...))
-%%  (globals ::= (ti ...))
-%%  (ticond ::= ((ti ...) locals globals φ))
-%%  (tfi ::= (ticond -> ticond))
-%%\end{mathpar}
-
 \include{Chapters/wasm-prechk}
 \include{Chapters/type-safety}
 \include{Chapters/discussion}

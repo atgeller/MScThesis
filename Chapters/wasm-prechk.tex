@@ -28,6 +28,7 @@ Formally, however, these are different instructions with different semantics and
 \end{figure}
 
 \subsection{The \name Index Language}
+\label{subsec:indexlang}
 \name uses an indexed type system.
 An indexed type language uses an index language in the type system to encode information within types.
 We use the index language to encode linear constraints on program variables within types.
@@ -111,9 +112,203 @@ All other \name instructions have equivalent semantics to their \wasm versions.
 \section{The \name Indexed Type System}
 \label{sec:typesys}
 The \name type system is designed to provide sufficient information to safely eliminate dynamic checks (\ie to ensure that the required preconditions are met to \prechk-tag an instruction).
-It is based on the type system from \dtal, which is capable of ensuring similar properties to those we desire to prove.
-For most instructions with 
+As explained in ~\ref{subsec:indexlang}, the \name type system can encode linear constraints on program variables in the preconditions and postconditions of instructions.
+We will now show how these constraints are added and used.
 
+The main typing judgement in \name, like in \wasm, is for lists of instructions.
+It has the form $C \vdash e^{*} : tfi$, where $C$ is the indexed module type context, $e^{*}$ is a sequence of instructions, and $tfi$ is the precondition and postcondition of the instruction (wrapped into a function type).
+Generally, there are two types of rules.
+Most rules are for inferring or checking the types of instructions (in which case $e^{*}$ will be a single instruction).
+There are also a few rules to compose together instruction sequences.
+We present the typing rules mixed with discussion of those rules.
+The typing judgment in its entirety is reproduced in the appendix.
+
+A number of typing rules are essentially equivalent to their \wasm counterparts.
+These are rules don't use or modify index type information.
+$\<unreachable>$ accepts any precondition and guarantees any postcondition.
+$\<nop>$ has the same precondition and postcondition.
+$\<drop>$ consumes the top value from the stack and does not change the local index store or index type context.
+\begin{mathpar}
+    \inferrule[]{ }{ %% unreachable
+        C \vdash \<unreachable> : tfi
+    }
+
+    \inferrule[]{ }{ %% nop
+        C \vdash \<nop> : \epsilon;l;\phi \rightarrow \epsilon;l;\phi
+    }
+
+    \inferrule[]{ }{ %% drop
+        C \vdash \<drop> : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
+    }
+\end{mathpar}
+
+The constant instruction is probably the simplest example of how indexed types work.
+It adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$ (where $a$ is fresh), declares the new indexed type in the index type context, and constrains that indexed type to be equal to the constant $(= a\; \ti{t}{c})$.
+The local index store is unchanged between the precondition and postcondition.
+\begin{mathpar}
+    \inferrule[]{ }{ %% const
+        C \vdash t.\<const> c : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a},(= a \ti{t}{c})
+    }
+\end{mathpar}
+
+There are several different types of operations, but they all work similarly.
+The binary operator instruction adds constraints between new and old program variables, since the result of the instruction is a new program variable, while the consumed values may already be constrained.
+A binary operation consumes two indexed types from the stack, $\ti{t}{a_1}$ and $\ti{t}{a_2}$, and produces a fresh indexed type, $\ti{t}{a_3}$.
+The index type declaration $\ti{t}{a_3}$ is added to the index type context $\phi$ and $a_3$ is constrained to be equal to the binary operator applied to the index variables that correspond to the input $(= a_3\;(binop\;a_1\;a_2)$.
+Binary operators do not affect or use local variables, they simply propagate, so the local index store is the same in the precondition and postcondition.
+\begin{mathpar}
+    \inferrule[]{ }{ %% binop
+        C \vdash t.relop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(relop\;a_1\;a_2))
+    }
+
+    \inferrule[]{ }{ %% testop
+        C \vdash t.testop : \ti{t}{a_1}\;l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2},(= a_2\;(testop\;a_1))
+    }
+
+    \inferrule[]{ }{ %% relop
+        C \vdash t.relop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(relop\;a_1\;a_2))
+    }
+\end{mathpar}
+
+The select rule constrains indexed types in a rather complex way.
+Select consumes three values from the stack, it returns the second value if the third value is zero, and otherwise returns the first value (similar to C's ternary operator).
+For this rule we use the dependent ``if'' to allow the constraint on the result to depend on the third value consumed: $(if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))$.
+\begin{mathpar}
+    \inferrule[]{ }{ %% select
+        C \vdash \<select> : {\begin{stackTL}
+            \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;\phi
+            \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},
+                (if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))
+        \end{stackTL}}
+    }
+\end{mathpar}
+
+The rules for the three different types of blocks (blocks, if blocks, and loops) are similar to \wasm.
+They simply ensure that the interior instruction sequence has the expected type under the context with the expected postcondition (or precondition in the case of loop) appended to the local stack.
+If blocks are able to make extra assumptions about the consumed value in the subsequences (that it is non-zero in the first sequence and zero in the second), because those constraints must be true for that sequence to be executed..
+
+One thing to note is that all three of these rules include their expected indexed function types as part of their syntax.
+We consider the index variables in these indexed function types to be patterns rather then literals, allowing them to match any literal as long as the same pattern matches the same literal (\ie $a_1$ matches $foo$ in both the local index store and index type context).
+Intuitively, this is very similar to alpha equivalence, where the precondition matches any preceding postcondition with the same structure as long as the variable can be renamed to match.
+The postcondition appended to the label stack also has pattern variables instead of the supplied literals.
+\begin{mathpar}
+    \inferrule[]{ %% block
+        tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+        C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e^{*} : tfi \\
+    }
+    {
+        C \vdash \<block> tfi\; e^{*} \<end> : tfi
+    }
+
+    \inferrule[]{ %% loop
+        tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+        C_2,\text{label } (ti_1^{*};l_1;(\phi_1)^{*}) \vdash e^{*} : tfi \\
+    }
+    {
+        C \vdash \<loop> tfi\; e^{*} \<end> : tfi
+    }
+
+    \inferrule[]{ %% if
+        tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+        C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_1^{*} : ti_1^{*};l_1;\phi_1, \neg(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_2^{*};l_2;\phi_2 \\
+        C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_2^{*} : ti_1^{*};l_1;\phi_1, (= a\; \ti{\<ithreetwo>}{0})) \rightarrow ti_2^{*};l_2;\phi_2 \\
+    }
+    {
+        C \vdash \<if> tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
+    }
+\end{mathpar}
+
+The rules for branching instructions and return are for the most part similar to \wasm.
+However, $br_if$ adds the assumption that the consumed value is zero to its postcondition.
+This assumption can be safely added because the value must be zero for execution to continue without a branch occurring.
+If the consumed value is constrained to be non-zero in the indexed type system, then this will cause a contradiction in the constraints of the index type context, however, that is fine since this means that no instructions following the $br_if$ will be executed.
+Also remember the above note that the postconditions on the label stack contain pattern index variables.
+
+\begin{mathpar}
+    \inferrule[]{ %% br
+        C_{\text{label}}(i) = ti^{*};l_1;\phi_1
+    }
+    {
+        C \vdash \<br> i : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+
+    \inferrule[]{ %% return
+        C_{\text{return}} = ti^{*};l_1;\phi_1
+    }
+    {
+        C \vdash \<return> : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+
+    \inferrule[]{ %% br_if
+        C_{\text{label}}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
+    }
+    {
+        C \vdash \<brif> i : ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti^{*};l_1;\phi_1,(= a\; \ti{\<ithreetwo>}{0})
+    }
+
+    \inferrule[]{ %% br_table
+        (C_{\text{label}}(i) = ti^{*};l_1;\phi_i)^{+} \and
+        (\phi_1 \implies \phi_i)^n
+    }
+    {
+        C \vdash \<brtable> i^{+} : ti_1^{*}\;ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+\end{mathpar}
+
+Function calls have the same type as the expected indexed function type of the function they are calling with two differences.
+First, the local index store is unchanged, since the called function operates on separate local variables.
+Second, the index type context in the postcondition is extended with the declarations and constraints from the precondition.
+The precondition and postcondition of a function can only contain constraints about the arguments supplied to that function, so simply copying the postcondition of the function would result in the lose of information about all other program variables.
+
+For direct function calls, the expected indexed function type is the type associated with the function in the indexed module type context.
+Indirect function calls have their expected types provided as part of instructions, where the same note about index variables being patterns from above holds.
+\begin{mathpar}
+    \inferrule[]{ %% call
+        C_{func}(i) = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+    {
+        C \vdash \<call> i : ti_1^{*};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
+    } \and
+    \inferrule[]{ %% call_indirect
+        C_{table}(i) = (j, tfi_2^{*}) \and
+        tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+    {
+        C \vdash \<callindirect> tfi : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
+    } \and
+\end{mathpar}
+
+The only instructions that actually mutate the local index store are those that operate on local variables.
+$\<getlocal>$ produces a fresh indexed type that is constrained to be equal to the index variable associated with the local being retrieved.
+$\<setlocal>$ works in the reverse direction, replacing the index variable associated with the local being set with a fresh indexed type constrained to be equal to the value consumed.
+Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediately regurgitates the indexed type back onto the stack.
+\begin{mathpar}
+    \inferrule[]{ %% get_local
+        C_{\text{local}}(i) = t \and
+        l(i) = \ti{t}{a}
+    }
+    {
+        C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi, \ti{t}{a_2}, (= a_2\; a)
+    }
+
+    \inferrule[]{ %% set_local
+        C_{\text{local}}(i) = t \and
+        l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
+    }
+    {
+        C \vdash \<setlocal> i : \ti{t}{a};l_1;\phi \rightarrow \epsilon;l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
+    }
+
+    \inferrule[]{ %% tee_local
+        C_{\text{local}}(i) = t \and
+        l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
+    }
+    {
+        C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a};l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
+    }
+\end{mathpar}
+
+\subsection{Using Types for Check Elimination}
 \name can currently eliminate checks for four types of instructions: memory loads and stores (similar to \dtal), integer division, and indirect function calls.
 Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid.
 The integer division instruction can be \prechk tagged if the second argument is provably non-zero.
@@ -124,17 +319,6 @@ Integer division simply requires that the second argument is non-zero.
 For example, the second rule in Figure \todo{figure} ensures that pre-checked division instructions can be safely executed.
 The premise $\phi \implies (neq\ b\ 0)$ requires that the index constraints satisfy the proposition $b \neq 0$ for the pre-checked instruction to be safe.
 Therefore, since a divide-by-zero is provably absent, it is safe to replace the division operator instruction with the \prechk-tagged version.
-
-\begin{mathpar}
-\inferrule[]{ }{ %% binop
-    \typerule{t.binop} {
-        \insttype{\type{\ti{t}{a_1}\ti{t}{a_2}}{l}{\phi}}
-                {\type{\ti{t}{a_3}}{l}{\phi,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2))}
-        }
-    }
-}
-\end{mathpar}
-
 
 \subsection{Subtyping, Implication, and Constraint Satisfaction}
 One issue with adding the index type context $\phi$ to preconditions and postconditions is that the postcondition of one instruction and the precondition of the next instruction might not match up exactly.
@@ -189,3 +373,6 @@ We then use this in the \name type system by adding a typing rule that allows th
         C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
     }
 \]
+
+\subsection{Module Types}
+\todo{Functions, globals, tables, and memory, oh my!}
