@@ -361,7 +361,7 @@ The typing rules for memory instructions are very similar to \wasm as we do not 
     }
 \end{mathpar}
 
-Now we move onto the rules for composing sequences of instructions.
+The last rules are the ones that can be used to compose sequences of instructions.
 The first rule is for the empty sequence, which, similar to in \wasm, simply has the same precondition and postcondition.
 Second, we have a rule to add stack polymorphism.
 Third, there is a rule to compose a sequence of instructions with another instruction.
@@ -389,13 +389,8 @@ Third, there is a rule to compose a sequence of instructions with another instru
 \end{mathpar}
 
 \subsection{Using Types for Check Elimination}
-\name can currently eliminate checks for four types of instructions: memory loads and stores (similar to \dtal), integer division, and indirect function calls.
-Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid.
-The integer division instruction can be \prechk tagged if the second argument is provably non-zero.
-Indirect function calls are a particularly interesting case that is specific to \wasm: they are used to safely handle function pointers when compiling from C/C++ and require a dynamic check to ensure that the called function has a suitable type.
-Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
-
-\todo{Rules}
+In Section \ref{sec:newinstructions} we explained why \prechk-tagged instructions do not need checks because of their static guarantees of the \name type system.
+Now, we will see how the \name type system provides those guarantees by looking at the typing rules for each of the \prechk-tagged instructions.
 
 Integer division simply requires that the second argument is non-zero.
 The premise $\phi \implies \neg(=\ a_2\ 0)$ requires that the index constraints satisfy the proposition $a_2 \neq 0$ for the pre-checked instruction to be safe.
@@ -406,6 +401,61 @@ Therefore, since a divide-by-zero is provably absent, it is safe to replace the 
     }{
         C \vdash t.\<divpc> : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(div\;a_1\;a_2))
     }
+\end{mathpar}
+
+Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid.
+Since \wasm and \name use linear memory which is a contiguous block of memory, we simply have to ensure that the index is within those bounds.
+Unfortunately, while the size of memory may be grown during program execution, we are currently unable to reason about changing memory size.
+Therefore, we just use the initial memory size.
+The initial memory size is the number of $64$ Kib pages ($65,536$ bytes), so we check that the constraints in the index type context ensure that the memory index plus the static offset is between $0$ and $65536-(the size of the value being loaded/stored)$.
+We use $width$ as a shorthand to denote the number of bytes requires for the value, it is equal to $|t|/8$ if $tp^{?}=\epsilon$, and otherwise equal to $|tp|/8$.
+\begin{mathpar}
+    \inferrule[]{ %% memory load
+        C_\text{memory} = n \and
+        2^{align} \leq (|tp| <)^{?} |t| \\
+        \phi \implies
+        {\begin{stackTL}
+            (\<ge> (\<add> a_1\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}), 
+            \\ (\<le> (\<add> a_1\; (\<add> \ti{\<ithreetwo>}{o+width}))\; \ti{\<ithreetwo>}{n*65536})
+        \end{stackTL}}
+    }
+    {
+        C \vdash t.\<load> (tp\_sx)^{?}\; align\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
+    }
+
+    \inferrule[]{ %% memory store
+        C_\text{memory} = n \and
+        2^{align} \leq (|tp| <)^{?} |t| \\
+        \phi \implies
+        {\begin{stackTL}
+            (\<ge> (\<add> a_1\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}), 
+            \\ (\<le> (\<add> a_1\; (\<add> \ti{\<ithreetwo>}{o+width}) \ti{\<ithreetwo>}{0}) \ti{\<ithreetwo>}{n*65536})
+        \end{stackTL}}
+    }
+    {
+        C \vdash t.\<store> tp^{?}\; align\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
+    }
+\end{mathpar}
+
+
+Indirect function calls in \wasm require a dynamic check to ensure that the called function has a suitable type.
+Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
+We ensure this by requiring that the type of every function at every possible index value has a subtype of the expected type: $\forall 0 \leq i < j. (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor tfis(i) <: tfi$ where $tfis=(tfi_2 ...)$.
+Further, we must show that the provided table index is within the table boundaries: $\phi \implies 0 \leq c < j$.
+\begin{mathpar}
+    \inferrule[]{ %% call_indirect
+        C_{table}(i) = (j, (tfi_2 ...)) \and
+        \phi \implies 0 \leq c < j \\
+        tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+        \forall 0 \leq i < j.\;
+        {\begin{stackTL}
+            (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) 
+            \\ \lor\; tfis(i) <: tfi$ where $tfis=(tfi_2 ...)
+        \end{stackTL}}
+    }
+    {
+        C \vdash \<callindirectpc> tfi : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
+    } \and
 \end{mathpar}
 
 \subsection{Subtyping, Implication, and Constraint Satisfaction}
@@ -464,4 +514,82 @@ We then use this in the \name type system by adding a typing rule that allows th
 \]
 
 \subsection{Module Types}
-\todo{Functions, globals, tables, and memory, oh my!}
+The complete module typing rules are in Figure \ref{fig:modulerules} (not that $im$ is an import and $ex$ is an export).
+Functions typecheck their body under the module context with the expected postcondition in the label stack and return position, and with the local index store constructed from the function's arguments and declared locals.
+Global variables must ensure that their initialization instructions produce a value of the proper type.
+Exported global variables cannot be mutable.
+Tables ensure that their indices refer to well-typed functions.
+Memory simply has its declared initial size.
+All imported functions, globals, tables, and memories are expected to have their declared type.
+They are type checked during linking.
+
+Type checking a module involves typechecking every component of the module.
+Functions are typechecked under the module index type context containing the entirety of the module, meaning that functions can refer to themselves, other functions, all globals, the table, and memory.
+This may seem to be a circular definition, but the type of the module is declared statically (as the combined declared types of all the module components), so it is just checking against the expected module index type context.
+Globals are typechecked under the module index context containing only the global variable declarations preceding the current declaration.
+
+\begin{figure}[h]
+    \begin{mathpar}
+        \inferrule[]{ %% local function
+            tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*};l_2;\phi_2),\text{return } (ti_2^{*},l_2,\phi_2) \\
+            C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+        } {
+            C \vdash ex^{*}\; \<func> tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; tfi
+        } \and
+
+        \inferrule[]{ %% imported function
+        } {
+            C \vdash ex^{*}\; \<func> tfi\; im : ex^{*}\; tfi
+        } \\
+
+        \inferrule[]{ %% local global
+            tg = mut^{?}\;t \and
+            ex^{*} = \epsilon \lor tg = t \and
+            C \vdash e^{*} : \epsilon; \epsilon; \phi_1 \rightarrow \ti{t}{a};\epsilon; \phi_2
+        } {
+            C \vdash ex^{*}\; \<global> tg\; e^{*} : ex^{*}\; tg
+        } \and
+
+        \inferrule[]{ %% imported global
+            tg = t \and
+        } {
+            C \vdash ex^{*}\; \<global> tg\; im : ex^{*}\; tg
+        } \and
+
+        \inferrule[]{ %% local table
+            (C_{\text{func}}(i) = tfi)^n
+        } {
+            C \vdash ex^{*}\; \<table> n\; i^n : ex^{*}\; (n,tfi^n)
+        } \and
+
+        \inferrule[]{ %% imported table
+        } {
+            C \vdash ex^{*}\; \<table> (n,tfi^n)\; im : ex^{*}\; (n,tfi^n)
+        } \and
+
+        \inferrule[]{ %% local memory
+        } {
+            C \vdash ex^{*}\; \<memory> n : ex^{*}\; n
+        }
+
+        \inferrule[]{ %% imported memory
+        } {
+            C \vdash ex^{*}\; \<memory> n\; im : ex^{*}\; n
+        }
+
+        \inferrule[]{ %% module
+            (C\vdash f : ex_f^{*}\; tfi)^{*} \and
+            (C_i \vdash glob_i : ex_g^{*}\; tg_i)^{*} \\
+            (C \vdash tab : ex_t^{*}\; (n,tfi^n))^{?} \and
+            (C \vdash mem : ex_m^{*}\; n)^{?} \\
+            (C_i=\{\text{global } tg^{i-1}\})_i^{*} \and
+            ex_f^{*\;*}\; ex_g^{*\;*}\; ex_t^{*\;?}\; ex_m^{*\;?} \text{ distinct} \\
+            C = \{\text{func } tfi^{*}, \text{global } tg^{*}, \text{table } (n,tfi^n)^{?}, \text{memory } n^{?}\}  
+        } {
+            \vdash \<module> f^{*}\; glob^{*}\; tab^{?}\; mem^{?}
+        }
+    \end{mathpar}
+    \caption{Indexed Module Typing Rules}
+    \label{fig:modulerules}
+\end{figure}
