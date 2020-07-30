@@ -158,6 +158,37 @@
         {
             C \vdash \<setglobal> i : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
         }
+
+        \inferrule[]{ %% memory load
+            C_\text{memory} = n \and
+            2^a \leq (|tp| <)^{?} |t|
+        }
+        {
+            C \vdash t.\<load> (tp\_sx)^{?}\; a\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
+        }
+
+        \inferrule[]{ %% memory store
+            C_\text{memory} = n \and
+            2^a \leq (|tp| <)^{?} |t|
+        }
+        {
+            C \vdash t.\<store> tp^{?}\; a\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
+        }
+
+        \inferrule[]{ %% current mem
+            C_\text{memory} = n \and
+        }
+        {
+            C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi
+        }
+
+        \inferrule[]{ %% grow mem
+            C_\text{memory} = n \and
+        }
+        {
+            C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi
+        }
+
         %% TODO: need typing rules for safe load and store
         \inferrule[]{ %% empty
         }

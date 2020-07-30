@@ -308,6 +308,86 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
     }
 \end{mathpar}
 
+Instructions for getting and setting globals produce and consume unconstrained values respectively.
+Global variables are very difficult to reason about in the type system since they are different between modules.
+At compile-time, before linking, it is very difficult to reason about globals from another module which would be necessary for imported functions.
+We do still ensure that the value is of the correct type and in the case of setting a global variable that the global variable is mutable.
+\begin{mathpar}
+    \inferrule[]{ %% get_global
+        C_\text{global}(i) = \text{mut}^{?}\; t
+    }
+    {
+        C \vdash \<getglobal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a}
+    }
+
+    \inferrule[]{ %% set_global
+        C_\text{global}(i) = \text{mut } t
+    }
+    {
+        C \vdash \<setglobal> i : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
+    }
+\end{mathpar}
+
+The typing rules for memory instructions are very similar to \wasm as we do not reason about the contents of memory or how its size can change throughout a program.
+\begin{mathpar}
+    \inferrule[]{ %% memory load
+        C_\text{memory} = n \and
+        2^a \leq (|tp| <)^{?} |t|
+    }
+    {
+        C \vdash t.\<load> (tp\_sx)^{?}\; a\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
+    }
+
+    \inferrule[]{ %% memory store
+        C_\text{memory} = n \and
+        2^a \leq (|tp| <)^{?} |t|
+    }
+    {
+        C \vdash t.\<store> tp^{?}\; a\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
+    }
+
+    \inferrule[]{ %% current mem
+        C_\text{memory} = n \and
+    }
+    {
+        C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi
+    }
+
+    \inferrule[]{ %% grow mem
+        C_\text{memory} = n \and
+    }
+    {
+        C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi
+    }
+\end{mathpar}
+
+Now we move onto the rules for composing sequences of instructions.
+The first rule is for the empty sequence, which, similar to in \wasm, simply has the same precondition and postcondition.
+Second, we have a rule to add stack polymorphism.
+Third, there is a rule to compose a sequence of instructions with another instruction.
+\begin{mathpar}
+    \inferrule[]{ %% empty
+    }
+    {
+        C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi
+    }
+
+    \inferrule[]{ %% extra vars
+        C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+    {
+        C \vdash e^{*} : ti^{*}\;ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti^{*}\;ti_2^{*};l_2;\phi_2
+    }
+
+    \inferrule[]{ %% combine
+        C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+        C \vdash e_2 : ti_2^{*};l_2;\phi_2 \rightarrow ti_3^{*};l_3;\phi_3
+    }
+    {
+        C \vdash e_1^{*}\;e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3
+    }
+\end{mathpar}
+
 \subsection{Using Types for Check Elimination}
 \name can currently eliminate checks for four types of instructions: memory loads and stores (similar to \dtal), integer division, and indirect function calls.
 Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid.
@@ -315,12 +395,21 @@ The integer division instruction can be \prechk tagged if the second argument is
 Indirect function calls are a particularly interesting case that is specific to \wasm: they are used to safely handle function pointers when compiling from C/C++ and require a dynamic check to ensure that the called function has a suitable type.
 Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
 
+\todo{Rules}
+
 Integer division simply requires that the second argument is non-zero.
-For example, the second rule in Figure \todo{figure} ensures that pre-checked division instructions can be safely executed.
-The premise $\phi \implies (neq\ b\ 0)$ requires that the index constraints satisfy the proposition $b \neq 0$ for the pre-checked instruction to be safe.
+The premise $\phi \implies \neg(=\ a_2\ 0)$ requires that the index constraints satisfy the proposition $a_2 \neq 0$ for the pre-checked instruction to be safe.
 Therefore, since a divide-by-zero is provably absent, it is safe to replace the division operator instruction with the \prechk-tagged version.
+\begin{mathpar}
+    \inferrule[]{ 
+        \phi \implies \neg(=\ a_2\ 0)
+    }{
+        C \vdash t.\<divpc> : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(div\;a_1\;a_2))
+    }
+\end{mathpar}
 
 \subsection{Subtyping, Implication, and Constraint Satisfaction}
+\todo{Looks like subtyping will only be used for type checking rules}
 One issue with adding the index type context $\phi$ to preconditions and postconditions is that the postcondition of one instruction and the precondition of the next instruction might not match up exactly.
 For example, one instruction may ensure a value is greater than ten, but the next just wants the value to be greater than zero.
 Intuitively, if a value, ``x'', is greater than ten it must also be greater than zero, and we want the \name type system to be able to figure this out as well.
