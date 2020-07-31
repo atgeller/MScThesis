@@ -1,2 +1,17 @@
 \chapter{Discussion}
 \label{chp:discussion}
+
+\section{Implementation Details}
+In practice, we reason about implication using the Z3 theorem prover \todo{citation needed}.
+To test whether the satisfiability of one index type context $\phi_1$ implies that some other index type context $\phi_2$ is satisfiable, we first generate Z3 constraints based on the propositions in both contexts.
+Then, we assert that the constraints generated for the first context must hold.
+Finally, we ask Z3 to find an assignment to the variables declared in the type index contexts where the constraints from the second context do not hold (a counterexample).
+If a counterexample cannot be found then the implication must hold, otherwise it does not hold.
+
+\paragraph{Impact of using Z3}
+Our choice of using Z3 has impacted \name in several ways.
+\begin{itemize}
+    \item The biggest impact is that we currently do not supporting floating point values and certain unary and binary operators because Z3 is unable to reason about them.
+    \item Because of how we test implication, we require that the index type contexts use the same names to refer to the same index variables.
+    \item The requirement of adding explicit type annotations for index variables and constants that appear in type indices comes from needing to know what width the variable will be when we convert it to a Z3 bitvector.
+\end{itemize}
