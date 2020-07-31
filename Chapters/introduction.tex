@@ -33,35 +33,6 @@ Generally, such type systems are attached to high-level languages, where explici
 Conversely, using expressive type systems in low-level languages often requires reasoning about program state and unstructured control flow (\ie $goto$), which introduces more complexity into the type system.
 However, prior work has attached expressive type systems, that permit complex correctness guarantees, to simple low-level languages.
 
-\todo{I like the next two paragraphs (commented out), but I think they should be moved to the conclusion/discussion, as they don't really fit here anymore.}
-%%Using such an expressive type system for a low-level language, we can alleviate overhead otherwise required to ensure safety of untrusted low-level programs.
-%%Typically, executing code in an untrusted context requires dynamic safety checks which introduce potentially unnecessary instructions, slowing down execution.
-%%However, with the safety guarantees provided by the type system, we can determine when these checks are unnecessary and remove them.
-%%This would allow low-level programs to be downloaded, checked, and executed safely and efficiently.
-
-%%Type systems can be used to alleviate the need for safety checks, reducing overhead, by providing safety guarantees about programs before they are run.
-%%The idea of using type systems to ensure the safety of low-level code is not a new one.
-%%Several projects have attached expressive type systems to low-level languages to attach proofs of correctness to low-level programs.
-%%However, the focus in these cases is on correctness, not on performance.
-
-We have built such a type system, based on prior work, for \name.
-The \name type system tracks the values of some computations in the types, and constraints between those values can be statically checked.
-It can provide the static guarantees necessary for the new \name instructions.
-Therefore, with the new type system and new instructions, \name has equivalent safety guarantees to \wasm, with potentially improved performance thanks to fewer instructions.
-
-\section{Thesis Statement}
-\begin{adjustwidth}{1cm}{1cm}
-    Using a more expressive type system, we can ensure safety \emph{and} improve the performance of low-level code in untrusted environments.
-\end{adjustwidth}
-
-\section{Contributions}
-We want to use types to improve performance while ensuring safety in real-world low-level programs.
-Towards that goal, we introduce \name, an extension of the WebAssembly (\wasm) language.
-\name introduces new versions of \wasm instructions which are faster than their \wasm counterparts, but also require stronger type-level safety guarantees (Section ~\ref{sec:newinstructions}).
-To facilitate type-checking these new instructions, \name uses an indexed type system which is able to encode linear constraints on program variables and therefore ensure complex safety properties (Section ~\ref{sec:typesys}).
-We ensure that \name is as safe as \wasm by providing a type safety proof of the \name indexed type system (Section ~\ref{chp:typesafety}).
-Together, these additions mean that \name is as safe as \wasm while potentially improving performance.
-
 \section{Related Work}
 \label{sec:relwork}
 \todo{Exact positioning TBA (probably use to drive discussion of type systems)}
@@ -106,3 +77,21 @@ It is designed to be safe as well as performant, with a small binary footprint.
 The \wasm type system is simple, only encoding primitive types, but strong enough to ensure type safety.
 Memory safety in \wasm is enforced using run-time checks.
 \wasm is supported by most major browsers, and is increasingly used in IoT devices due to its portability and safety.
+
+\section{Contributions}
+We want to use types to improve performance while ensuring safety in real-world low-level programs.
+While prior work has used expressive type systems for low-level languages, we want to show the feasibility of doing this with a language commonly used in contexts that are both performance-critical and untrusted.
+Towards that goal, we introduce \name, an extension of the WebAssembly (\wasm) language.
+
+\name introduces new versions of \wasm instructions which are faster than their \wasm counterparts, but also require stronger type-level safety guarantees (Section ~\ref{sec:newinstructions}).
+To facilitate type-checking these new instructions, \name uses an indexed type system which is able to encode linear constraints on program variables and therefore ensure complex safety properties (Section ~\ref{sec:typesys}).
+We ensure that \name is as safe as \wasm by providing a type safety proof of the \name indexed type system (Section ~\ref{chp:typesafety}).
+Together, these additions mean that \name is as safe as \wasm while potentially improving performance.
+
+\section{Thesis Statement}
+\begin{adjustwidth}{1cm}{1cm}
+    Using a more expressive type system, we can ensure safety \emph{and} improve the performance of low-level code in untrusted environments.
+\end{adjustwidth}
+
+
+
