@@ -35,7 +35,7 @@
             \typerule{\<unreachable>} {
                 tfi
             }
-        } \and 
+        } \and
         \inferrule[]{ }{ %% nop
             \typerule{\<nop>} {
                 \insttype{\type{\epsilon}{l}{\phi}}
@@ -71,7 +71,7 @@
         } \and
 
         \thought{Important (and kinda cool) note: if we have, for example, that $(\<eqz> a)$ in $\phi_1$, then when type-checking $e_1^{*}$ we assume false (in the form of $(\<eqz> a) \land \neg(<eqz> a)$), and therefore any postcondition can be satisfied.}
-        
+
         \inferrule[]{ %% if
             tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
             C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_1^{*} : ti_1^{*};l_1;\phi_1, \neg(= a\; (\<ithreetwo> 0)) \rightarrow ti_2^{*};l_2;\phi_2 \\
