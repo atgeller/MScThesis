@@ -21,7 +21,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $inversion$ on $const$ and $binop$, we know that $ti_2^{*} = ti_1^{*} \ti{t}{a_3}$, $l_2=l_1$, and that
         \begin{align*}
-            \phi_1&, 
+            \phi_1&,
             \begin{stackTL}
                 \ti{t}{a_1}, (= a_1\; \ti{t}{c_1}), \\
                 \ti{t}{a_2}, (= a_2\; \ti{t}{c_2}), \\
@@ -66,7 +66,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $inversion$ on $const$ and $testop$, we know that $ti_2^{*}=ti_1^{*}\; \ti{t}{a_2}$, $l_2=l_1$, and that
         \begin{align*}
-            \phi_1&, 
+            \phi_1&,
             \begin{stackTL}
                 \ti{t}{a_1}, (= a_1\;\ti{t}{c}), \\
                 \ti{t}{a_2}, (= a_2\;(testop\;a_1))
@@ -76,7 +76,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $const$, $C \vdash t.\<const> c :
             \begin{stackTL}
-                \epsilon;l_1;g_1;\phi_1 \\ 
+                \epsilon;l_1;g_1;\phi_1 \\
                 \rightarrow \ti{t}{a_2};l_1;\phi_1,\ti{t}{a_2},(= a_2\;\ti{t}{c_2})
             \end{stackTL}$.
 
@@ -100,7 +100,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
     \\ $\land$ $\<nop> \hookrightarrow \epsilon$
 
         By $inversion$ on $nop$, we know that $ti_2^{*} = ti_1^{*}$, $l_2 = l_1$, and $\phi_1 \implies \phi_0$ and $\phi_0 \implies \phi_2$ for some $\phi_0$.
-    
+
         $C\vdash \epsilon : \epsilon;l;g;\phi_0 \rightarrow \epsilon;l;g;\phi_0$ by $empty$.
 
         Then, $C \vdash \epsilon ti_1^{*};l;g;\phi_1 \rightarrow ti_1^{*};l;g;\phi_2$ by $stack-poly$ and $sub-typing$.
@@ -117,7 +117,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
     %% Select
     \item Case: $C\; {\begin{stackTL}
-        \vdash (t.\<const> c_1)\;(t.\<const> c_2)\;(\<ithreetwo>.\<const> 0)\;\<select> 
+        \vdash (t.\<const> c_1)\;(t.\<const> c_2)\;(\<ithreetwo>.\<const> 0)\;\<select>
         \\ : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     \end{stackTL}}$
     \\ $\land$ $(t.\<const> c_1)\;(t.\<const> c_2)\;(\<ithreetwo>.\<const> 0)\;\<select> \hookrightarrow (t.\<const> c_2)$
@@ -134,7 +134,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
             \implies \phi_2
         \end{stackTL}}
         $
-        
+
         By $const$, \\
         $ C \vdash (t.\<const> c_2) :
             {\begin{stackTL}
@@ -458,6 +458,21 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         Therefore $S;C \vdash v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
+    \item Case: $C \vdash \<getlocal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $v_1^j \; v \; v_2^k;\<getlocal> j \hookrightarrow v$
+
+        By $inversion$ on $get-local$, $ti_2^{*} = \ti{t}{a_1} \; ti_1^{*}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a_1},(= a_1 \; a) \implies \phi_2$, where $\ti{t}{a} = l_1(j)$.
+
+        By $inversion$ on $admin-code$ and $admin-const$, $\phi_1 = \circ,\phi_{v_1}^j, \ti{t}{a}, (= a \; \ti{t}{c}), \phi_{v_2}^k$, where $v = (t.\<const> c)$.
+
+        $C \vdash v : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a_1};l_2;\phi_1,\ti{t}{a_1},(= a_1 \; \ti{t}{c})$ by $const$.
+
+        $\phi_1,\ti{t}{a_1},(= a_1 \; \ti{t}{c}) \iff \phi_1,\ti{t}{a_1},(= a_1 \; a)$ because $\phi_1$ contains the constraint $(= a \; \ti{t}{c})$.
+
+        $C \vdash v : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a_1};l_2;\phi_2$ by $subtyping$.
+
+        Therefore, $C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+
     \item Case: $C \vdash \<getglobal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     $\land$ $\vdash s : S$
     \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
@@ -478,7 +493,7 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         By $inversion$, $ti_2^{*} = ti_1^{*}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a},(= a \; \ti{t}{c}) \implies \phi_2$, where $(t.\<const> c) = v$.
 
-        Because $a$ is fresh in $ti_2^{*}$, $l_2$, and $\phi_1$, $\phi_1 \implies \phi_1,\ti{t}{a},(= \; \ti{t}{c})$.
+        Because $a$ is fresh in $ti_2^{*}$, $l_2$, and $\phi_1$, $\phi_1 \implies \phi_1,\ti{t}{a},(= a \; \ti{t}{c})$.
 
         $C \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_2;\phi_1$ by $empty$.
 
@@ -486,17 +501,17 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         Therefore, $C \vdash \epsilon : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
-        $C_\text{global}(j) = \text{mut} t$ because it is a premise of $set-global$ which we have assumed to hold.
+        $C_\text{global}(j) = \text{mut} \; t$ because it is a premise of $set-global$ which we have assumed to hold.
 
         $\vdash v_0 : \ti{t}{a_0};\phi_0$, where $v_0 = s_\text{glob}(i,j)$ because it is a premise of $S \vdash s_\text{inst}(i) : C$, which is a sub-derivation of $\vdash s : S$.
 
         $\vdash v : \ti{t}{a_1};\phi_v$ by $admin-const$.
 
-        $S \vdash s'_\text{inst}(i) : C$ by $instance$ and the premises of $S \vdash s_\text{inst}(i) : C$.
+        $S \vdash s'_\text{inst}(i) : C$ by $instance$, note that the other premises are the same as the premises from $S \vdash s_\text{inst}(i) : C$.
 
         \thought{Maybe I should explicitly invoke the other premises?}
 
-        Therefore, $\vdash s' : S$ by $store$ and the premises of $\vdash s : S$.
+        Therefore, $\vdash s' : S$ by $store$, note that the other premises are the same as the premises from $\vdash s : S$.
 
         \thought{Ditto here.}
 

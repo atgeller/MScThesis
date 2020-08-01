@@ -35,13 +35,13 @@
             \typerule{\<unreachable>} {
                 tfi
             }
-        } \and 
+        } \and
         \inferrule[]{ }{ %% nop
             \typerule{\<nop>} {
                 \insttype{\type{\epsilon}{l}{\phi}}
                       {\type{\epsilon}{l}{\phi}}
             }
-        } \and 
+        } \and
         \inferrule[]{ }{ %% drop
             \typerule{\<drop>} {
                 \insttype{\type{\ti{t}{a}}{l}{\phi}}
@@ -71,7 +71,7 @@
         } \and
 
         \thought{Important (and kinda cool) note: if we have, for example, that $(\<eqz> a)$ in $\phi_1$, then when type-checking $e_1^{*}$ we assume false (in the form of $(\<eqz> a) \land \neg(<eqz> a)$), and therefore any postcondition can be satisfied.}
-        
+
         \inferrule[]{ %% if
             tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
             C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_1^{*} : ti_1^{*};l_1;\phi_1, \neg(= a\; (\<ithreetwo> 0)) \rightarrow ti_2^{*};l_2;\phi_2 \\
@@ -158,6 +158,37 @@
         {
             C \vdash \<setglobal> i : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
         }
+
+        \inferrule[]{ %% memory load
+            C_\text{memory} = n \and
+            2^a \leq (|tp| <)^{?} |t|
+        }
+        {
+            C \vdash t.\<load> (tp\_sx)^{?}\; a\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
+        }
+
+        \inferrule[]{ %% memory store
+            C_\text{memory} = n \and
+            2^a \leq (|tp| <)^{?} |t|
+        }
+        {
+            C \vdash t.\<store> tp^{?}\; a\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
+        }
+
+        \inferrule[]{ %% current mem
+            C_\text{memory} = n \and
+        }
+        {
+            C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi
+        }
+
+        \inferrule[]{ %% grow mem
+            C_\text{memory} = n \and
+        }
+        {
+            C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi
+        }
+
         %% TODO: need typing rules for safe load and store
         \inferrule[]{ %% empty
         }
@@ -178,8 +209,8 @@
             C \vdash e_1^{*}\;e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3
         } \and
         \inferrule[]{ %% strengthen precondition, weaken postcondition
-            ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_1;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2 \\
-            C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;g_2;\phi_2
+            ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_1;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         }
         {
             C \vdash e^{*} : ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_1;\phi_3
@@ -284,7 +315,7 @@
         \inferrule[]{ %% admin code
             (\vdash v : \ti{t}{a};\phi_v)^{*}\\
             C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
-            S;C \vdash v^{*};e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
+            S;C \vdash e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
         } {
             S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi
         } \and
