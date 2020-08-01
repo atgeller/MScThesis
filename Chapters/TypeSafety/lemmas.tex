@@ -4,34 +4,36 @@
 
     %% const
     If $C \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*};l_1;\phi_1 \rightarrow ti_1^{*}\;\ti{t}{a};l_1;\phi_1,\ti{t}{a},(= a \; \ti{t}{c}) <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+    then $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{t}{a},(= a \; \ti{t}{c})}{ti_2^{*}\;l_2}{\phi_2}$.
 
     %% binop
     If $C \vdash t.binop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$,
-    and $ti_1^{*};l_1;\phi_1 \rightarrow ti^{*} \; \ti{t}{a_3};l_1;\phi_1,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2)) <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_3}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2))}{ti_2^{*}\;l_2}{\phi_2}$.
 
     %% testop
     If $C \vdash t.testop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1}$,
-    and $ti_1^{*};l_1;\phi_1 \rightarrow ti^{*} \; \ti{\<ithreetwo>}{a_2};l_1;\phi_1,\ti{\<ithreetwo>}{a_2},(= a_2\;(testop\;a_1)) <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_2}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{\<ithreetwo>}{a_2},(= a_2\;(testop\;a_1))}{ti_2^{*}\;l_2}{\phi_2}$.
 
     %% relop
     If $C \vdash t.relop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$,
-    and $ti_1^{*};l_1;\phi_1 \rightarrow ti^{*} \; \ti{\<ithreetwo>}{a_3};l_1;\phi_1,\ti{\<ithreetwo>}{a_3},(= a_3\;(relop\;a_1\;a_2)) <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_3}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{\<ithreetwo>}{a_3},(= a_3\;(relop\;a_1\;a_2))}{ti_2^{*}\;l_2}{\phi_2}$.
 
     %% set-local
     If $C \vdash \<setlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$
-    and $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_1,\ti{t}{a_2},(= a_2\;a) <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    where $t = C_\text{local}(i)$.
+    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$, $C_\text{local}(i) = t$,
+    and $\satisfies{\phi_1,\ti{t}{a_2},(= a_2\;a)}{ti_2^{*}\;l_2}{\phi_2}$.
 
     %% composition
     If $C \vdash e_1^{*} \; e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $C \vdash e_1^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$,
-    $C \vdash e_2 : ti_4^{*};l_4;\phi_4 \rightarrow ti_5^{*};l_5;\phi_5$,
-    and $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 <: ti_3^{*};l_3;\phi_3 \rightarrow ti_5^{*};l_5;\phi_5$.
+    then $C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$,
+    $C \vdash e_2 : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_4$,
+    and $\satisfies{\phi_4}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    \thought{This relys on a bit of a non-obvious idea that even if the precondition is changed through subtyping, the subtyping can be deferred until a later composition.}
 
     %% admin-program
     If $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$,
@@ -45,15 +47,15 @@
     where $C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}$.
 
     %% admin-const
-    If $\vdash v : ti;\phi_v$,
+    If $\vdash t.\<const> c : ti;\phi_v$,
     then $ti = \ti{t}{a}$,
-    and $\phi_v = \circ,\ti{t}{a},(= a \; \ti{t}{c})$,
-    where $t.\<const> c = v$.
+    and $\phi_v = \circ,\ti{t}{a},(= a \; \ti{t}{c})$.
 
     %% local
     If $S;C \vdash \<local> \{ i;v_l^{*} \} \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};e^{*} : ti^n;l_3;\phi_3$,
-    and $ti_1^{*};l_1;\phi_1 \rightarrow ti_1^{*} \; ti^n;l_1;\phi_1,\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+    then $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
+    $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};e^{*} : ti^n;l_3;\phi_3$,
+    and $\satisfies{\phi_1,\phi_3}{ti_2^{*}\;l_2}{\phi_2}$.
 
 \end{lemma}
 \begin{proof}
