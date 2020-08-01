@@ -473,6 +473,45 @@ Note that the locals and globals are omitted where they are unnecessary and triv
 
         Therefore, $C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
+    \item Case: $S;\epsilon \vdash_i v_1^j \; v \; v_2^k; v' \; (\<setlocal> j) : ti^{*};l;\phi$
+    \\ $\land$ $v_1^j \; v \; v_2^k;v' \; \<setlocal> j \hookrightarrow v_1^j \; v' \; v_2^k\epsilon$
+
+        By $inversion$ on $admin-code$, $\vdash v : \ti{t}{a};\phi_v$,
+        and $S;C \vdash v' \; (\<setlocal> j) : \epsilon:l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$,
+        where $l_1(j) = \ti{t}{a}$, and $C_\text{local}(j) = t$.
+
+        $C \vdash v' : \epsilon;l_1;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$,
+        $C \vdash \<setlocal> j : ti_4^{*};l_4;\phi_4 \rightarrow ti^{*};l;\phi_5$,
+        and $\epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi <: \epsilon;l_1;\phi_3 \rightarrow ti^{*};l;\phi_5$,
+        by $inversion$ on $composition$ and $subtyping$.
+
+        By $inversion$ on $set-local$ and $subtyping$, and because we know $t = C_\text{local}(j)$,
+        $ti^{*} = \epsilon$, $l_4 = \ti{t}{a'}$, $l = l_4 \text{ except } l(j) = \ti{t}{a_l}$,
+        and $\ti{t}{a'};l_4;\phi_4 \rightarrow \epsilon;l;\phi_4,\ti{t}{a_l},(= a_l\;a') <: \ti{t}{a'};l_4;\phi_4 \rightarrow \epsilon;l;\phi_5$.
+
+        By $inversion$ on $const$ and $subtyping$, $l_4 = l_1$,
+        and $\epsilon;l_1;\phi_3 \rightarrow \ti{t}{a'};l_1;\phi_3,\ti{t}{a'},(= a' \; \ti{t}{c'}) <: \epsilon;l_1;\phi_3 \rightarrow \ti{t}{a'};l_1;\phi_4$.
+
+        $C \vdash \epsilon : \epsilon;l;\phi_4,\ti{t}{a_l},(= a_l\;a') \rightarrow \epsilon;l;\phi_4,\ti{t}{a_l},(= a_l\;a')$ by $empty$.
+
+        % \thought{If $ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$}
+
+        \thought{
+            Want to show $S;\epsilon \vdash_i v_1^j \; v' \; v_2^k; \epsilon : ti^{*};l;\phi$.
+            Want to show $C \vdash \epsilon : \epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k \rightarrow ti^{*};l;\phi$.
+            Have $ti^{*} = \epsilon$, so need to show that $\epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k \rightarrow \epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k <: \epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k \rightarrow \epsilon;l;\phi$.
+            Can't get that $\phi_1^j,\phi_{v'},\phi_2^k \implies \phi$ since can't invert $subtyping$.
+        }
+
+    \item Case: $C \vdash v' \; \<setlocal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $v_1^j \; v \; v_2^k;v' \; \<setlocal> j \hookrightarrow v_1^j \; v' \; v_2^k;\epsilon$
+
+        By $inversion$ on $composition$, .... ughhhh
+
+        By $inversion$ on $set-local$, $\ti{t}{a} \; ti_2^{*} = ti_1^{*}$, $l_2 = l_1$ except $l_2(j) = \ti{t}{a_2}$, and $\phi_1,\ti{t}{a_2},(= a_2 \; a) \implies \phi_2$.
+
+        $C \vdash \epsilon : \epsilon;l_2;\phi_1,\ti{t}{a_2},(= a_2 \; a) \rightarrow \epsilon;l_2;\phi$.
+
     \item Case: $C \vdash \<getglobal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     $\land$ $\vdash s : S$
     \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
