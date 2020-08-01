@@ -20,6 +20,7 @@
 \usepackage{changepage}
 \usepackage{multirow}
 \usepackage{mathtools}
+\usepackage{calc}
 
 % Always Use these
 \usepackage{hyperref}
@@ -100,6 +101,8 @@
 \newcommand{\refrule}{\@ifstar\@refruleStar\@refruleNoStar}
 
 \makeatother
+
+\newcommand{\satisfies}[3]{#1 \xRightarrow{#2} #3}
 
 \includeonly{
     Preamble/acknowledgements,
