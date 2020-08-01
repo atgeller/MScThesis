@@ -125,19 +125,19 @@ The typing judgment in its entirety is reproduced in the appendix.
 
 A number of typing rules are essentially equivalent to their \wasm counterparts.
 These are rules don't use or modify index type information.
-$\<unreachable>$ accepts any precondition and guarantees any postcondition.
-$\<nop>$ has the same precondition and postcondition.
-$\<drop>$ consumes the top value from the stack and does not change the local index store or index type context.
+\refrule{Unreachable} accepts any precondition and guarantees any postcondition.
+In \refrule{Nop}, no changes are made from the precondition to the post condition.
+The $\<drop>$ instruction consumes the top value from the stack and does not change the local index store or index type context.
 \begin{mathpar}
-    \inferrule[]{ }{ %% unreachable
+    \inferrule*[right=\defrule{Unreachable}]{ }{ %% unreachable
         C \vdash \<unreachable> : tfi
     }
 
-    \inferrule[]{ }{ %% nop
+    \inferrule*[right=\defrule{Nop}]{ }{ %% nop
         C \vdash \<nop> : \epsilon;l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule[]{ }{ %% drop
+    \inferrule*[right=\defrule{Drop}]{ }{ %% drop
         C \vdash \<drop> : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
     }
 \end{mathpar}
@@ -146,7 +146,7 @@ The constant instruction is probably the simplest example of how indexed types w
 It adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$ (where $a$ is fresh), declares the new indexed type in the index type context, and constrains that indexed type to be equal to the constant $(= a\; \ti{t}{c})$.
 The local index store is unchanged between the precondition and postcondition.
 \begin{mathpar}
-    \inferrule[]{ }{ %% const
+    \inferrule*[right=\defrule{Const}]{ }{ %% const
         C \vdash t.\<const> c : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a},(= a \ti{t}{c})
     }
 \end{mathpar}
@@ -157,24 +157,24 @@ A binary operation consumes two indexed types from the stack, $\ti{t}{a_1}$ and 
 The index type declaration $\ti{t}{a_3}$ is added to the index type context $\phi$ and $a_3$ is constrained to be equal to the binary operator applied to the index variables that correspond to the input $(= a_3\;(binop\;a_1\;a_2)$.
 Binary operators do not affect or use local variables, they simply propagate, so the local index store is the same in the precondition and postcondition.
 \begin{mathpar}
-    \inferrule[]{ }{ %% binop
+    \inferrule*[right=\defrule{Binop}]{ }{ %% binop
         C \vdash t.relop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(relop\;a_1\;a_2))
     }
 
-    \inferrule[]{ }{ %% testop
+    \inferrule*[right=\defrule{Testop}]{ }{ %% testop
         C \vdash t.testop : \ti{t}{a_1}\;l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2},(= a_2\;(testop\;a_1))
     }
 
-    \inferrule[]{ }{ %% relop
+    \inferrule*[right=\defrule{Relop}]{ }{ %% relop
         C \vdash t.relop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(relop\;a_1\;a_2))
     }
 \end{mathpar}
 
-The select rule constrains indexed types in a rather complex way.
+\refrule{Select} constrains indexed types in a rather complex way.
 Select consumes three values from the stack, it returns the second value if the third value is zero, and otherwise returns the first value (similar to C's ternary operator).
 For this rule we use the dependent ``if'' to allow the constraint on the result to depend on the third value consumed: $(if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))$.
 \begin{mathpar}
-    \inferrule[]{ }{ %% select
+    \inferrule*[right=\defrule{Select}]{ }{ %% select
         C \vdash \<select> : {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;\phi
             \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},
@@ -192,7 +192,7 @@ We consider the index variables in these indexed function types to be patterns r
 Intuitively, this is very similar to alpha equivalence, where the precondition matches any preceding postcondition with the same structure as long as the variable can be renamed to match.
 The postcondition appended to the label stack also has pattern variables instead of the supplied literals.
 \begin{mathpar}
-    \inferrule[]{ %% block
+    \inferrule*[right=\defrule{Block}]{ %% block
         tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e^{*} : tfi \\
     }
@@ -200,7 +200,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C \vdash \<block> tfi\; e^{*} \<end> : tfi
     }
 
-    \inferrule[]{ %% loop
+    \inferrule*[right=\defrule{Loop}]{ %% loop
         tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
         C_2,\text{label } (ti_1^{*};l_1;(\phi_1)^{*}) \vdash e^{*} : tfi \\
     }
@@ -208,7 +208,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C \vdash \<loop> tfi\; e^{*} \<end> : tfi
     }
 
-    \inferrule[]{ %% if
+    \inferrule*[right=\defrule{If}]{ %% if
         tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_1^{*} : ti_1^{*};l_1;\phi_1, \neg(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_2^{*};l_2;\phi_2 \\
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_2^{*} : ti_1^{*};l_1;\phi_1, (= a\; \ti{\<ithreetwo>}{0})) \rightarrow ti_2^{*};l_2;\phi_2 \\
@@ -225,28 +225,28 @@ If the consumed value is constrained to be non-zero in the indexed type system, 
 Also remember the above note that the postconditions on the label stack contain pattern index variables.
 
 \begin{mathpar}
-    \inferrule[]{ %% br
+    \inferrule*[right=\defrule{Br}]{ %% br
         C_{\text{label}}(i) = ti^{*};l_1;\phi_1
     }
     {
         C \vdash \<br> i : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule[]{ %% return
+    \inferrule*[right=\defrule{Return}]{ %% return
         C_{\text{return}} = ti^{*};l_1;\phi_1
     }
     {
         C \vdash \<return> : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule[]{ %% br_if
+    \inferrule*[right=\defrule{Br-If}]{ %% br_if
         C_{\text{label}}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
     }
     {
         C \vdash \<brif> i : ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti^{*};l_1;\phi_1,(= a\; \ti{\<ithreetwo>}{0})
     }
 
-    \inferrule[]{ %% br_table
+    \inferrule*[right=\defrule{Br-Table}]{ %% br_table
         (C_{\text{label}}(i) = ti^{*};l_1;\phi_i)^{+} \and
         (\phi_1 \implies \phi_i)^n
     }
@@ -263,13 +263,13 @@ The precondition and postcondition of a function can only contain constraints ab
 For direct function calls, the expected indexed function type is the type associated with the function in the indexed module type context.
 Indirect function calls have their expected types provided as part of instructions, where the same note about index variables being patterns from above holds.
 \begin{mathpar}
-    \inferrule[]{ %% call
+    \inferrule*[right=\defrule{Call}]{ %% call
         C_{func}(i) = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
     {
         C \vdash \<call> i : ti_1^{*};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
     } \and
-    \inferrule[]{ %% call_indirect
+    \inferrule*[right=\defrule{Call-Indirect}]{ %% call_indirect
         C_{table}(i) = (j, tfi_2^{*}) \and
         tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
@@ -283,7 +283,7 @@ $\<getlocal>$ produces a fresh indexed type that is constrained to be equal to t
 $\<setlocal>$ works in the reverse direction, replacing the index variable associated with the local being set with a fresh indexed type constrained to be equal to the value consumed.
 Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediately regurgitates the indexed type back onto the stack.
 \begin{mathpar}
-    \inferrule[]{ %% get_local
+    \inferrule*[right=\defrule{Get-Local}]{ %% get_local
         C_{\text{local}}(i) = t \and
         l(i) = \ti{t}{a}
     }
@@ -291,7 +291,7 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
         C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi, \ti{t}{a_2}, (= a_2\; a)
     }
 
-    \inferrule[]{ %% set_local
+    \inferrule*[right=\defrule{Set-Local}]{ %% set_local
         C_{\text{local}}(i) = t \and
         l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
     }
@@ -299,7 +299,7 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
         C \vdash \<setlocal> i : \ti{t}{a};l_1;\phi \rightarrow \epsilon;l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
     }
 
-    \inferrule[]{ %% tee_local
+    \inferrule*[right=\defrule{Tee-Local}]{ %% tee_local
         C_{\text{local}}(i) = t \and
         l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
     }
@@ -313,14 +313,14 @@ Global variables are very difficult to reason about in the type system since the
 At compile-time, before linking, it is very difficult to reason about globals from another module which would be necessary for imported functions.
 We do still ensure that the value is of the correct type and in the case of setting a global variable that the global variable is mutable.
 \begin{mathpar}
-    \inferrule[]{ %% get_global
+    \inferrule*[right=\defrule{Get-Global}]{ %% get_global
         C_\text{global}(i) = \text{mut}^{?}\; t
     }
     {
         C \vdash \<getglobal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a}
     }
 
-    \inferrule[]{ %% set_global
+    \inferrule*[right=\defrule{Set-Global}]{ %% set_global
         C_\text{global}(i) = \text{mut } t
     }
     {
@@ -330,7 +330,7 @@ We do still ensure that the value is of the correct type and in the case of sett
 
 The typing rules for memory instructions are very similar to \wasm as we do not reason about the contents of memory or how its size can change throughout a program.
 \begin{mathpar}
-    \inferrule[]{ %% memory load
+    \inferrule*[right=\defrule{Load}]{ %% memory load
         C_\text{memory} = n \and
         2^a \leq (|tp| <)^{?} |t|
     }
@@ -338,7 +338,7 @@ The typing rules for memory instructions are very similar to \wasm as we do not 
         C \vdash t.\<load> (tp\_sx)^{?}\; a\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
     }
 
-    \inferrule[]{ %% memory store
+    \inferrule*[right=\defrule{Store}]{ %% memory store
         C_\text{memory} = n \and
         2^a \leq (|tp| <)^{?} |t|
     }
@@ -346,14 +346,14 @@ The typing rules for memory instructions are very similar to \wasm as we do not 
         C \vdash t.\<store> tp^{?}\; a\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule[]{ %% current mem
+    \inferrule*[right=\defrule{Current-Memory}]{ %% current mem
         C_\text{memory} = n \and
     }
     {
         C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi
     }
 
-    \inferrule[]{ %% grow mem
+    \inferrule*[right=\defrule{Grow-Memory}]{ %% grow mem
         C_\text{memory} = n \and
     }
     {
@@ -366,20 +366,20 @@ The first rule is for the empty sequence, which, similar to in \wasm, simply has
 Second, we have a rule to add stack polymorphism.
 Third, there is a rule to compose a sequence of instructions with another instruction.
 \begin{mathpar}
-    \inferrule[]{ %% empty
+    \inferrule*[right=\defrule{Empty}]{ %% empty
     }
     {
         C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule[]{ %% extra vars
+    \inferrule*[right=\defrule{Stack-Poly}]{ %% extra vars
         C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
     {
         C \vdash e^{*} : ti^{*}\;ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti^{*}\;ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule[]{ %% combine
+    \inferrule*[right=\defrule{Composition}]{ %% combine
         C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
         C \vdash e_2 : ti_2^{*};l_2;\phi_2 \rightarrow ti_3^{*};l_3;\phi_3
     }
@@ -387,6 +387,50 @@ Third, there is a rule to compose a sequence of instructions with another instru
         C \vdash e_1^{*}\;e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3
     }
 \end{mathpar}
+
+\subsection{Subtyping, Implication, and Constraint Satisfaction}
+One issue with adding the index type context $\phi$ to preconditions and postconditions is that the postcondition of one instruction and the precondition of the next instruction might not match up exactly.
+For example, one instruction may ensure a value is greater than ten, but the next just wants the value to be greater than zero.
+Intuitively, if a value, ``x'', is greater than ten it must also be greater than zero, and we want the \name type system to be able to figure this out as well.
+However, computers as of yet are unable to use intuition, so we must instead formalize this intuition such that a computer can reason about it.
+
+Our formalization of this problem is based on Hoare logic \todo{find proper citation}.
+Hoare logic similarly has preconditions and postconditions on statements, and allows those preconditions to be \emph{strengthened} and postconditions to be \emph{weakened}.
+Strengthening and weakening is based on implication ($\implies$).
+We say that $\phi_1 \implies \phi_2$ when the following holds: if $\phi_1$ is satisfied, then $\phi_2$ must also be satisfied.
+If $\phi_1 \implies \phi_2$, then we consider $\phi_1$ to be stronger than $\phi_2$, and $\phi_2$ to be weaker than $\phi_1$.
+This solves the aforementioned problem because we can weaken ``x is greater than 10'' to ``x is greater than 0'' (or equivalently strengthen ``x is greater than 0'' to ``x is greater than 10'').
+
+To fit strengthening and weakening into the type system, we define a subtyping judgment based on implication.
+The \refrule{Implies} says that if an indexed function type $tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $tfi_2$, and is otherwise equivalent, then $tfi_1$ is a subtype of $tfi_2$.
+\refrule{FreshVar} allows adding a fresh index variable that is constrained to be exactly equal to a constant.
+This is mainly useful in the type safety proof to deal with information loss caused by consuming values from the stack.
+\begin{mathpar}
+    \inferrule*[right=\defrule{Implies}]{
+        \phi_0 \implies \phi_1 \and
+        \phi_2 \implies \phi_3
+    }{
+        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+
+    \inferrule*[right=\defrule{FreshVar}]{
+        \phi_3 \implies \phi,(t\;a),(= a\; \ti{t}{c}) \and
+        a \not\in (ti_1^{*};l_1;\phi)
+    }{
+        ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }
+\end{mathpar}
+
+We then use this in the \name type system by adding a typing rule that allows the indexed function type for a list of instructions to be replaced by a subtype of that indexed function type.
+
+\[
+    \inferrule*[right=\defrule{SubTyping}]{
+        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+        C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+    }{
+        C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
+    }
+\]
 
 \subsection{Using Types for Check Elimination}
 In Section \ref{sec:newinstructions} we explained why \prechk-tagged instructions do not need checks because of their static guarantees of the \name type system.
@@ -396,7 +440,7 @@ Integer division simply requires that the second argument is non-zero.
 The premise $\phi \implies \neg(=\ a_2\ 0)$ requires that the index constraints satisfy the proposition $a_2 \neq 0$ for the pre-checked instruction to be safe.
 Therefore, since a divide-by-zero is provably absent, it is safe to replace the division operator instruction with the \prechk-tagged version.
 \begin{mathpar}
-    \inferrule[]{ 
+    \inferrule*[right=\defrule{Div-Prechk}]{
         \phi \implies \neg(=\ a_2\ 0)
     }{
         C \vdash t.\<divpc> : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(div\;a_1\;a_2))
@@ -410,7 +454,7 @@ Therefore, we just use the initial memory size.
 The initial memory size is the number of $64$ Kib pages ($65,536$ bytes), so we check that the constraints in the index type context ensure that the memory index plus the static offset is between $0$ and $65536-(the size of the value being loaded/stored)$.
 We use $width$ as a shorthand to denote the number of bytes requires for the value, it is equal to $|t|/8$ if $tp^{?}=\epsilon$, and otherwise equal to $|tp|/8$.
 \begin{mathpar}
-    \inferrule[]{ %% memory load
+    \inferrule*[right=\defrule{Load-Prechk}]{ %% memory load
         C_\text{memory} = n \and
         2^{align} \leq (|tp| <)^{?} |t| \\
         \phi \implies
@@ -420,10 +464,10 @@ We use $width$ as a shorthand to denote the number of bytes requires for the val
         \end{stackTL}}
     }
     {
-        C \vdash t.\<load> (tp\_sx)^{?}\; align\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
+        C \vdash t.\<loadpc> (tp\_sx)^{?}\; align\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
     }
 
-    \inferrule[]{ %% memory store
+    \inferrule*[right=\defrule{Store-Prechk}]{ %% memory store
         C_\text{memory} = n \and
         2^{align} \leq (|tp| <)^{?} |t| \\
         \phi \implies
@@ -433,17 +477,16 @@ We use $width$ as a shorthand to denote the number of bytes requires for the val
         \end{stackTL}}
     }
     {
-        C \vdash t.\<store> tp^{?}\; align\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
+        C \vdash t.\<storepc> tp^{?}\; align\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
     }
 \end{mathpar}
-
 
 Indirect function calls in \wasm require a dynamic check to ensure that the called function has a suitable type.
 Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
 We ensure this by requiring that the type of every function at every possible index value has a subtype of the expected type: $\forall 0 \leq i < j. (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor tfis(i) <: tfi$ where $tfis=(tfi_2 ...)$.
 Further, we must show that the provided table index is within the table boundaries: $\phi \implies 0 \leq c < j$.
 \begin{mathpar}
-    \inferrule[]{ %% call_indirect
+    \inferrule*[right=\defrule{Call-Indirect-Prechk}]{ %% call_indirect
         C_{table}(i) = (j, (tfi_2 ...)) \and
         \phi \implies 0 \leq c < j \\
         tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
@@ -457,61 +500,6 @@ Further, we must show that the provided table index is within the table boundari
         C \vdash \<callindirectpc> tfi : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
     } \and
 \end{mathpar}
-
-\subsection{Subtyping, Implication, and Constraint Satisfaction}
-\todo{Looks like subtyping will only be used for type checking rules}
-One issue with adding the index type context $\phi$ to preconditions and postconditions is that the postcondition of one instruction and the precondition of the next instruction might not match up exactly.
-For example, one instruction may ensure a value is greater than ten, but the next just wants the value to be greater than zero.
-Intuitively, if a value, ``x'', is greater than ten it must also be greater than zero, and we want the \name type system to be able to figure this out as well.
-However, computers as of yet are unable to use intuition, so we must instead formalize this intuition such that a computer can reason about it.
-
-Our formalization of this problem is based on Hoare logic \todo{find proper citation}.
-Hoare logic similarly has preconditions and postconditions on statements, and allows those preconditions to be \emph{strengthened} and postconditions to be \emph{weakened}.
-Strengthening and weakening is based on implication ($\implies$).
-We say that $\phi_1 \implies \phi_2$ when the following holds: if $\phi_1$ is satisfied, then $\phi_2$ must also be satisfied.
-If $\phi_1 \implies \phi_2$, then we consider $\phi_1$ to be stronger than $\phi_2$, and $\phi_2$ to be weaker than $\phi_1$.
-This solves the aforementioned problem because we can weaken ``x is greater than 10'' to ``x is greater than 0'' (or equivalently strengthen ``x is greater than 0'' to ``x is greater than 10'').
-
-In practice, we reason about implication using the Z3 theorem prover \todo{citation needed}.
-To test whether the satisfiability of one index type context $\phi_1$ implies that some other index type context $\phi_2$ is satisfiable, we first generate Z3 constraints based on the propositions in both contexts.
-Then, we assert that the constraints generated for the first context must hold.
-Finally, we ask Z3 to find an assignment to the variables declared in the type index contexts where the constraints from the second context do not hold (a counterexample).
-If a counterexample cannot be found then the implication must hold, otherwise it does not hold.
-
-\todo{Need to format the digression to set it apart}
-\thought{Maybe this is better moved to the discussion section to discuss as part of the implementation?}
-\paragraph{Digression about impact of using Z3.}
-Our choice of using Z3 has impacted \name in several ways.
-\begin{itemize}
-    \item The biggest impact is that we currently do not supporting floating point values and certain unary and binary operators because Z3 is unable to reason about them.
-    \item Because of how we test implication, we require that the index type contexts use the same names to refer to the same index variables.
-    \item The requirement of adding explicit type annotations for index variables and constants that appear in type indices comes from needing to know what width the variable will be when we convert it to a Z3 bitvector.
-\end{itemize}
-
-\todo{End of digression}
-
-To fit strengthening and weakening into the type system, we define a subtyping judgment based on implication.
-The subtyping judgement says that if an indexed function type $tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $tfi_2$, and is otherwise equivalent, then $tfi_1$ is a subtype of $tfi_2$:
-
-\[
-    \inferrule{
-        \phi_0 \implies \phi_1 \and
-        \phi_2 \implies \phi_3
-    }{
-        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
-    }
-\]
-
-We then use this in the \name type system by adding a typing rule that allows the indexed function type for a list of instructions to be replaced by a subtype of that indexed function type:
-
-\[
-    \inferrule{
-        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
-        C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
-    }{
-        C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
-    }
-\]
 
 \subsection{Module Types}
 The complete module typing rules are in Figure \ref{fig:modulerules} (not that $im$ is an import and $ex$ is an export).
@@ -530,7 +518,7 @@ Globals are typechecked under the module index context containing only the globa
 
 \begin{figure}[h]
     \begin{mathpar}
-        \inferrule[]{ %% local function
+        \inferrule*[]{ %% local function
             tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
             C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*};l_2;\phi_2),\text{return } (ti_2^{*},l_2,\phi_2) \\
             C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
@@ -538,12 +526,12 @@ Globals are typechecked under the module index context containing only the globa
             C \vdash ex^{*}\; \<func> tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; tfi
         } \and
 
-        \inferrule[]{ %% imported function
+        \inferrule*[]{ %% imported function
         } {
             C \vdash ex^{*}\; \<func> tfi\; im : ex^{*}\; tfi
         } \\
 
-        \inferrule[]{ %% local global
+        \inferrule*[]{ %% local global
             tg = mut^{?}\;t \and
             ex^{*} = \epsilon \lor tg = t \and
             C \vdash e^{*} : \epsilon; \epsilon; \phi_1 \rightarrow \ti{t}{a};\epsilon; \phi_2
@@ -551,34 +539,34 @@ Globals are typechecked under the module index context containing only the globa
             C \vdash ex^{*}\; \<global> tg\; e^{*} : ex^{*}\; tg
         } \and
 
-        \inferrule[]{ %% imported global
+        \inferrule*[]{ %% imported global
             tg = t \and
         } {
             C \vdash ex^{*}\; \<global> tg\; im : ex^{*}\; tg
         } \and
 
-        \inferrule[]{ %% local table
+        \inferrule*[]{ %% local table
             (C_{\text{func}}(i) = tfi)^n
         } {
             C \vdash ex^{*}\; \<table> n\; i^n : ex^{*}\; (n,tfi^n)
         } \and
 
-        \inferrule[]{ %% imported table
+        \inferrule*[]{ %% imported table
         } {
             C \vdash ex^{*}\; \<table> (n,tfi^n)\; im : ex^{*}\; (n,tfi^n)
         } \and
 
-        \inferrule[]{ %% local memory
+        \inferrule*[]{ %% local memory
         } {
             C \vdash ex^{*}\; \<memory> n : ex^{*}\; n
         }
 
-        \inferrule[]{ %% imported memory
+        \inferrule*[]{ %% imported memory
         } {
             C \vdash ex^{*}\; \<memory> n\; im : ex^{*}\; n
         }
 
-        \inferrule[]{ %% module
+        \inferrule*[]{ %% module
             (C\vdash f : ex_f^{*}\; tfi)^{*} \and
             (C_i \vdash glob_i : ex_g^{*}\; tg_i)^{*} \\
             (C \vdash tab : ex_t^{*}\; (n,tfi^n))^{?} \and

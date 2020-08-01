@@ -20,6 +20,7 @@
 \usepackage{changepage}
 \usepackage{multirow}
 \usepackage{mathtools}
+\usepackage{calc}
 
 % Always Use these
 \usepackage{hyperref}
@@ -83,6 +84,25 @@
 \newcommand{\ti}[2]{(#1\;#2)}
 \newcommand{\type}[4]{#1;#2;#3;#4}
 \newcommand{\insttype}[2]{#1 \rightarrow #2}
+
+\makeatletter
+
+\newcommand{\techprefix}{}
+\newcommand{\rulename}[1]{{\scshape #1}}
+
+\LetLtxMacro{\rulelabel}{\label}
+% For rules in particular
+\newcommand{\@defruleStar}[3][\techprefix]{\phantomsection{\rulename{#3}}\expandafter\rulelabel{rule:#1:#2}}
+\newcommand{\@defruleNoStar}[2][\techprefix]{\@defruleStar[#1]{#2}{#2}}
+\newcommand{\defrule}{\@ifstar\@defruleStar\@defruleNoStar}
+
+\newcommand{\@refruleStar}[3][\techprefix]{\hyperref[rule:#1:#2]{Rule \rulename{#3}}}
+\newcommand{\@refruleNoStar}[2][\techprefix]{\@refruleStar[#1]{#2}{#2}}
+\newcommand{\refrule}{\@ifstar\@refruleStar\@refruleNoStar}
+
+\makeatother
+
+\newcommand{\satisfies}[3]{#1 \xRightarrow{#2} #3}
 
 \includeonly{
     Preamble/acknowledgements,
