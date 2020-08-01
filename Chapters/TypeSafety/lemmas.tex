@@ -3,8 +3,8 @@
     \todo{So many cases to write out}
 
     %% const
-    If $C \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$, $l_1 = l_2$,
+    If $C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $t.\<const> c = v$, $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$, $l_1 = l_2$,
     and $\satisfies{\phi_1,\ti{t}{a},(= a \; \ti{t}{c})}{ti_2^{*}\;l_2}{\phi_2}$.
 
     %% binop
@@ -47,8 +47,8 @@
     where $C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}$.
 
     %% admin-const
-    If $\vdash t.\<const> c : ti;\phi_v$,
-    then $ti = \ti{t}{a}$,
+    If $\vdash v : ti;\phi_v$,
+    then $t.\<const> c = v$, $ti = \ti{t}{a}$,
     and $\phi_v = \circ,\ti{t}{a},(= a \; \ti{t}{c})$.
 
     %% local

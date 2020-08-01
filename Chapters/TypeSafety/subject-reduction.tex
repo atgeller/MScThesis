@@ -392,25 +392,42 @@ Note that the locals and globals are omitted where they are unnecessary and triv
                 $S;C \vdash_i \<local>_m\{j;v^n \; (t.\<const> 0)^k\} \; \<block> tfi_2\; e^{*} \<end> \<end> : tfi_0$ by $stack-poly$ and $sub-typing$.
         \end{itemize}
 
-    \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
 
-        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_1,\phi_3 \implies \phi_2$, and $l_1 = l_2$.
+        % By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_1,\phi_3 \implies \phi_2$, and $l_1 = l_2$.
 
-        $S;(ti^n;l_3;\phi_3) \vdash_i v^n : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
+        By $inversion$ on $local$, $l_1 = l_2$,
+        $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};v^n : ti^n;l_3;\phi_3$,
+        and $\satisfies{\phi_1,\phi_3}{ti^n\;l_2}{\phi_2}$.
 
-        $(\vdash v_l : ti_l;\phi_l)^{*}$, and\\
-        $S;C_l \vdash v^n : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$ because they are premises of $admin-code$ which we have assumed to hold.
+        % $S;(ti^n;l_3;\phi_3) \vdash_i v^n : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
 
-        $\phi_l^{*} = \circ,\ti{t}{a}^{*},(\<eq> a \ti{t}{c})^{*}$ by $admin-const$.
+        By $inversion$ on $admin-code$, $(\vdash v_l : ti_l;\phi_l)^{*}$,
+        and $S;C_l \vdash v^n : \epsilon:ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$.
 
-        By $inversion$ on $const$ and $subtyping$, $\phi_l^{*},\phi_v \implies \phi_3$.
+        % $(\vdash v_l : ti_l;\phi_l)^{*}$, and\\
+        % $S;C_l \vdash v^n : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$ because they are premises of $admin-code$ which we have assumed to hold.
 
-        Because $a^{*}$ are fresh, $\phi_v \implies \phi_l^{*},\phi_v$.
+        By $inversion$ on $admin-const$, $\phi_l^{*} = \circ,\ti{t}{a}^{*},(= a \ti{t}{c})^{*}$.
 
-        \thought{This uses the fact that constants cannot reference locals, since $v^n$ can contain no $\<setlocal>$ instructions.}
+        % $\phi_l^{*} = \circ,\ti{t}{a}^{*},(\<eq> a \ti{t}{c})^{*}$ by $admin-const$.
+
+        By $inversion$ on $const$, $\satisfies{\phi_l^{*},\phi_v}{ti^n\;l_3}{\phi_3}$.
+
+        % By $inversion$ on $const$ and $subtyping$, $\phi_l^{*},\phi_v \implies \phi_3$.
+
+        \thought{this assumes it's legal to remove from the annotations}
+
+        Because $a^{*}$ are free in $\phi_v$ and $ti^n$, $\satisfies{\phi_v}{ti^n}{\phi_l^{*},\phi_v}$.
+
+        % Because $a^{*}$ are fresh, $\phi_v \implies \phi_l^{*},\phi_v$.
+
+        % \thought{This uses the fact that constants cannot reference locals, since $v^n$ can contain no $\<setlocal>$ instructions.}
 
         $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v$ by $const$.
+
+        \thought{stuck here, not sure how to justify using the satisfaction with $ti^n$, would require adding to the annotations, which seems iffy}.
 
         $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by $subtyping$.
 
@@ -480,28 +497,37 @@ Note that the locals and globals are omitted where they are unnecessary and triv
         and $S;C \vdash v' \; (\<setlocal> j) : \epsilon:l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$,
         where $l_1(j) = \ti{t}{a}$, and $C_\text{local}(j) = t$.
 
-        $C \vdash v' : \epsilon;l_1;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$,
-        $C \vdash \<setlocal> j : ti_4^{*};l_4;\phi_4 \rightarrow ti^{*};l;\phi_5$,
-        and $\epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi <: \epsilon;l_1;\phi_3 \rightarrow ti^{*};l;\phi_5$,
-        by $inversion$ on $composition$ and $subtyping$.
+        By $inversion$ on $admin-const$, $t.\<const> c = v$, and $\phi_v = \circ,\ti{t}{a},(= a \; \ti{t}{c})$.
 
-        By $inversion$ on $set-local$ and $subtyping$, and because we know $t = C_\text{local}(j)$,
-        $ti^{*} = \epsilon$, $l_4 = \ti{t}{a'}$, $l = l_4 \text{ except } l(j) = \ti{t}{a_l}$,
-        and $\ti{t}{a'};l_4;\phi_4 \rightarrow \epsilon;l;\phi_4,\ti{t}{a_l},(= a_l\;a') <: \ti{t}{a'};l_4;\phi_4 \rightarrow \epsilon;l;\phi_5$.
+        By $inversion$ on $composition$,
+        $C \vdash v' : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti_3^{*};l_3;\phi_3$,
+        $C \vdash \<setlocal> j : ti_3^{*};l_3;\phi_3 \rightarrow ti^{*};l;\phi_4$,
+        and $\satisfies{\phi_4}{ti^{*}\;l}{\phi}$.
 
-        By $inversion$ on $const$ and $subtyping$, $l_4 = l_1$,
-        and $\epsilon;l_1;\phi_3 \rightarrow \ti{t}{a'};l_1;\phi_3,\ti{t}{a'},(= a' \; \ti{t}{c'}) <: \epsilon;l_1;\phi_3 \rightarrow \ti{t}{a'};l_1;\phi_4$.
+        Recalling that $t = C_\text{local}(j)$;
+        by $inversion$ on $set-local$,
+        $ti_3^{*} = ti^{*} \; \ti{t}{a'}$,
+        $l = l_3 \text{ except } l(j) = \ti{t}{a_l}$,
+        and $\satisfies{\phi_3,\ti{t}{a_l},(= a_l\;a')}{ti^{*}\;l}{\phi_4}$.
 
-        $C \vdash \epsilon : \epsilon;l;\phi_4,\ti{t}{a_l},(= a_l\;a') \rightarrow \epsilon;l;\phi_4,\ti{t}{a_l},(= a_l\;a')$ by $empty$.
+        By $inversion$ on $const$,
+        $t.\<const> c' = v'$, $ti^{*} = \epsilon$, $l_1 = l_3$,
+        and $\satisfies{\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'})}{\ti{t}{a'}\;l_1}{\phi_3}$.
 
-        % \thought{If $ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$}
+        $C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi$ by $empty$.
 
-        \thought{
-            Want to show $S;\epsilon \vdash_i v_1^j \; v' \; v_2^k; \epsilon : ti^{*};l;\phi$.
-            Want to show $C \vdash \epsilon : \epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k \rightarrow ti^{*};l;\phi$.
-            Have $ti^{*} = \epsilon$, so need to show that $\epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k \rightarrow \epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k <: \epsilon;l;\phi_1^j,\phi_{v'},\phi_2^k \rightarrow \epsilon;l;\phi$.
-            Can't get that $\phi_1^j,\phi_{v'},\phi_2^k \implies \phi$ since can't invert $subtyping$.
-        }
+        $C \vdash \epsilon : \epsilon;l;\phi_3,\ti{t}{a_l},(= a_l\;a') \rightarrow \epsilon;l;\phi$ by $subtyping$.
+
+        \thought{potential unsoundness below.}
+
+        $\vdash v' : \ti{t}{a'};\circ,\ti{t}{a'},(= a' \; \ti{t}{c})$
+
+        Since $a$ is free in $l$, $\ti{t}{a'}$, and $\phi_1^j,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c')$,
+        $\satisfies{\phi_1^j,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'})}{l}{\phi_3}{\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'})}$.
+
+        \todo{...}
+
+        $C \vdash \epsilon : \epsilon;l;\phi_1^j,\ti{t}{a_l},(= a_l\;\ti{t}{c'}),\phi_2^k \rightarrow \epsilon;l;\phi$
 
     \item Case: $C \vdash v' \; \<setlocal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $v_1^j \; v \; v_2^k;v' \; \<setlocal> j \hookrightarrow v_1^j \; v' \; v_2^k;\epsilon$
