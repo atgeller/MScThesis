@@ -398,12 +398,12 @@ By case analysis on the reduction rules.
                 $S;C \vdash_i \<local>_m\{j;v^n \; (t.\<const> 0)^k\} \; \<block> tfi_2\; e^{*} \<end> \<end> : tfi_0$ by $stack-poly$ and $sub-typing$.
         \end{itemize}
 
-    \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$
+    \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
 
-        By $inversion$ on $local$, $l_1 = l_2$,
+        By $inversion$ on $local$, $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
         $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};v^n : ti^n;l_3;\phi_3$,
-        and $\satisfies{\phi_1,\phi_3}{ti^n\;l_2}{\phi_2}$.
+        and $\satisfies{\phi_1,\phi_3}{ti_2^{*}\;l_2}{\phi_2}$.
 
         By $inversion$ on $admin-code$, $(\vdash v_l : ti_l;\phi_l)^{*}$,
         and $S;C_l \vdash v^n : \epsilon:ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$.
