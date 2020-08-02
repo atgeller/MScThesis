@@ -198,7 +198,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e^{*} : tfi \\
     }
     {
-        C \vdash \<block> tfi\; e^{*} \<end> : tfi
+        C \vdash \<block>\; tfi\; e^{*} \<end> : tfi
     }
 
     \inferrule*[right=\defrule{Loop}]{ %% loop
@@ -206,7 +206,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C_2,\text{label } (ti_1^{*};l_1;(\phi_1)^{*}) \vdash e^{*} : tfi \\
     }
     {
-        C \vdash \<loop> tfi\; e^{*} \<end> : tfi
+        C \vdash \<loop>\; tfi\; e^{*} \<end> : tfi
     }
 
     \inferrule*[right=\defrule{If}]{ %% if
@@ -215,7 +215,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_2^{*} : ti_1^{*};l_1;\phi_1, (= a\; \ti{\<ithreetwo>}{0})) \rightarrow ti_2^{*};l_2;\phi_2 \\
     }
     {
-        C \vdash \<if> tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
+        C \vdash \<if>\; tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
     }
 \end{mathpar}
 
