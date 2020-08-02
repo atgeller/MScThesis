@@ -81,13 +81,13 @@
             C \vdash \<if> tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
         } \and
         \inferrule[]{ %% br
-            C_{\text{label}}(i) = ti^{*};l_1;\phi_1
+            C_\text{label}(i) = ti^{*};l_1;\phi_1
         }
         {
             C \vdash \<br> i : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } \and
         \inferrule[]{ %% br_if
-            C_{\text{label}}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
+            C_\text{label}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
         }
         {
             C \vdash \<brif> i : ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti^{*};l_1;\phi_1,(= a\; \ti{\<ithreetwo>}{0})
@@ -100,7 +100,7 @@
             C \vdash \<brtable> i^{+} : ti_1^{*}\;ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } \and
         \inferrule[]{ %% return
-            C_{\text{return}} = ti^{*};l_1;\phi_1
+            C_\text{return} = ti^{*};l_1;\phi_1
         }
         {
             C \vdash \<return> : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2

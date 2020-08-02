@@ -22,10 +22,46 @@
     then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_3}$, $l_1 = l_2$,
     and $\satisfies{\phi_1,\ti{\<ithreetwo>}{a_3},(= a_3\;(relop\;a_1\;a_2))}{ti_2^{*}\;l_2}{\phi_2}$.
 
+    %% br
+    If $C \vdash \<br> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $C_\text{label}(i) = ti^{*};l_1;\phi_3$,
+    and $\satisfies{\phi_1}{ti_1^{*};l_1}{\phi_3}$.
+
+    %% br_if
+    If $C \vdash \<brif> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{\<ithreetwo>}{a}$, $l_1 = l_2$, $C_\text{label}(i) = ti_2^{*};l_1;\phi_3,\neg(= a\; \ti{\<ithreetwo>}{0})$,
+    $\satisfies{\phi_1}{ti_1^{*};l_1}{\phi_3}$,
+    and $\satisfies{\phi_1,(= a\; \ti{\<ithreetwo>}{0})}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% return
+    If $C \vdash \<return> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $C_\text{return} = ti^{*};l_1;\phi_3$,
+    and $\satisfies{\phi_1}{ti_1^{*};l_1}{\phi_3}$.
+
+    %% get-local
+    If $C \vdash \<getlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a_2}$, $l_1 = l_2$, $l_1(i) = \ti{t}{a}$,
+    and $\satisfies{\phi_1,\ti{t}{a},(= a_2\;a)}{ti_2^{*}\;l_2}{\phi_2}$.
+
     %% set-local
     If $C \vdash \<setlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
     then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$, $C_\text{local}(i) = t$,
     and $\satisfies{\phi_1,\ti{t}{a_2},(= a_2\;a)}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% tee-local
+    If $C \vdash \<teelocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} = ti^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$, $C_\text{local}(i) = t$,
+    and $\satsifies{\phi_1,\ti{t}{a_2},(= a_2\;a)}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% get-global
+    If $C \vdash \<getglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut}^{?} t$,
+    and $\satisfies{\phi_1,\ti{t}{a}}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% set-global
+    If $C \vdash \<setglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut} t$,
+    and $\satisfies{\phi_1}{ti_2^{*}\;l_2}{\phi_2}$.
 
     %% composition
     If $C \vdash e_1^{*} \; e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
