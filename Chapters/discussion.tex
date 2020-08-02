@@ -28,12 +28,11 @@ The first obvious step would be to implement a compiler for name so we are able 
 There is also the potential to find other optimizations we can perform with the additional type information.
 
 \paragraph{Where Do Types Annotations Come From?}
-The embedding of \wasm into \name we have presented does not take advantage of the possibility of using type annotations on functions and blocks to check stronger guarantees about programs.
+Recall that the embedding of \wasm into \name from Section \ref{subsec:Embedding} does not take advantage of the possibility of using type annotations on functions and blocks to check stronger guarantees about programs.
 Type annotations can be added by the developer, who will then get stronger guarantees of correctness along with the potential for more optimizations.
-However, \wasm code is often generated as a result of compiling from Rust, C, or C++.
-We would prefer for the developer not to have to hand-annotate compiled \wasm.
+However, we would prefer for the developer not to have to hand-annotate compiled \wasm.
 Instead, we could use static analysis to try to find the weakest preconditions that guarantee the safety of \prechk-tagging instructions.
-We could also attempt to have the compiler generating the \wasm code add annotations as a form of type preserving compilation similar to TIL.
+We could also attempt to have have a compiler from a higher-level language to \wasm add annotations as a form of type preserving compilation similar to FToTal.
 
 \paragraph{How to Reason About Global Variables?}
 Reasoning about global variables is made difficult because static typechecking is restricted to within the module you are checking.
