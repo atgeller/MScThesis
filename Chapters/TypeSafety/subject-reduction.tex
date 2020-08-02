@@ -1,18 +1,13 @@
-\subsection{Subject Reduction Proof}
+\emph{Subject reduction}, also sometimes referred to as ``type preservation'', ensures that if a program has a specific type, then the program will have the same type after a reduction step.
+We first present some auxilliary lemmas used in the subject reduction proof, and then jump into the proof.
+
+\input{Chapters/TypeSafety/lemmas.tex}
 
 \begin{theorem}{Subject Reduction}
-  Bla bla bla
+  If $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$ and $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$ then $\vdash_i s';v'^{*};e'^{*} : ti^{*};l;\phi$.
 \end{theorem}
 \begin{proof}
 By case analysis on the reduction rules.
-\todo{I want to omit locals and globals, but I also think it's good to keep them for completeness.}
-Note that the locals and globals are omitted where they are unnecessary and trivially unchanged.
-
-\thought{I'm like 90\% sure that a good chunk of these proofs are only understandable by me, to the extent that I understand what I'm doing.}
-
-\thought{I keep appealing to basically an inversion lemma that is never stated but seems obvious. It would be a good idea to formalize this eventually (shouldn't be too difficult). In the meanwhile assume I mean that when I say "by x, we know y" where y is not a premise of the typing rule x or where I say "y is of the form z".}
-
-\todo{Type rule names based on code from William's dissertation to match those used here}
 
 \begin{itemize}
     %% Binop -> const

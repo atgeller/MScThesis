@@ -1,4 +1,8 @@
-\subsection{Lemmas Used in Subject-Reduction Proof}
+\reflemma{Inversion} tells us what typing rules can apply to a given \name instruction sequence, and therefore lets us reason about what the type of that sequence looks like.
+For example, if we have a typing derivation, $D$ for $C \vdash t.const c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$, then we know that $D$ must have at its base \refrule{Const}, because that is the only way we have of typing constant instructions.
+$D$ can also include any number of applications of \refrule{Subtyping} and \refrule{Stack-Poly}, because they can be applied to any well typed sequence of instructions, as well as \refrule{Composition} since it can be used with the empty sequence and any well-typed single instruction.
+However, the addition of \refrule{Composition} with the empty sequence is trivial because the postcondition of an empty instruction sequence must be immediately reachable from the precondition, and therefore the stack and local index store must be the same in both (and the postcondition index type context being reachable from the precondition index type context).
+
 \begin{lemma}{(Inversion)}
     \todo{So many cases to write out}
 
@@ -104,7 +108,13 @@
 \begin{proof}
 \end{proof}
 
-\begin{lemma}{(Nested-Type-Preserved)}
+The next lemma, \reflemma{Lift-Consts}, shows that if a sequence of constants, $v^n$, has a certain postcondition within a nested context, $L^j$, then it has the same postcondition outside of that context with the precondition of the context.
+We use this rule for branching and returning, when we want to essentially replace $L^j$ with just $v^n$, and show that $v^n$ can reach the same postcondition outside of $L^j$ that it has inside of $L^j$.
+
+The intuition for the proof is that the nature of nested contexts are such that all of the instructions preceding $v^n$ are values and therefore only add fresh index variables which are constrained to be equal to constants.
+Thus, we can pull $v^n$ outside of the nested context and know that we can still get to the postcondition because we can add back in all of the fresh index variables that we would have added from the values preceding it via implication.
+
+\begin{lemma}{(\deflemma{Lift-Consts})}
 
     If $C \vdash v^n : \epsilon;l_3;\phi_3 \rightarrow ti^n;l_3;\phi_4$ is a subderivation of $C \vdash  L^j [v^n] : s_1;l_1;\phi_1 \rightarrow s_2;l_2;\phi_2$,
     \\then $C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_3;\phi_4$ after reduction

@@ -408,7 +408,8 @@ This is mainly useful in the type safety proof to deal with information loss cau
 \begin{mathpar}
     \inferrule*[right=\defrule{Implies}]{
         \phi_0 \implies \phi_1 \and
-        \phi_2 \implies \phi_3
+        \phi_2 \implies \phi_3 \and
+        \satisfies{\phi_0}{ti_1^{*}\;l_1}{\phi_1}
     }{
         ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }

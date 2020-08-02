@@ -1,23 +1,7 @@
 \section{Progress}
-We proceed by case analysis on the typing rules.
+\emph{Progress} ensures that if a program is well-typed then it either: entirely consists of values, traps, or is reducible (\ie there exists another program that it reduces to).
+Since most \name instructions have the same semantics as in \wasm, and every \name type includes all the information of a \wasm type, we can reuse the \wasm proof for those instructions (see \ref{subsec:erasure}).
+The intuition for this is that the \name indexed type system provides strictly more information than the \wasm type system.
+However, for \name instructions that do not have the same semantics as in \wasm, specifically \prechk-tagged instructions, we still must prove those cases.
 
-\begin{itemize}
-    \item $\inferrule[]{ }{ %% const
-    \typerule{t.\<const>c} {
-        \insttype{\type{\epsilon}{l}{g}{\phi}}
-            {\type{\ti{t}{a}}{l}{g}{\phi,\ti{t}{a},(\<eq>a\;(t\;c))}}}
-    }$
-
-    \proof Trivial, since $t.\<const> c$ is a value.
-
-    \item $\inferrule[]{ }{ %% binop
-        C \vdash t.\<binop> :
-        {\begin{stackTL}
-            \ti{t}{a_1}\ti{t}{a_2};l;g;\phi \\
-            \rightarrow \ti{t}{a_3};l;g;\phi,\ti{t}{a_3},(\<eq>a_3\;(\<binop>\;a_1\;a_2))
-        \end{stackTL}}
-    }$
-    
-    \proof 
-
-\end{itemize}
+\input{Chapters/TypeSafety/erasure.tex}

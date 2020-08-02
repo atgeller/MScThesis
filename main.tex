@@ -55,9 +55,11 @@
 
 \newcommand{\erase}[1]{\llbracket #1 \rrbracket}
 
-\newtheorem{definition}{Definition}[section]
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{lemma}[section]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{\theoremstyle{definition}Definition}
+\newtheorem{theorem}{Theorem}
+\theoremstyle{plain}
+\newtheorem{lemma}{Lemma}
 %\Crefname{lemma}{Lemma}{Lemmas}
 
 % Stack formatting
@@ -76,6 +78,10 @@
 
 \mathlig{;}{\tbbf{;\;}}
 \mathlig{:}{:}
+
+\newcommand{\trsf}[1]{\textcolor{red}{\mathsf{#1}}}
+\reservestyle{\wkeywords}{\trsf}
+\wkeywords{withreetwo[i32], wisixfour[i64], wbinop[binop], wtestop[testop], wrelop[relop], wconst[const\;], weq[eq\;], wneq[neq\;], weqz[eqz\;], wle[le\;], wadd[add\;], wge[ge\;], wunreachable[unreachable], wnop[nop], wdrop[drop], wselect[select], wblock[block\;], wend[\;end], wloop[loop\;], wif[if\;], welse[\;else\;], wbr[br\;], wbrif[br\rule{1ex}{.4pt}if\;], wbrtable[br\rule{1ex}{.4pt}table\;], wreturn[return], wcall[call\;], wcallindirect[call\rule{1ex}{.4pt}indirect\;], wgetlocal[get\rule{1ex}{.4pt}local\;], wsetlocal[set\rule{1ex}{.4pt}local\;], wteelocal[tee\rule{1ex}{.4pt}local\;], wgetglobal[get\rule{1ex}{.4pt}global\;], wsetglobal[set\rule{1ex}{.4pt}global\;], wtrap[trap], wfunc[func\;], wlocal[local], wglobal[global\;], wtable[table\;], wmemory[memory\;], wlabel[label], wdiv[div], wload[load\;], wstore[store\;], wcurrentmemory[current\rule{1ex}{.4pt}memory\;], wgrowmemory[grow\rule{1ex}{.4pt}memory\;], wdivpc[div\textsubscript{prechk}], wcallindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], wloadpc[load\textsubscript{prechk}\;], wstorepc[store\textsubscript{prechk}\;], wmodule[module\;]}
 
 \hyphenation{Web-Assembly}
 
@@ -99,6 +105,18 @@
 \newcommand{\@refruleStar}[3][\techprefix]{\hyperref[rule:#1:#2]{Rule \rulename{#3}}}
 \newcommand{\@refruleNoStar}[2][\techprefix]{\@refruleStar[#1]{#2}{#2}}
 \newcommand{\refrule}{\@ifstar\@refruleStar\@refruleNoStar}
+
+\newcommand{\lemmaname}[1]{{\scshape #1}}
+
+\LetLtxMacro{\lemmalabel}{\label}
+% For lemmas in particular
+\newcommand{\@deflemmaStar}[3][\techprefix]{\phantomsection{\lemmaname{#3}}\expandafter\lemmalabel{lemma:#1:#2}}
+\newcommand{\@deflemmaNoStar}[2][\techprefix]{\@deflemmaStar[#1]{#2}{#2}}
+\newcommand{\deflemma}{\@ifstar\@deflemmaStar\@deflemmaNoStar}
+
+\newcommand{\@reflemmaStar}[3][\techprefix]{\hyperref[lemma:#1:#2]{Lemma \rulename{#3}}}
+\newcommand{\@reflemmaNoStar}[2][\techprefix]{\@reflemmaStar[#1]{#2}{#2}}
+\newcommand{\reflemma}{\@ifstar\@reflemmaStar\@reflemmaNoStar}
 
 \makeatother
 
