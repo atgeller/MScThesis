@@ -73,7 +73,25 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
     $C \vdash e_2 : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_4$,
     and $\satisfies{\phi_4}{ti_2^{*}\;l_2}{\phi_2}$.
 
-    \thought{This relys on a bit of a non-obvious idea that even if the precondition is changed through subtyping, the subtyping can be deferred until a later composition.}
+    \thought{This relies on a bit of a non-obvious idea that even if the precondition is changed through subtyping, the subtyping can be deferred until a later composition.}
+
+    %% store
+    If $\vdash s : S$,
+    then $s = \{ \text{inst } inst^{*}, \text{tab } (cl^{*})^{*}, \text{mem } (b^{*})^{*} \}$,
+    $S = \{ \text{inst } C^{*}, \text{tab } n^{*}, \text{mem } m^{*} \}$,
+    $(S \vdash inst : C)^{*}$,
+    $((S \vdash cl : tfi)^{*})^{*}$,
+    $(n \leq |cl^{*}|)^{*}$,
+    and $(m \leq |b^{*}|)^{*}$.
+
+    %% instance
+    If $S \vdash inst : C$,
+    then $inst = \{ \text{func } cl^{*}, \text{glob } v^{*}, \text{tab } i^{?}, \text{mem } j^{?} \}$,
+    $C = \{ \text{func } tfi^{*}, \text{global } (\text{mut}^{?} t)^{*}, \text{table } n^{?}, \text{memory } m^{?} \}$,
+    $(S \vdash cl : tfi)^{*}$,
+    $(\vdash v : \ti{t}{a};\phi_v)^{*}$,
+    $(S_\text{tab}(i) = n)^{?}$,
+    and $(S_\text{mem}(j) = m)^{?}$.
 
     %% admin-program
     If $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$,
@@ -83,7 +101,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
     %% admin-code
     If $S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi$,
     then $(\vdash v : \ti{t}{a};\phi_v)^{*}$,
-    and $S;C \vdash e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi$,
+    and $S;C \vdash e^{*} : \epsilon;\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi$,
     where $C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}$.
 
     %% admin-const
