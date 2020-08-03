@@ -1,0 +1,156 @@
+\reflemma{Inversion} tells us what typing rules can apply to a given \name instruction sequence, and therefore lets us reason about what the type of that sequence looks like.
+For example, if we have a typing derivation, $D$ for $C \vdash t.const c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$, then we know that $D$ must have at its base \refrule{Const}, because that is the only way we have of typing constant instructions.
+$D$ can also include any number of applications of \refrule{Subtyping} and \refrule{Stack-Poly}, because they can be applied to any well typed sequence of instructions, as well as \refrule{Composition} since it can be used with the empty sequence and any well-typed single instruction.
+However, the addition of \refrule{Composition} with the empty sequence is trivial because the postcondition of an empty instruction sequence must be immediately reachable from the precondition, and therefore the stack and local index store must be the same in both (and the postcondition index type context being reachable from the precondition index type context).
+
+\begin{lemma}{(Inversion)}
+    \todo{So many cases to write out}
+
+    %% const
+    If $C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $t.\<const> c = v$, $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{t}{a},(= a \; \ti{t}{c})}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% binop
+    If $C \vdash t.binop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_3}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2))}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% testop
+    If $C \vdash t.testop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_2}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{\<ithreetwo>}{a_2},(= a_2\;(testop\;a_1))}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% relop
+    If $C \vdash t.relop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_3}$, $l_1 = l_2$,
+    and $\satisfies{\phi_1,\ti{\<ithreetwo>}{a_3},(= a_3\;(relop\;a_1\;a_2))}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% br
+    If $C \vdash \<br> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $C_\text{label}(i) = ti^{*};l_1;\phi_3$,
+    and $\satisfies{\phi_1}{ti_1^{*};l_1}{\phi_3}$.
+
+    %% br_if
+    If $C \vdash \<brif> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{\<ithreetwo>}{a}$, $l_1 = l_2$, $C_\text{label}(i) = ti_2^{*};l_1;\phi_3,\neg(= a\; \ti{\<ithreetwo>}{0})$,
+    $\satisfies{\phi_1}{ti_1^{*};l_1}{\phi_3}$,
+    and $\satisfies{\phi_1,(= a\; \ti{\<ithreetwo>}{0})}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% return
+    If $C \vdash \<return> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $C_\text{return} = ti^{*};l_1;\phi_3$,
+    and $\satisfies{\phi_1}{ti_1^{*};l_1}{\phi_3}$.
+
+    %% get-local
+    If $C \vdash \<getlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a_2}$, $l_1 = l_2$, $l_1(i) = \ti{t}{a}$,
+    and $\satisfies{\phi_1,\ti{t}{a},(= a_2\;a)}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% set-local
+    If $C \vdash \<setlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$, $C_\text{local}(i) = t$,
+    and $\satisfies{\phi_1,\ti{t}{a_2},(= a_2\;a)}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% tee-local
+    If $C \vdash \<teelocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} = ti^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$, $C_\text{local}(i) = t$,
+    and $\satisfies{\phi_1,\ti{t}{a_2},(= a_2\;a)}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% get-global
+    If $C \vdash \<getglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut}^{?} t$,
+    and $\satisfies{\phi_1,\ti{t}{a}}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% set-global
+    If $C \vdash \<setglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut} t$,
+    and $\satisfies{\phi_1}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    %% composition
+    If $C \vdash e_1^{*} \; e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$,
+    $C \vdash e_2 : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_4$,
+    and $\satisfies{\phi_4}{ti_2^{*}\;l_2}{\phi_2}$.
+
+    \thought{This relys on a bit of a non-obvious idea that even if the precondition is changed through subtyping, the subtyping can be deferred until a later composition.}
+
+    %% admin-program
+    If $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$,
+    then $\vdash s : S$,
+    and $S;\epsilon \vdash_i v^{*};e^{*} : ti^{*};l;\phi$.
+
+    %% admin-code
+    If $S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi$,
+    then $(\vdash v : \ti{t}{a};\phi_v)^{*}$,
+    and $S;C \vdash e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi$,
+    where $C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}$.
+
+    %% admin-const
+    If $\vdash v : ti;\phi_v$,
+    then $t.\<const> c = v$, $ti = \ti{t}{a}$,
+    and $\phi_v = \circ,\ti{t}{a},(= a \; \ti{t}{c})$.
+
+    %% local
+    If $S;C \vdash \<local> \{ i;v_l^{*} \} \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
+    $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};e^{*} : ti^n;l_3;\phi_3$,
+    and $\satisfies{\phi_1,\phi_3}{ti_2^{*}\;l_2}{\phi_2}$.
+
+\end{lemma}
+\begin{proof}
+    Proof omitted, but follows from induction over typing derivations.
+\end{proof}
+
+\begin{lemma}{(Coherence)}
+    \todo{Nested composition can be expressed with only one subtyping relation.}
+\end{lemma}
+\begin{proof}
+\end{proof}
+
+The next lemma, \reflemma{Lift-Consts}, shows that if a sequence of constants, $v^n$, has a certain postcondition within a nested context, $L^j$, then it has the same postcondition outside of that context with the precondition of the context.
+We use this rule for branching and returning, when we want to essentially replace $L^j$ with just $v^n$, and show that $v^n$ can reach the same postcondition outside of $L^j$ that it has inside of $L^j$.
+
+The intuition for the proof is that the nature of nested contexts are such that all of the instructions preceding $v^n$ are values and therefore only add fresh index variables which are constrained to be equal to constants.
+Thus, we can pull $v^n$ outside of the nested context and know that we can still get to the postcondition because we can add back in all of the fresh index variables that we would have added from the values preceding it via implication.
+
+\begin{lemma}{(\deflemma{Lift-Consts})}
+
+    If $C \vdash v^n : \epsilon;l_3;\phi_3 \rightarrow ti^n;l_3;\phi_4$ is a subderivation of $C \vdash  L^j [v^n] : s_1;l_1;\phi_1 \rightarrow s_2;l_2;\phi_2$,
+    \\then $C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_3;\phi_4$ after reduction
+\end{lemma}
+\begin{proof}
+    By induction on $j$.
+    \begin{itemize}
+        \item Base case: $j=0$
+
+            $C \vdash v_0^{*} \; v^n \; e^{*} \<end> : s_1;l_1;\phi_1 \rightarrow s_2;l_2;\phi_2$ for some $v_0^{*}$ and $e^{*}$ by expanding $L^0$.
+
+            $C \vdash (t.\<const> c)^{*} : \epsilon;l_1;\phi_0 \rightarrow \ti{t}{a}^{*};l_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$ where $v_0^{*}=(t.\<const> c)^{*}$ and $\phi_1 \implies \phi_0$ by $inversion$.
+
+            Then, $\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \implies \phi_3$.
+
+            $C \vdash v^n : \ti{t}{a}^{*};l_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*},\ti{t}{a}^{*}\;ti^n;l_3;\phi_4$, by $subtyping$.
+
+            $C \vdash v^n : \epsilon;l_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_4$, by $inversion$.
+
+            If $v_0^{*}$ are not executed (\ie they are not part of the reduced expression), then $a^{*}$ are fresh, so $\phi_0 \implies \phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$, and therefore $C \vdash v^n : \epsilon;l_1;\phi_0 \rightarrow ti^n;l_1;\phi_4$ by $subtyping$ and since $l_1=l_3$.
+
+            Then, $C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_1;\phi_4$ by $subtyping$.
+
+        \item Induction case: $j=k+1$
+
+            $C \vdash \<label>_n \{ e_0^{*} \} \; v_0^{*} \; L^k[v^n] \; e_1^{*} \<end> : s_1;l_1;\phi_1 \rightarrow s_2;l_2;\phi_2$ for some $v_0^{*}$, $e_0^{*}$, and $e_1^{*}$ by expanding $L^j$.
+
+            $C \vdash (t.\<const> c)^{*} : \epsilon;l_1;\phi_0 \rightarrow \ti{t}{a}^{*};l_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$ where $v_0^{*}=(t.\<const> c)^{*}$ and $\phi_1 \implies \phi_0$ by $inversion$.
+
+            Then, $C \vdash L^k[v^n] : \ti{t}{a}^{*};l_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow s_5;l_5;\phi_5$ for some $s_5;l_5;\phi_5$ by $inversion$.
+
+            $C \vdash v^n : \epsilon;l_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow ti^n;l_1;\phi_4$ by the inductive hypothesis.
+
+            If $v_0^{*}$ are not executed (\ie after one reduction step), $a^{*}$ are fresh, so $\phi_0 \implies \ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$, and therefore $C \vdash v^n : \epsilon;l_1;\phi_0 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_5$ by $subtyping$ and since $l_1=l_3$.
+
+            Then, $C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_3$ by $subtyping$.
+
+    \end{itemize}
+\end{proof}

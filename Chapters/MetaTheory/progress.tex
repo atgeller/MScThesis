@@ -1,4 +1,5 @@
 \subsection{Progress}
+\label{subsec:progress}
 \emph{Progress} ensures that if a program is well-typed then it either: entirely consists of values, traps, or is reducible (\ie there exists another program that it reduces to).
 Since most \name instructions have the same semantics as in \wasm, and every \name type includes all the information of a \wasm type, we can reuse the \wasm proof for those instructions by using the erasure function from Section \ref{subsec:erasure}.
 The intuition for this is that the \name indexed type system provides strictly more information than the \wasm type system.

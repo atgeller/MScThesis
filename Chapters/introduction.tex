@@ -28,6 +28,7 @@ To provide these additional static guarantees, we equip \name with a more advanc
 \section{Type Systems}
 Types systems are useful for reasoning about programs.
 They can be used to reason about the correctness of programs, usually in the form of safety guarantees.
+\todo{Is this really type safety? Or should it be type soundess?}
 For example, type safety is the property that a well-typed program will never become \emph{stuck}, that is, it will always be able to reduce the current expression or the current expression is a well-formed irreducible value.
 The safety guarantees of type systems provide a degree of trust in programs, as a well-typed program implicitly contains a checkable proof that it will only exhibit safe behavior.
 
@@ -90,7 +91,7 @@ Towards that goal, we introduce \name, an extension of the WebAssembly (\wasm) l
 
 \name introduces new versions of \wasm instructions which require no dynamic checks, but also require stronger type-level safety guarantees than their \wasm counterparts (\autoref{sec:newinstructions}).
 To facilitate type-checking these new instructions, \name uses an indexed type system which is able to encode linear constraints on program variables and therefore ensure safety properties of the new \name instructions (\autoref{sec:typesys}).
-We ensure that \name is as safe as \wasm by providing a type safety proof of the \name indexed type system (\autoref{sec:typesafety}).
+We ensure that \name is as safe as \wasm by providing a type safety proof of the \name indexed type system (\autoref{sec:typesoundness}).
 Together, these additions mean that \name is as safe as \wasm while potentially improving performance.
 We show that \name is backwards compatible with \wasm by showing a type erasure to \wasm (\autoref{subsec:erasure}), and that \wasm programs can be turned into \name programs (\autoref{subsec:embedding}).
 
