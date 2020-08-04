@@ -163,7 +163,7 @@ Binary operators do not affect or use local variables, they simply propagate, so
     }
 
     \inferrule*[right=\defrule{Testop}]{a_2 \not\in \phi}{ %% testop
-        C \vdash t.testop : \ti{t}{a_1}\;l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2},(= a_2\;(testop\;a_1))
+        C \vdash t.testop : \ti{t}{a_1}\;l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi,\ti{t}{a_2},(= a_2\;(testop\;a_1))
     }
 
     \inferrule*[right=\defrule{Relop}]{a_3 \not\in \phi}{ %% relop
