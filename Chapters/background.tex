@@ -1,11 +1,10 @@
 \chapter{Background}
-\section{\wasm}
 \label{sec:wasm}
 Here we present an overview of \wasm so reader's have some familiarity with it for when we present \name.
 We do not cover the entirety of the \wasm language as presented in the 2017 paper, but rather selected important points about the syntax, semantics, and type system.
 It is recommended that the reader first skim this section to understand the basics and then refer back while reading \autoref{chp:prechk} and \autoref{chp:metatheory}.
 
-\subsection{\wasm Syntax}
+\section{\wasm Syntax}
 \autoref{fig:wasmsyntaxtypes} shows the types of \wasm.
 Primitive \wasm types and values, represented as $t$, include 32 and 64-bit floats and integers.
 Packed types, $tp$, include 8, 16, and 32 bit integers, they are used in memory operations.
@@ -43,8 +42,8 @@ As a convention, syntax written in a \tbbf{blue, bold font} denotes a keyword, w
 Throughout the \wasm syntax there are many metavariables used to represent natural numbers: $n$ and $m$ are usually used for the table and memory sizes, $i$ and $j$ are often used as indexes (\eg to reference a local variable), $o$ and $align$ are used within memory operations (we replace $a$ with $align$ for clarity and since we use $a$ elsewhere), and lastly $c$ is used as a constant variable (which could also be a float).
 Confusingly enough, $iN$ is used to annotate operations that support integers, and $fN$ is used to annotate operations that support floats.
 
-Some instructions, such as $\<loop> tf\; e^{*} \<end>$ include a sequence of instructions $e^{*}$.
-We refer to such instructions as block instructions, since they define control flow blocks for the instructions inside (not to be confused with the $\<block>$ insturction, which is a block instruction).
+Some instructions, such as $\<loop>\; tf\; e^{*} \<end>$ include a sequence of instructions $e^{*}$.
+We refer to such instructions as block instructions, since they define control flow blocks for the instructions inside (not to be confused with the $\<block>$ instruction, which is a block instruction).
 Similarly, we refer to $e^{*}$ as the body.
 
 \begin{figure}
@@ -82,7 +81,7 @@ Additionally, function arguments are accessible as local variables within the bo
 Global variables may be mutable (although, exported global variables cannot be mutable, as we will see later), and are initialized via a sequence of instructions.
 Function tables store references to functions that can be called using indirect function calls, they are used to more safely represent function pointers.
 Indirect function calls must supply a function type that gets checked against the table function that ends up being called at run-time.
-Linear memory is simply a very large continuous chunk of memory.
+Linear memory, $mem$, is simply a very large continuous chunk of memory.
 Memory load and store operations require run-time bounds checks to ensure that they operate within the chunk of memory.
 
 \begin{figure}
@@ -101,8 +100,8 @@ Memory load and store operations require run-time bounds checks to ensure that t
     \label{fig:wasmmodules}
 \end{figure}
 
-\subsection{\wasm Dynamic Semantics}
-\label{subsec:wasmsemantics}
+\section{\wasm Dynamic Semantics}
+\label{sec:wasmsemantics}
 \wasm is a stack-based assembly language that uses reduction semantics.
 Before we introduce the \wasm semantics, we first must introduce some administrative instructions that are used in the reduction relation.
 \autoref{fig:wasmadmin} shows the new administrative instructions.
@@ -162,9 +161,10 @@ Lastly, \wasm uses several shorthands to get information out of module instances
 Essentially, this allows us to implicity deference the $i$th module instance to get the $j$th function inside of the instance.
 This shorthand is used similarly for glob, tab, and mem.
 
-\paragraph{The \wasm Reduction Relation} works on \emph{configurations}, that include the store $s$, local variables (represented as a sequence of values $v^{*}$), and the instruction sequence $e^{*}$.
+\subsection{The \wasm Reduction Relation}
+The \wasm Reduction Relation works on \emph{configurations}, that include the store $s$, local variables (represented as a sequence of values $v^{*}$), and the instruction sequence $e^{*}$.
 The store, local variables, and module index are omitted when not used.
-We present all the different flavors of reduction rules below.
+We present all the reduction rules below.
 
 \begin{mathpar}
     \boxed{s;v^{*};e^{*} \rightarrow s';v'^{*};e'^{*}}
@@ -179,6 +179,7 @@ This way of decomposing ensures that all of the instructions preceding an instru
 
 Binary and relation operations consume two values and either return the specified operation applied to those values, or trap if it is not defined (in the case of dividing by zero).
 Test operators only consume one value, and do not trap, but are otherwise similar.
+
 \<unreachable> causes a trap, \<nop> reduces to the empty sequence, and \<drop> consumes one value and reduces to the empty sequence.
 We have shown the true case of select, which returns the second value consumes ($k+1$ is a common shorthand for a non-zero value).
 
@@ -198,7 +199,7 @@ We have shown the true case of select, which returns the second value consumes (
 
         v\;\<drop> &\hookrightarrow& \epsilon \\
 
-        v_1\;v_2\;(\<ithreetwo>.\<const> k+1)\;\<select> &\hookrightarrow& v_2 \\
+        v_1\;v_2\;(\<ithreetwo>.\<const> 0)\;\<select> &\hookrightarrow& v_2 \\
 
         v_1\;v_2\;(\<ithreetwo>.\<const> k+1)\;\<select> &\hookrightarrow& v_1 \\
     \end{array}
@@ -370,10 +371,12 @@ The same is true of global variables, except there is an extra step since they a
 
 Finally, there are the memory instructions.
 One can load or store a value from or to memory, get the current memory size, or try to grow the memory.
-There is a lot of minutia detail, but none of it is particularly important.
-The key high level takeaway is that load and store will trap if the supplied index plus the static offset is out of bounds.
 $|t|$ is used to represent the size of the type (\eg $|t| = 8$ bytes).
 We omit two rules, one each for store and load, that include the ability to use packed types to load/store smaller values and to load signed/unsigned.
+There is a lot of minutia detail, but none of it is particularly important.
+For example, $tp$ is an optional packed type which allows storing values smaller than the normal size of the type of the value (\eg storing eight bits $\<ieight>$ of a thirtytwo bit integer $\<ithreetwo>$).
+Loading from memory can optionally be signed or unsigned using $sx$, which represented signed or unsigned.
+The key high level takeaway is that load and store will trap if the supplied index $k$ plus the static offset $o$ is out of bounds.
 
 \begin{mathpar}
     \begin{array}{rcl}
@@ -420,8 +423,8 @@ We omit two rules, one each for store and load, that include the ability to use 
     \end{array}
 \end{mathpar}
 
-\subsection{The \wasm Type System}
-\label{subsec:wasmtyping}
+\section{The \wasm Type System}
+\label{sec:wasmtyping}
 Instructions in \wasm are typed under a module type context $C$.
 $C$ keeps track of various module-level types: functions, globals, the table, memory, locals, the label stack (\ie the expected types for branching instructions), and the return stack (\ie the expected type of the return instruction).
 
@@ -451,7 +454,7 @@ This is yet another common notational atrocity where $x,y$ means $x$ extended wi
 The branch rule accepts any precondition, extended with the $i$th postcondition on the label stack (counting backwards), and returns to any postcondition.
 A branch will return the $n$ values before it, so it is ok if there are more values on the stack, as they will be discarded.
 Execution does not proceed after branching, so the postcondition can be anything.
-For unction calls we lookup the type of the function in the context.
+For function calls we lookup the type of the function in the context.
 Finally, setting a local variable consumes a value of the type that is given by looking up the type of the local in the context.
 
 \begin{mathpar}
@@ -498,7 +501,8 @@ Then, the precondition of the full sequence $e_1^{*}\;e_2$ is the precondition o
     }
 \end{mathpar}
 
-\paragraph{Stack Polymorphism.}
+\subsection{Stack Polymorphism}
+\label{subsec:stackpoly}
 To compose together the types of many instructions, it is necessary to carry around extra type information about the rest of the stack while type-checking instructions.
 \emph{Stack polymorphism} allows extending the precondition and postcondition with the same data to thread unmodified parts of the stack through a list of instructions.
 Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the instruction being checked, after which point the ``forgotten'' part can be re-added.
