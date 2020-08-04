@@ -1,0 +1,50 @@
+\subsection{Embedding \wasm in \name}
+\label{subsec:embedding}
+We present a way to embed \wasm programs in \name.
+The embedding function takes a \wasm program and replaces all of the type annotations with indexed function types that have no constraints on the variables.
+While this embedding requires no additional developer effort, it provides no information to the indexed type system beyond what can be inferred from the instructions in the program.
+We conjecture that a well-typed \wasm program embedded in \name is also well-typed, but we have not proved it.
+
+As with the presentation of the erasure function, we typeset \name instructions in a \tbbf{bold blue font} and \wasm instruction in a \textcolor{red}{\textsf{red, sans serif font}}.
+
+\begin{definition}{$\embed{e^{*}}=e^{*}$}
+    \begin{mathpar}
+        {\begin{stackTL}
+            \embed{\<wblock> (t_1^{*}\rightarrow t_2^{*})\; e^{*} \<wend>} = \<block> tfi\; \embed{e^{*}} \<end>
+            \\ \text{where } tfi=
+            {\begin{stackTL}
+                \ti{t_1}{a_1}^{*};\ti{t_3}{a_3}^{*};\circ,\ti{t_1}{a_1}^{*},\ti{t_3}{a_3}^{*})
+                \\ \rightarrow \ti{t_2}{a_2}^{*};\ti{t_4}{a_4}^{*};\circ,\ti{t_2}{a_2}^{*},\ti{t_4}{a_4}^{*}
+            \end{stackTL}}
+        \end{stackTL}}
+
+        {\begin{stackTL}
+            \embed{\<wloop> (t_1^{*}\rightarrow t_2^{*})\; e^{*} \<wend>} = \<loop> tfi\; \embed{e^{*}} \<end>
+            \\ \text{where } tfi=
+            {\begin{stackTL}
+                \ti{t_1}{a_1}^{*};\ti{t_3}{a_3}^{*};\circ,\ti{t_1}{a_1}^{*},\ti{t_3}{a_3}^{*}
+                \\ \rightarrow \ti{t_2}{a_2}^{*};\ti{t_4}{a_4}^{*};\circ,\ti{t_2}{a_2}^{*},\ti{t_4}{a_4}^{*}
+            \end{stackTL}}
+        \end{stackTL}}
+
+        {\begin{stackTL}
+            \embed{\<wif> (t_1^{*}\rightarrow t_2^{*})\; e_1^{*}\; e_2^{*} \<wend>} = \<if> tfi\; \embed{e_1^{*}}\; \embed{e_2^{*}} \<end>
+            \\ \text{where } tfi=
+            {\begin{stackTL}
+                \ti{t_1}{a_1}^{*};\ti{t_3}{a_3}^{*};\circ,\ti{t_1}{a_1}^{*},\ti{t_3}{a_3}^{*}
+                \\ \rightarrow \ti{t_2}{a_2}^{*};\ti{t_4}{a_4}^{*};\circ,\ti{t_2}{a_2}^{*},\ti{t_4}{a_4}^{*}
+            \end{stackTL}}
+        \end{stackTL}}
+
+        {\begin{stackTL}
+            \embed{\<wcallindirect> (t_1^{*}\rightarrow t_2^{*})} = \<callindirect> tfi
+            \\ \text{where } tfi=
+            {\begin{stackTL}
+                \ti{t_1}{a_1}^{*};\ti{t_3}{a_3}^{*};\circ,\ti{t_1}{a_1}^{*},\ti{t_3}{a_3}^{*}
+                \\ \rightarrow \ti{t_2}{a_2}^{*};\ti{t_3}{a_3}^{*};()\circ,\ti{t_1}{a_1},\ti{t_3}{a_3}^{*}),(\circ,\ti{t_2}{a_2}^{*})
+            \end{stackTL}}
+        \end{stackTL}}
+
+        \embed{e} = e \text{, otherwise}
+    \end{mathpar}
+\end{definition}

@@ -3,6 +3,7 @@
 \usepackage{savesym}
 \usepackage{amsmath}
 \usepackage{amsthm}
+\usepackage{amssymb}
 \savesymbol{program}
 \savesymbol{@program}
 \usepackage{semantic}   % Tools for typesetting PL semantics
@@ -21,6 +22,7 @@
 \usepackage{multirow}
 \usepackage{mathtools}
 \usepackage{calc}
+\usepackage{natbib}
 
 % Always Use these
 \usepackage{hyperref}
@@ -53,11 +55,14 @@
 \newcommand{\ie}[0]{\emph{i.e.,}\xspace}
 \newcommand{\eg}[0]{\emph{e.g.,}\xspace}
 
-\newcommand{\erase}[1]{\llbracket #1 \rrbracket}
+\newcommand{\erase}[1]{erase(#1)}
+\newcommand{\embed}[1]{embed(#1)}
 
-\newtheorem{definition}{Definition}[section]
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{lemma}[section]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{\theoremstyle{definition}Definition}
+\newtheorem{theorem}{Theorem}
+\theoremstyle{plain}
+\newtheorem{lemma}{Lemma}
 %\Crefname{lemma}{Lemma}{Lemmas}
 
 % Stack formatting
@@ -72,10 +77,15 @@
 % Typeset object language notation in blue with sans serif font
 \newcommand{\tbbf}[1]{\textbf{\color{blue}#1}}
 \reservestyle{\keywords}{\tbbf}
-\keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], neq[neq\;], eqz[eqz\;], le[le\;], add[add\;], ge[ge\;], unreachable[unreachable], nop[nop], drop[drop], select[select], block[block\;], end[\;end], loop[loop\;], if[if\;], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], getglobal[get\rule{1ex}{.4pt}global\;], setglobal[set\rule{1ex}{.4pt}global\;], trap[trap], func[func\;], local[local], global[global\;], table[table\;], memory[memory\;], label[label], div[div], load[load\;], store[store\;], currentmemory[current\rule{1ex}{.4pt}memory\;], growmemory[grow\rule{1ex}{.4pt}memory\;], divpc[div\textsubscript{prechk}], callindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], loadpc[load\textsubscript{prechk}\;], storepc[store\textsubscript{prechk}\;], module[module\;]}
+\keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], ne[ne\;], eqz[eqz\;], le[le\;], add[add\;], ge[ge\;], unreachable[unreachable], nop[nop], drop[drop], select[select], block[block], end[\;end], loop[loop], if[if], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], getglobal[get\rule{1ex}{.4pt}global\;], setglobal[set\rule{1ex}{.4pt}global\;], trap[trap], func[func\;], local[local], global[global\;], table[table\;], memory[memory\;], label[label], div[div], load[load\;], store[store\;], currentmemory[current\rule{1ex}{.4pt}memory\;], growmemory[grow\rule{1ex}{.4pt}memory\;], divpc[div\textsubscript{prechk}], callindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], loadpc[load\textsubscript{prechk}\;], storepc[store\textsubscript{prechk}\;], module[module\;], fthreetwo[f32], fsixfour[f64], ieight[i8], isixteen[i16], clz[clz], ctz[ctz], popcnt[popcnt],
+sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[convert], reinterpret[reinterpret]}
 
 \mathlig{;}{\tbbf{;\;}}
 \mathlig{:}{:}
+
+\newcommand{\trsf}[1]{\textcolor{red}{\mathsf{#1}}}
+\reservestyle{\wkeywords}{\trsf}
+\wkeywords{withreetwo[i32], wisixfour[i64], wbinop[binop], wtestop[testop], wrelop[relop], wconst[const\;], weq[eq\;], wneq[neq\;], weqz[eqz\;], wle[le\;], wadd[add\;], wge[ge\;], wunreachable[unreachable], wnop[nop], wdrop[drop], wselect[select], wblock[block\;], wend[\;end], wloop[loop\;], wif[if\;], welse[\;else\;], wbr[br\;], wbrif[br\rule{1ex}{.4pt}if\;], wbrtable[br\rule{1ex}{.4pt}table\;], wreturn[return], wcall[call\;], wcallindirect[call\rule{1ex}{.4pt}indirect\;], wgetlocal[get\rule{1ex}{.4pt}local\;], wsetlocal[set\rule{1ex}{.4pt}local\;], wteelocal[tee\rule{1ex}{.4pt}local\;], wgetglobal[get\rule{1ex}{.4pt}global\;], wsetglobal[set\rule{1ex}{.4pt}global\;], wtrap[trap], wfunc[func\;], wlocal[local], wglobal[global\;], wtable[table\;], wmemory[memory\;], wlabel[label], wdiv[div], wload[load\;], wstore[store\;], wcurrentmemory[current\rule{1ex}{.4pt}memory\;], wgrowmemory[grow\rule{1ex}{.4pt}memory\;], wdivpc[div\textsubscript{prechk}], wcallindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], wloadpc[load\textsubscript{prechk}\;], wstorepc[store\textsubscript{prechk}\;], wmodule[module\;]}
 
 \hyphenation{Web-Assembly}
 
@@ -100,6 +110,18 @@
 \newcommand{\@refruleNoStar}[2][\techprefix]{\@refruleStar[#1]{#2}{#2}}
 \newcommand{\refrule}{\@ifstar\@refruleStar\@refruleNoStar}
 
+\newcommand{\lemmaname}[1]{{\scshape #1}}
+
+\LetLtxMacro{\lemmalabel}{\label}
+% For lemmas in particular
+\newcommand{\@deflemmaStar}[3][\techprefix]{\phantomsection{\lemmaname{#3}}\expandafter\lemmalabel{lemma:#1:#2}}
+\newcommand{\@deflemmaNoStar}[2][\techprefix]{\@deflemmaStar[#1]{#2}{#2}}
+\newcommand{\deflemma}{\@ifstar\@deflemmaStar\@deflemmaNoStar}
+
+\newcommand{\@reflemmaStar}[3][\techprefix]{\hyperref[lemma:#1:#2]{Lemma \rulename{#3}}}
+\newcommand{\@reflemmaNoStar}[2][\techprefix]{\@reflemmaStar[#1]{#2}{#2}}
+\newcommand{\reflemma}{\@ifstar\@reflemmaStar\@reflemmaNoStar}
+
 \makeatother
 
 \newcommand{\satisfies}[3]{#1 \xRightarrow{#2} #3}
@@ -111,7 +133,7 @@
     Chapters/introduction,
     Chapters/background,
     Chapters/wasm-prechk,
-    Chapters/type-safety,
+    Chapters/metatheory,
     Chapters/discussion,
     Chapters/conclusion,
 }
@@ -159,11 +181,11 @@
 \include{Chapters/introduction}
 \include{Chapters/background}
 \include{Chapters/wasm-prechk}
-\include{Chapters/type-safety}
+\include{Chapters/metatheory}
 \include{Chapters/discussion}
 \include{Chapters/conclusion}
 
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \bibliography{citations}
 
 \end{document}

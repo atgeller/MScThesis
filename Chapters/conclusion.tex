@@ -1,2 +1,7 @@
 \chapter{Conclusion}
 \label{chp:conclusion}
+
+We have introduced \name, a low-level language that uses an expressive type system to potentially improve performance via the elimination of unnecessary run-time checks.
+To ensure the safety of \name, we have proven the type safety of the \name language as well as showing a sound type erasure to \wasm, demonstrating that \name is at least as safe as \wasm.
+Further, \name is based on \wasm, a real-world language commonly used in performance-critical and untrusted contexts, where both safety and performance are critical.
+This demonstrates the usefulness of using expressive type systems as a practical tool to improve performance and ensure safety for low-level languages in real use cases.

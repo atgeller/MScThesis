@@ -1,9 +1,10 @@
 \subsection{Subject Reduction}
+\label{subsec:subject-reduction}
 \emph{Subject reduction}, also sometimes referred to as ``type preservation'', ensures that if a program has a specific type, then the program will have the same type after a reduction step.
 We use a number of lemmas in the subject reduction proof.
 \todo{Worst transition sentence ever}
 
-\input{Chapters/TypeSafety/lemmas.tex}
+\input{Chapters/MetaTheory//lemmas.tex}
 
 In many reduction cases, there are values on the stack that get consumed by reducing an instruction.
 This creates a bit of a problem because those values represent intermediate state, and as such will introduce new index variables to the index type context in their postcondition.
@@ -528,31 +529,19 @@ By case analysis on the reduction rules.
 
         \thought{I set out to write a very verbose proof case, but I didn't expect it to be this verbose.}
 
-    \item Case: $\vdash s;v^{*};\<getglobal> j : ti^{*};l;\phi$
+    \item Case: $C \vdash \<getglobal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    $\land$ $\vdash s : S$
     \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
 
-        By $inversion$ on $admin-program$, $\vdash s : S$, and $S;\epsilon \vdash_i v^{*};\<getglobal> j : ti^{*};l;\phi$.
+        By $inversion$, $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a} \implies \phi_2$, where $C_\text{global}(j) = \text{mut}^{?} \; t$.
 
-        By $inversion$ on $admin-code$, $S;C \vdash \<getglobal> j : \epsilon;l_1;\phi_v^{*} \rightarrow ti^{*};l;\phi$.
+        $\vdash s_\text{glob}(i,j) : \ti{t}{a_2};\phi_v$ because it is a premise of $S \vdash s_\text{inst}(i) : C$, which is a sub-derivation of $\vdash s : S$.
 
-        By $inversion$ on $get-global$, $ti^{*} = \ti{t}{a}$, $l = l_1$, $C_\text{global}(j) = \text{mut}^{?} t$,
-        and $\satisfies{\phi_v^{*},\ti{t}{a}}{\ti{t}{a}\;l}{\phi}$.
+        $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_1,\ti{t}{a},(= a \; \ti{t}{c})$ by $const$.
 
-        By $inversion$ on $store$, $S \vdash s_\text{inst}(i) : C$.
+        $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_2$ by $subtyping$.
 
-        Recalling that $C_\text{global}(j) = \text{mut}^{?} t$;
-        by $inversion$ on $instance$, $\vdash s_\text{glob}(i,j) : \ti{t}{a_1};\phi_1$.
-
-        $S;C \vdash t.\<const> c : \epsilon;l;\phi_v^{*} \rightarrow \ti{t}{a};l;\phi_v^{*},\ti{t}{a},(= a \; \ti{t}{c})$ by $const$,
-        where $t.\<const> c = s_\text{glob}(i,j)$.
-
-        $\satisfies{\ti{t}{a},(= a \; \ti{t}{c})}{\ti{t}{a}\;l}{\ti{t}{a}}$ trivially.
-
-        $S;C \vdash s_\text{glob}(i,j) : \epsilon;l;\phi_v^{*} \rightarrow \ti{t}{a};l;\phi$ by $subtyping$.
-
-        $S;\epsilon \vdash_i v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by $admin-code$, using the premises from $inversion$.
-
-        Therefore, $\vdash_i s;v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by $admin-program$.
+        Therefore, $C \vdash s_\text{glob}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
     \item Case: $C \vdash v \; (\<setglobal> j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     $\land$ $\vdash s : S$

@@ -33,7 +33,7 @@ Formally, however, these are different instructions with different semantics and
 An indexed type language uses an index language in the type system to encode information within types.
 We use the index language to encode linear constraints on program variables within types.
 Figure~\ref{fig:itsyntax} shows the syntax for the index type language.
-Syntax written in a \tbbf{blue, bold font} denotes a \wasm keyword.
+Remember, syntax written in a \tbbf{blue, bold font} denotes a \wasm keyword.
 Below is a quick overview of each of the terms.
 
 \begin{figure}[t]
@@ -123,11 +123,11 @@ There are also a few rules to compose together instruction sequences.
 We present the typing rules mixed with discussion of those rules.
 The typing judgment in its entirety is reproduced in the appendix.
 
-A number of typing rules are essentially equivalent to their \wasm counterparts.
+Here are some of the simpler rules.
 These are rules don't use or modify index type information.
-\refrule{Unreachable} accepts any precondition and guarantees any postcondition.
-In \refrule{Nop}, no changes are made from the precondition to the post condition.
-The $\<drop>$ instruction consumes the top value from the stack and does not change the local index store or index type context.
+\refrule{Unreachable} accepts any precondition and guarantees any postcondition since it just causes a trap.
+In \refrule{Nop}, no changes are made from the precondition to the post condition because the instruction does nothing.
+\refrule{Drop} consumes the top value from the stack (without caring about its type) and does not change the local index store or index type context.
 \begin{mathpar}
     \inferrule*[right=\defrule{Unreachable}]{ }{ %% unreachable
         C \vdash \<unreachable> : tfi
@@ -142,11 +142,12 @@ The $\<drop>$ instruction consumes the top value from the stack and does not cha
     }
 \end{mathpar}
 
-The constant instruction is probably the simplest example of how indexed types work.
-It adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$ (where $a$ is fresh), declares the new indexed type in the index type context, and constrains that indexed type to be equal to the constant $(= a\; \ti{t}{c})$.
+The constant instruction is a simple example of how indexed types work.
+It adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$, declares the new indexed type in the index type context, and constrains that indexed type to be equal to the constant $(= a\; \ti{t}{c})$.
+We require $a$ to be fresh, which is enforced by the premise $a \not\in \phi$, this is a common pattern to see in rules which introduce new index variables.
 The local index store is unchanged between the precondition and postcondition.
 \begin{mathpar}
-    \inferrule*[right=\defrule{Const}]{ }{ %% const
+    \inferrule*[right=\defrule{Const}]{ a \not\in \phi }{ %% const
         C \vdash t.\<const> c : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a},(= a \ti{t}{c})
     }
 \end{mathpar}
@@ -157,15 +158,15 @@ A binary operation consumes two indexed types from the stack, $\ti{t}{a_1}$ and 
 The index type declaration $\ti{t}{a_3}$ is added to the index type context $\phi$ and $a_3$ is constrained to be equal to the binary operator applied to the index variables that correspond to the input $(= a_3\;(binop\;a_1\;a_2)$.
 Binary operators do not affect or use local variables, they simply propagate, so the local index store is the same in the precondition and postcondition.
 \begin{mathpar}
-    \inferrule*[right=\defrule{Binop}]{ }{ %% binop
-        C \vdash t.relop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(relop\;a_1\;a_2))
+    \inferrule*[right=\defrule{Binop}]{a_3 \not\in \phi}{ %% binop
+        C \vdash t.binop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2))
     }
 
-    \inferrule*[right=\defrule{Testop}]{ }{ %% testop
+    \inferrule*[right=\defrule{Testop}]{a_2 \not\in \phi}{ %% testop
         C \vdash t.testop : \ti{t}{a_1}\;l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2},(= a_2\;(testop\;a_1))
     }
 
-    \inferrule*[right=\defrule{Relop}]{ }{ %% relop
+    \inferrule*[right=\defrule{Relop}]{a_3 \not\in \phi}{ %% relop
         C \vdash t.relop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(relop\;a_1\;a_2))
     }
 \end{mathpar}
@@ -174,7 +175,7 @@ Binary operators do not affect or use local variables, they simply propagate, so
 Select consumes three values from the stack, it returns the second value if the third value is zero, and otherwise returns the first value (similar to C's ternary operator).
 For this rule we use the dependent ``if'' to allow the constraint on the result to depend on the third value consumed: $(if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))$.
 \begin{mathpar}
-    \inferrule*[right=\defrule{Select}]{ }{ %% select
+    \inferrule*[right=\defrule{Select}]{a_3 \not\in \phi}{ %% select
         C \vdash \<select> : {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;\phi
             \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},
@@ -197,7 +198,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e^{*} : tfi \\
     }
     {
-        C \vdash \<block> tfi\; e^{*} \<end> : tfi
+        C \vdash \<block>\; tfi\; e^{*} \<end> : tfi
     }
 
     \inferrule*[right=\defrule{Loop}]{ %% loop
@@ -205,7 +206,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C_2,\text{label } (ti_1^{*};l_1;(\phi_1)^{*}) \vdash e^{*} : tfi \\
     }
     {
-        C \vdash \<loop> tfi\; e^{*} \<end> : tfi
+        C \vdash \<loop>\; tfi\; e^{*} \<end> : tfi
     }
 
     \inferrule*[right=\defrule{If}]{ %% if
@@ -214,7 +215,7 @@ The postcondition appended to the label stack also has pattern variables instead
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_2^{*} : ti_1^{*};l_1;\phi_1, (= a\; \ti{\<ithreetwo>}{0})) \rightarrow ti_2^{*};l_2;\phi_2 \\
     }
     {
-        C \vdash \<if> tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
+        C \vdash \<if>\; tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
     }
 \end{mathpar}
 
@@ -285,7 +286,8 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
 \begin{mathpar}
     \inferrule*[right=\defrule{Get-Local}]{ %% get_local
         C_{\text{local}}(i) = t \and
-        l(i) = \ti{t}{a}
+        l(i) = \ti{t}{a} \and
+        a_2 \not\in \phi
     }
     {
         C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi, \ti{t}{a_2}, (= a_2\; a)
@@ -293,7 +295,8 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
 
     \inferrule*[right=\defrule{Set-Local}]{ %% set_local
         C_{\text{local}}(i) = t \and
-        l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
+        l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2} \and
+        a_2 \not\in \phi
     }
     {
         C \vdash \<setlocal> i : \ti{t}{a};l_1;\phi \rightarrow \epsilon;l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
@@ -301,7 +304,8 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
 
     \inferrule*[right=\defrule{Tee-Local}]{ %% tee_local
         C_{\text{local}}(i) = t \and
-        l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}
+        l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2} \and
+        a_2 \not\in \phi
     }
     {
         C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a};l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
@@ -314,7 +318,8 @@ At compile-time, before linking, it is very difficult to reason about globals fr
 We do still ensure that the value is of the correct type and in the case of setting a global variable that the global variable is mutable.
 \begin{mathpar}
     \inferrule*[right=\defrule{Get-Global}]{ %% get_global
-        C_\text{global}(i) = \text{mut}^{?}\; t
+        C_\text{global}(i) = \text{mut}^{?}\; t \and
+        a \not\in \phi
     }
     {
         C \vdash \<getglobal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a}
@@ -332,7 +337,8 @@ The typing rules for memory instructions are very similar to \wasm as we do not 
 \begin{mathpar}
     \inferrule*[right=\defrule{Load}]{ %% memory load
         C_\text{memory} = n \and
-        2^a \leq (|tp| <)^{?} |t|
+        2^a \leq (|tp| <)^{?} |t| \and
+        a_2 \not\in \phi
     }
     {
         C \vdash t.\<load> (tp\_sx)^{?}\; a\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
@@ -348,6 +354,7 @@ The typing rules for memory instructions are very similar to \wasm as we do not 
 
     \inferrule*[right=\defrule{Current-Memory}]{ %% current mem
         C_\text{memory} = n \and
+        a \not\in \phi
     }
     {
         C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi
@@ -355,6 +362,7 @@ The typing rules for memory instructions are very similar to \wasm as we do not 
 
     \inferrule*[right=\defrule{Grow-Memory}]{ %% grow mem
         C_\text{memory} = n \and
+        a_2 \not\in \phi
     }
     {
         C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi
@@ -376,7 +384,7 @@ Third, there is a rule to compose a sequence of instructions with another instru
         C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
     {
-        C \vdash e^{*} : ti^{*}\;ti_1^{*};l_1;g_1;\phi_1 \rightarrow ti^{*}\;ti_2^{*};l_2;\phi_2
+        C \vdash e^{*} : ti^{*}\;ti_1^{*};l_1;\phi_1 \rightarrow ti^{*}\;ti_2^{*};l_2;\phi_2
     }
 
     \inferrule*[right=\defrule{Composition}]{ %% combine
@@ -389,6 +397,7 @@ Third, there is a rule to compose a sequence of instructions with another instru
 \end{mathpar}
 
 \subsection{Subtyping, Implication, and Constraint Satisfaction}
+\label{subsec:subtyping}
 One issue with adding the index type context $\phi$ to preconditions and postconditions is that the postcondition of one instruction and the precondition of the next instruction might not match up exactly.
 For example, one instruction may ensure a value is greater than ten, but the next just wants the value to be greater than zero.
 Intuitively, if a value, ``x'', is greater than ten it must also be greater than zero, and we want the \name type system to be able to figure this out as well.
@@ -401,23 +410,29 @@ We say that $\phi_1 \implies \phi_2$ when the following holds: if $\phi_1$ is sa
 If $\phi_1 \implies \phi_2$, then we consider $\phi_1$ to be stronger than $\phi_2$, and $\phi_2$ to be weaker than $\phi_1$.
 This solves the aforementioned problem because we can weaken ``x is greater than 10'' to ``x is greater than 0'' (or equivalently strengthen ``x is greater than 0'' to ``x is greater than 10'').
 
+\todo{Properly format digression}
+\paragraph{Digression on Fresh Variables}
+\todo{Is this clunky? This feels clunky, but I also think that the example helps and connects it to what we were saying above.}
+It can be useful to introduce fresh index variables and use them in constraints as sort of a scratch value.
+We handle this by having implication range over a set a variables $ti^{*}$, as in $\satisfies{\phi_0}{ti^{*}}{\phi_1}$.
+Intuitively, this means that the $\phi_0$ implies that all of the constraints in $\phi_1$ on index variables $ti^{*}$ are true.
+For example, $\satisfies{\circ,\ti{\<ithreetwo>}{a},(> a \ti{\<ithreetwo>}{10})}{\ti{\<ithreetwo>}{a}}{\circ,\ti{\<ithreetwo>}{a},(> a \ti{\<ithreetwo>}{0}),\ti{\<ithreetwo>}{b},(= b 0)}$, because $(> a \ti{\<ithreetwo>}{10})$ implies that $(> a \ti{\<ithreetwo>}{0})$, and the constraints on $b$ are not taken into account.
+
+We can now add fresh index variables and arbitrary constraints on them to the postconditions of indexed function types as a part of weakening.
+This may seem a little counterintuitive since it looks like we are strengthening the constraint set, but it is in fact unchanged with respect to the index variables that are actually used in the program).
+Further, we are careful to avoid contradictions by requiring that the new index variables are fresh.
+In the example we just walked through, we could safely add $b$ because it was not a variable we cared about and was not present in $\circ,\ti{\<ithreetwo>}{a},(> a \ti{\<ithreetwo>}{10})$, so we knew it would not cause any contradictions.
+\todo{End of digression.}
+
 To fit strengthening and weakening into the type system, we define a subtyping judgment based on implication.
 The \refrule{Implies} says that if an indexed function type $tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $tfi_2$, and is otherwise equivalent, then $tfi_1$ is a subtype of $tfi_2$.
-\refrule{FreshVar} allows adding a fresh index variable that is constrained to be exactly equal to a constant.
-This is mainly useful in the type safety proof to deal with information loss caused by consuming values from the stack.
+
 \begin{mathpar}
     \inferrule*[right=\defrule{Implies}]{
-        \phi_0 \implies \phi_1 \and
-        \phi_2 \implies \phi_3
+        \satisfies{\phi_0}{ti_1^{*}\;l_1}{\phi_1} \and
+        \satisfies{\phi_2}{ti_2^{*}\;l_2}{\phi_3}
     }{
         ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
-    }
-
-    \inferrule*[right=\defrule{FreshVar}]{
-        \phi_3 \implies \phi,(t\;a),(= a\; \ti{t}{c}) \and
-        a \not\in (ti_1^{*};l_1;\phi)
-    }{
-        ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 \end{mathpar}
 
@@ -439,9 +454,11 @@ Now, we will see how the \name type system provides those guarantees by looking 
 Integer division simply requires that the second argument is non-zero.
 The premise $\phi \implies \neg(=\ a_2\ 0)$ requires that the index constraints satisfy the proposition $a_2 \neq 0$ for the pre-checked instruction to be safe.
 Therefore, since a divide-by-zero is provably absent, it is safe to replace the division operator instruction with the \prechk-tagged version.
+As an aside, recall that $a_3 \not\in \phi$ ensures that $a_3$ is fresh.
 \begin{mathpar}
     \inferrule*[right=\defrule{Div-Prechk}]{
-        \phi \implies \neg(=\ a_2\ 0)
+        \phi \implies \neg(=\ a_2\ 0) \and
+        a_3 \not\in \phi
     }{
         C \vdash t.\<divpc> : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(div\;a_1\;a_2))
     }
@@ -456,7 +473,8 @@ We use $width$ as a shorthand to denote the number of bytes requires for the val
 \begin{mathpar}
     \inferrule*[right=\defrule{Load-Prechk}]{ %% memory load
         C_\text{memory} = n \and
-        2^{align} \leq (|tp| <)^{?} |t| \\
+        2^{align} \leq (|tp| <)^{?} |t| \and
+        a_3 \not\in \phi \\
         \phi \implies
         {\begin{stackTL}
             (\<ge> (\<add> a_1\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}), 

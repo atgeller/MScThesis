@@ -81,13 +81,13 @@
             C \vdash \<if> tfi\; e_1^{*} \<else> e_2^{*} \<end> : tfi
         } \and
         \inferrule[]{ %% br
-            C_{\text{label}}(i) = ti^{*};l_1;\phi_1
+            C_\text{label}(i) = ti^{*};l_1;\phi_1
         }
         {
             C \vdash \<br> i : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } \and
         \inferrule[]{ %% br_if
-            C_{\text{label}}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
+            C_\text{label}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
         }
         {
             C \vdash \<brif> i : ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti^{*};l_1;\phi_1,(= a\; \ti{\<ithreetwo>}{0})
@@ -100,7 +100,7 @@
             C \vdash \<brtable> i^{+} : ti_1^{*}\;ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } \and
         \inferrule[]{ %% return
-            C_{\text{return}} = ti^{*};l_1;\phi_1
+            C_\text{return} = ti^{*};l_1;\phi_1
         }
         {
             C \vdash \<return> : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
@@ -287,7 +287,7 @@
         \inferrule[]{ %% store
             S = \{ \text{inst} \; C^{*}, \text{tab} \; n^{*}, \text{mem} \; m^{*} \}\\
             (S \vdash inst : C)^{*} \and
-            ((S \vdash cl : tf)^{*})^{*} \and
+            ((S \vdash cl : tfi)^{*})^{*} \and
             (n \leq |cl^{*}|)^{*} \and
             (m \leq |b^{*}|)^{*}
         } {
@@ -317,7 +317,7 @@
             C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
             S;C \vdash e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
         } {
-            S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi
+            S;(ti^n;l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^n;l;\phi
         } \and
         \inferrule[]{ %% admin const
         } {

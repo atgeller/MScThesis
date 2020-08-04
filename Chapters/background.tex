@@ -5,51 +5,175 @@ Here we present an overview of \wasm so reader's have some familiarity with it f
 We do not cover the entirety of the \wasm language as presented in the 2017 paper, but rather selected important points about the syntax, semantics, and type system.
 
 \subsection{\wasm Syntax}
-\wasm is a stack-based assembly language.
-The primitive \wasm types and values include 32 and 64-bit floats and integers.
-There are many instructions:
-\begin{itemize}
-    \item Constants
-    \item Binary and unary operations for arithmetic and comparisons. There are different ones for integers and floats.
-    \item Unreachable: an instruction that triggers a ``trap'', a \wasm run-time error (think: assert false)
-    \item No-op
-    \item An instruction to discard the value on top of the stack
-    \item A ternary operator to choose between two values on the stack based on a third value
-    \item Several control flow blocks that introduce labels for branching
-    \item Several branching operators, including unconditional and conditional branches
-    \item Function calls and return
-    \item Indirect function calls
-    \item Get/set instructions for local and global variables
-    \item Memory operations, including load, store, getting the current memory size, and attempting to grow the size of memory
-\end{itemize}
+\autoref{fig:wasmsyntaxtypes} shows the types of \wasm.
+Primitive \wasm types and values, represented as $t$, include 32 and 64-bit floats and integers.
+Packed types, $tp$, include 8, 16, and 32 bit integers, they are used in memory operations.
+Function types, $tf$, map from one sequence of types to another, although they aren't really function types in the traditional sense, as explained in \autoref{subsec:wasmtyping}.
+
+\begin{figure}
+\begin{math}
+\begin{array}{rcl}
+    t & ::= & \<ithreetwo> \mid \<isixfour> \mid \<fthreetwo> \mid \<fsixfour> \\
+    tp & ::= & \<ieight> \mid \<isixteen> \mid \<ithreetwo> \\
+    tf & ::= & t^{*} \rightarrow t^{*} \\
+    tg & ::= & \text{mut}^{?}\; t
+\end{array}
+\end{math}
+\caption{\wasm Types}
+\label{fig:wasmsyntaxtypes}
+\end{figure}
 
 The \wasm syntax uses the Kleene star within its BNF to refer to possibly empty sequences.
-For example, instructions, $e$, are usually grouped into sequences $e^{*}$, which are possibly empty $\epsilon$.
+For example, instructions, represented by the metavariable $e$, are usually grouped into sequences $e^{*}$, which are possibly empty $\epsilon$.
 $e_1$ and $e_2$ refer to different instructions (although the actual instruction they represent may be the same).
 Similarly, $e_1^{*}$ and $e_2^{*}$ refer to different sequences of instructions (again, the sequences may be the same).
 There is no requirement that a sequence of non-terminals, $e_1^{*}$, be made up of entirely the same pattern, unless it is explicitly written out as in $(t.const c)^{*}$.
 For example, $e_1^{*}$ matches $(t.\<const> c_1)\; (t.\<const> c_2)\; (t.binop)$.
-Further, we may separate out subsequences: from $(t.const c)^{*}$ we may separate out $t^{*}$ and $c^{*}$ to refer to the sequences of types and constant values respectively.
+Further, we may separate out subsequences: from $(t.\<const> c)^{*}$ we may separate out $t^{*}$ and $c^{*}$ to refer to the sequences of types and constant values respectively.
 
-\wasm has modules that include linear memory, function tables, global variables, and functions.
-Linear memory is simply a very large continuous chunk of memory.
-Memory load and store operations require run-time bounds checks to ensure that they operate within the chunk of memory.
-Function tables store references to functions that can be called using indirect function calls, they are used to more safely represent function pointers.
-Indirect function calls must supply a function type that gets checked against the table function that ends up being called at run-time.
-Global variables may be mutable, and are initialized via a sequence of instructions.
+We can use different annotations in place of the Kleene star to add additional information.
+The Kleene star may be replaced with an exact value $n$ when we know that the sequence has length $n$ (\eg a sequence of 3 types be phrased as $t^{3}$).
+We can also use a question mark to represent either an empty sequence ($\epsilon$), or a sequence with exactly one item (\eg, $v^{?}=v' \lor v^{?}=\epsilon$).
+
+With this notation in mind, we can now look over the \wasm instructions in \autoref{fig:wasminstructions}.
+As a convention, syntax written in a \tbbf{blue, bold font} denotes a keyword, while text written in $italics$ represents a metavariable.
+Throughout the \wasm syntax there are many metavariables used to represent natural numbers: $n$ and $m$ are usually used for the table and memory sizes, $i$ and $j$ are often used as indexes (\eg to reference a local variable), $o$ and $align$ are used within memory operations (we replace $a$ with $align$ for clarity and since we use $a$ elsewhere), and lastly $c$ is used as a constant variable (which could also be a float).
+Confusingly enough, $iN$ is used to annotate operations that support integers, and $fN$ is used to annotate operations that support floats.
+
+Some instructions, such as $\<loop> tf\; e^{*} \<end>$ include a sequence of instructions $e^{*}$.
+We refer to such instructions as block instructions, since they define control flow blocks for the instructions inside (not to be confused with the $\<block>$ insturction, which is a block instruction).
+Similarly, we refer to $e^{*}$ as the body.
+
+\begin{figure}
+    \begin{math}
+    \begin{array}{rcl}
+        unop_{iN} & ::= & \<clz> \mid \<ctz> \mid \<popcnt> \\
+        testop_{iN} & ::= & \<eqz> \\
+        binop_{iN} & ::= & \<add> \mid \<sub> \mid \<shl> \mid \<or> \mid ... \\
+        relop_{iN} & ::= & \<eq> \mid \<ne> \mid \<gt> \mid \<ge> \mid ... \\
+        cvtop & ::= & \<convert> \mid \<reinterpret> \\
+    \end{array}
+    \end{math}
+
+    \begin{math}
+    \begin{array}{rcl}
+        e & ::= & \<unreachable> \mid \<nop> \mid \<drop> \mid \<select> \mid \\
+        && \<block>\; tf\; e^{*} \<end> \mid \<loop>\; tf\; e^{*} \<end> \mid \<if>\; tf\; e^{*} \<else> e^{*} \<end> \mid \\
+        && \<br> i \mid \<brif> i \mid \<brtable> i^{+} \mid \<return> \mid \<call> i \mid \<callindirect> tf \mid \\
+        && \<getlocal> i \mid \<setlocal> i \mid \<teelocal> i \mid \<getglobal> i \mid \\
+        && \<setglobal> i \mid t.\<load> (tp\_sx)^{?}\; align\; o \mid t.\<store> tp^{?}\; align\; o \mid \\
+        && \<currentmemory> \mid \<growmemory> \mid t.\<const> c \mid \\
+        && t.unop_t \mid t.binop_t \mid t.testop_t \mid t.relop_t \mid t.cvtop\; t\_sx^{?} \\
+    \end{array}
+    \end{math}
+    \caption{\wasm Instructions}
+    \label{fig:wasminstructions}
+\end{figure}
+
+\wasm has modules that include functions ($f$), global variables ($glob$), an optional function table ($tab$), and an optional linear memory chunk ($mem$), as seen in \autoref{fig:wasmmodules}.
+Functions, globals, the table, and memory can be imported, using $\<import> "name_1"\; "name_2"$, which imports $name_2$ from the file $name_1$.
+Similarly, they can also be exported under any number of names using $\<export> "name"$.
+
 Functions include a list of local variable declarations to use within the body (a sequence of instructions).
 Additionally, function arguments are accessible as local variables within the body of functions.
+Global variables may be mutable (although, exported global variables cannot be mutable, as we will see later), and are initialized via a sequence of instructions.
+Function tables store references to functions that can be called using indirect function calls, they are used to more safely represent function pointers.
+Indirect function calls must supply a function type that gets checked against the table function that ends up being called at run-time.
+Linear memory is simply a very large continuous chunk of memory.
+Memory load and store operations require run-time bounds checks to ensure that they operate within the chunk of memory.
+
+\begin{figure}
+    \begin{math}
+    \begin{array}{rcl}
+        im &::=& \<import> "name_1"\; "name_2" \\
+        ex &::=& \<export> "name" \\
+        f &::=& ex^{*}\; \<func> tf\; \<local>\; t^{*}\; e^{*} \mid ex^{*}\; \<func> tf\; im \\
+        glob &::=& ex^{*}\; \<global> tg\; e^{*} \mid ex^{*}\; \<global> tg\; im \\
+        tab &::=& ex^{*}\; \<table> n\; i^{*} \mid ex^{*}\; \<table> n\; im \\
+        mem &::=& ex^{*}\; \<memory> n\; \mid ex^{*}\; \<memory> n\; im \\
+        module &::=& \<module> f^{*}\; glob^{*}\; tab^{?}\; mem^{?}
+    \end{array}
+    \end{math}
+    \caption{\wasm Module Definitions}
+    \label{fig:wasmmodules}
+\end{figure}
 
 \subsection{\wasm Semantics}
 \label{subsec:wasmsemantics}
-\wasm uses a mixed reduction and small-step operational semantics.
+\wasm is a stack-based assembly language that uses a mixed reduction and small-step operational semantics.
+Before we introduce the \wasm semantics, we first must introduce some administrative instructions that are used in the reduction relation.
+\autoref{fig:wasmadmin} shows the new administrative instructions.
+
+\begin{figure}
+    \begin{math}
+    \begin{array}{rcl}
+        cl &::=& \{\text{inst } i, \text{func } f\} \\
+        b &::=& 0x00, 0x01, ..., 0xff \\
+        tabinst &::=& cl^{*} \\
+        meminst &::=& b^{*} \\
+        inst &::=& \{\text{func } cl^{*}, \text{glob } v^{*}, \text{tab } i^{?},\text{mem } i^{?}\} \\
+        s &::=& \{\text{inst } inst^{*}, \text{tab } tabinst^{*}, \text{mem } meminst^{*}\} \\
+        v &::=& t.\<const> c \\
+        e &::=& ... \mid \<trap> \mid \<call> cl \mid \<label>_n\{ e^{*}\}\; e^{*}\<end> \mid \\
+        && \<local>_n\{ i;v^{*}\}\; e^{*}\<end>\\
+        L^0 &::=& v^{*}\; \square \; e^{*} \\
+        L^{k+1} &::=& v^{*}\; \<label>_n\{ e^{*}\}\; L^{k}\<end> \; e^{*} \\
+    \end{array}
+    \end{math}
+    \caption{\wasm Administrative instructions}
+    \label{fig:wasmadmin}
+\end{figure}
+
+$cl$ represents a \wasm closures.
+Closures include the module instance that the function is defined in, as well as the function definition (which cannot be an import) with any exports erased.
+Intuitively, a closure represents a function closed under linking.
+$b$ represents a byte.
+The runtime store, $s$, includes runtime instances for every module ($inst^{*}$), as well as all of the tables ($tabinst^{*}$), and memory chunks ($meminst^{*}$).
+In other words, $s$ includes full definitions for every module.
+Module runtime instances, $inst$, refer to their table/memory (if they have one), by indexing into the list of runtime instances of tables/memory chunks.
+
+A representation of values, $v$, is added as a metavariable to refer to constant instructions $t.\<const> c$.
+A \emph{trap} ($\<trap>$) is the \wasm term for a run time error.
+$\<call> cl$ is a function call on a closure.
+As we will see, it is an intermediate step for performing both direct and indirect function calls.
+
+We also have two types of block instructions introduced.
+The first, label blocks, are used in handling control flow.
+Specifically, they are used to hand branching.
+All block instructions (\<block>, \<loop>, and \<if>) reduce to label blocks.
+The second new block instruction is the local block.
+Locals blocks are how closure calls get expanded.
+They introduce an environment consisting of the module instance and local variables inside which their body is reduced \todo{Executed? Reduced? Can we use them interchangeably? I think this comes up in other places as well, something to watch out for}.
+
+Finally, we introduce reduction contexts, $L^{k}$, where $k$ is the nesting depth.
+Reduction contexts are based on label blocks, so $L^{k}$ essentially contains $k$ nested local blocks.
+As we will see, instructions are reduced in place by decomposing the entire program using reduction contexts.
+
+There are a few final notational digressions we must make before describing the reduction relation.
+First, objects such as $s=\{\text{inst } inst^{*}, \text{tab } tabinst^{*}, \text{mem } meminst^{*}\}$ can be deferenced using its keywords (\eg inst).
+For example, $s_\text{inst}=inst^{*}$ given the above definition of $s$.
+Second, we can index into a sequence to get a specific element (\eg $inst^{*}(i)$ returns the $i$th $inst$ in $inst^{*}$).
+Lastly, \wasm uses several shorthands to get information out of module instances in $s$: $s_\text{func}(i)(j)=s_\text{inst}(i)_\text{func}(j)$.
+Essentially, this allows us to implicity deference the $i$th module instance to get the $j$th function inside of the instance.
+This shorthand is used similarly for glob, tab, and mem.
+
+\paragraph{The \wasm Reduction Relation.}
+We will now 
+
+\todo{Structure}
 The ``stack'' is actually just the sequence of values preceding the first reducible instruction.
-Instructions are reduced in place by decomposing the entire program using reduction contexts.
-Reduction contexts are based on label blocks, administrative instructions used to handle control flow.
+\todo{inductive structure}
+
+\todo{Expand on branching}
 Branching from inside a label block essentially peels back the specified number of label blocks, and continues executing with the stored instructions (used only by loops which store the loop code) of the containing label block.
 For example, $\<label> \{\} \<label> \{\} \<label> \{\} \<br> 1 \<end> \<end> \<end>$ will reduce to $\<label> \{\} \<end>$, while $\<label> \{ \<loop> ... \<end> \} \<br> 1 \<end>$ reduces to $\<loop> ... \<end>$.
 
+\todo{Explain function call expansion a little}
+
+\todo{Discuss each of the rules for \prechk instructions}
+
 \subsection{The \wasm Type System}
+\label{subsec:wasmtyping}
 \wasm is a stack-based language, so the type of an instruction in \wasm consists of a precondition and postcondition on the shape of the stack.
 This can be viewed as though instructions \emph{consume} certain values from the stack and then \emph{produce} values to be pushed on the stack.
 For example, a binary operation of some type $t$ consumes two values of the given type $t$ on the stack and produces a value of type $t$:
@@ -67,8 +191,9 @@ To compose together the types of many instructions, it is necessary to carry aro
 \emph{Stack polymorphism} allows extending the precondition and postcondition with the same data to thread unmodified parts of the stack through a list of instructions.
 Intuitively, this allows you to ``forget'' the rest of the stack and focus only on the part being manipulated by the instruction being checked, after which point the ``forgotten'' part can be re-added.
 
-\todo{Run through an example using concrete values}
 For example, if the stack has the shape $\<isixfour>\; \<ithreetwo>\; \<ithreetwo>$, then stack polymorphism allows us to ignore $\<isixfour>$ and typecheck $\<ithreetwo>.binop$ with $\<ithreetwo>\;\<ithreetwo>$.
 Then the stack would look like $\<ithreetwo>$, at which point we add $\<isixfour>$ back to the postcondtion to get $\<isixfour>\; \<ithreetwo>$ after executing $\<ithreetwo>.binop$.
 
-\todo{Anything else to add here?}
+\todo{Define C formally}
+
+\todo{Add example type rules we prove erasure for.}

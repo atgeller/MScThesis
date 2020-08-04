@@ -1,0 +1,83 @@
+\subsection{Erasing \name to \wasm}
+\label{subsec:erasure}
+We provide an erasure function for \name that transforms \name programs into \wasm programs by discarding the extra information from the \name type system and replacing \prechk-tagged instructions with their non-tagged counterparts.
+Erasure is useful for demonstrating backwards compatibility.
+Additionally, erasure is useful in the type safety proof in Section \ref{subsec:progress}.
+We show that erasing a well-typing \name program produces a well-typed \wasm program.
+
+We typeset \name instructions in a \tbbf{bold blue font} and \wasm instruction in a \textcolor{red}{\textsf{red, sans serif font}} to set them apart.
+
+\begin{definition}{$\erase{tfi} = \trsf{tf}$}
+
+    $\erase{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2} = \trsf{t_1^{*} \rightarrow t_2^{*}}$
+\end{definition}
+
+\begin{definition}{$\erase{e} = \trsf{e}$}
+    \begin{mathpar}
+        \erase{\<block> tfi\; e^{*} \<end>} = \<wblock> \erase{tfi}\; \erase{e^{*}} \<wend>
+
+        \erase{\<loop> tfi\; e^{*} \<end>} = \<wloop> \erase{tfi}\; \erase{e^{*}} \<wend>
+
+        \erase{\<if> tfi\; e_1^{*}\; e_2^{*} \<end>} = \<wif> \erase{tfi}\; \erase{e_1^{*}}\; \erase{e_2^{*}} \<wend>
+
+        \erase{\<callindirect> tfi} = \<wcallindirect> \erase{tfi}
+
+        \thought{Does it really make sense to have prechk instructions here for the progress proof? I guess it's fine cause we list them explicitly.}
+
+        \erase{t.\<divpc>} = t.\<wdiv>
+
+        \erase{t.\<callindirectpc>} = t.\<wcallindirect>
+
+        \erase{t.\<storepc> tp^{?}\; align\; o} = t.\<wstore> tp^{?}\; align\; o
+
+        \erase{t.\<loadpc> (tp\_sx)^{?}\; align\; o} = t.\<wload> (tp\_sx)^{?}\; align\; o
+
+        \erase{e} = e \text{, otherwise}
+    \end{mathpar}
+
+\end{definition}
+
+\begin{definition}{$\erase{C} = \trsf{C}$}
+    \begin{mathpar}
+        {\begin{stackTL} erase(
+            {\begin{stackTL}
+                \text{func } tfi^{*}, \text{ global } tg^{*}, \text{ table } (n,tfi^{*})^{?}, \text{ memory } m^{?},
+                \\ \text{local } t^{*}, \text{ label } (\ti{t_1}{a_1}^{*};l_1;\phi_1)^{*}, \text{ return } (\ti{t_2}{a_2}^{*};l_2;\phi_2)^{?})
+            \end{stackTL}}
+        \\=
+        {\begin{stackTL}\{\text{func } \erase{tfi^{*}}, \text{ global } tg^{*}, \text{ table } n^{?}, \text{ memory }\; m^{?},
+            \\ \text{local } t^{*}, \text{ label } (t_1^{*})^{*}, \text{ return } (t_2^{*})^{?}\}
+        \end{stackTL}}
+        \end{stackTL}}
+    \end{mathpar}
+\end{definition}
+
+\begin{definition}{$\erase{S} = \trsf{S}$}
+
+    $\erase{\{\text{inst } C^{*}, \text{tab } n^{*}, \text{mem } m^{*}\}}=
+    \{\text{inst } \erase{C}^{*}, \text{tab } n^{*}, \text{mem } m^{*}\}$
+\end{definition}
+
+\begin{lemma}{(Erased-Well-Typed-Admin)}
+
+    If $S;C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    \\ then $\erase{S};\erase{C} \vdash \erase{e^{*}} : \erase{\epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^{*};l_2;\phi_2}$
+\end{lemma}
+\begin{proof}
+    \thought{These proofs are so simple that I really don't think it's worth it to enumerate them.}
+
+    We proceed by induction over typing rules. Most proof cases are omitted as they are quite simple but we provide a few to give an idea of what the proofs look like.
+
+    \begin{itemize}
+        \item $S;C \vdash t.binop : \ti{t}{a_1}\;\ti{t}{a_2};l_1;\phi_1 \rightarrow \ti{t}{a_3};l_1;\phi_1,\ti{t}{a_3},(= a_3\; (binop\;a_1\;a_2))$
+
+        $\erase{S};\erase{C} \vdash \erase{t.binop} : \erase{\ti{t}{a_1}\;\ti{t}{a_2};l_1;\phi_1 \rightarrow \ti{t}{a_3};l_1;\phi_1,\ti{t}{a_3},(= a_3\; (binop\;a_1\;a_2))}$ = $\erase{S};\erase{C} \vdash t.binop : t\;t \rightarrow t$, which holds under \wasm's type system.
+        \item $S;C \vdash \<unreachable> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+
+        $\erase{S};\erase{C} \vdash \erase{\<unreachable>} : \erase{ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2}$ = $\erase{S};\erase{C} \vdash \<wunreachable> : t_1^{*} \rightarrow t_2$, which holds under \wasm's type system.
+
+        \item $S;C \vdash \<drop> : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_1;\phi_1$
+
+        $\erase{S};\erase{C} \vdash \erase{\<nop>} : \erase{\epsilon;l_1;\phi_1 \rightarrow \epsilon;l_1;\phi_1}$ = $\erase{S};\erase{C} \vdash \<wnop> : \epsilon \rightarrow \epsilon$, which holds under \wasm's type system.
+    \end{itemize}
+\end{proof}
