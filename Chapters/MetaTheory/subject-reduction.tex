@@ -69,14 +69,16 @@ By case analysis on the reduction rules.
 
     %% Testop
     \item $C\vdash (t.\<const> c)\; t.testop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-    \\ $\land$ $(t.\<const> c)\; (t.\<const> c)\; t.testop \hookrightarrow t.\<const> c_2$ where $c_2=testop(c)$
+    \\ $\land$ $(t.\<const> c)\; t.testop \hookrightarrow \<ithreetwo>.\<const> c_2$ where $c_2=testop(c)$
+
+        \todo{This is wonky}
 
         By $inversion$ on $const$ and $testop$, we know that $ti_2^{*}=ti_1^{*}\; \ti{t}{a_2}$, $l_2=l_1$, and that
         \begin{align*}
             \phi_1&,
             \begin{stackTL}
                 \ti{t}{a_1}, (= a_1\;\ti{t}{c}), \\
-                \ti{t}{a_2}, (= a_2\;(testop\;a_1))
+                \ti{\<ithreetwo>}{a_2}, (= a_2\;(testop\;a_1))
             \end{stackTL} \\
             &\implies \phi_2
         \end{align*}
@@ -84,7 +86,7 @@ By case analysis on the reduction rules.
         By $const$, $C \vdash t.\<const> c :
             \begin{stackTL}
                 \epsilon;l_1;g_1;\phi_1 \\
-                \rightarrow \ti{t}{a_2};l_1;\phi_1,\ti{t}{a_2},(= a_2\;\ti{t}{c_2})
+                \rightarrow \ti{\<ithreetwo>}{a_2};l_1;\phi_1,\ti{\<ithreetwo>}{a_2},(= a_2\;\ti{t}{c_2})
             \end{stackTL}$.
 
         Because $c_2=testop_t(c)$, then by $\implies$,
@@ -92,7 +94,7 @@ By case analysis on the reduction rules.
             \phi_1,\ti{t}{a},(= a\;\ti{t}{c_2}) &\implies \phi_1,
             \begin{stackTL}
                 \ti{t}{a_1}, (= a_1\;\ti{t}{c}), \\
-                \ti{t}{a_2}, (= a_2\;(testop\;a_1))
+                \ti{\<ithreetwo>}{a_2}, (= a_2\;(testop\;a_1))
             \end{stackTL}
         \end{align*}
 
@@ -570,6 +572,20 @@ By case analysis on the reduction rules.
         Therefore, $\vdash s' : S$ by $store$, note that the other premises are the same as the premises from $\vdash s : S$.
 
         \thought{Ditto here.}
+
+    \item Case: $C \vdash (\<ithreetwo>.\<const> k) \; (t.\<load> tp\_sx\; align\; o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    $\land$ $\vdash s : S$
+    \\ $\land$ $s;(\<ithreetwo>.\<const> k) \; (t.\<load> tp\_sx\; align\; o) \hookrightarrow_i s;(t.\<const> const_t(b^{*}))$, where $s_\text{mem}(i,k+o,|t|)=b^{*}$
+
+        By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Load}, we know that $l_2=l_1$, $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$ where $a \not\in \phi_3$, and $\satisfies{\phi_1,\ti{t}{a_1},(= a_1 \; \ti{\<ithreetwo>}{k})}{ti_1^{*}\;\ti{\<ithreetwo>}{a_1}\;l_1}{\phi_3}$.
+        We also then know that $\satisfies{\phi_3,\ti{t}{a}}{ti_1^{*}\;\ti{\<ithreetwo>}{a}\;l_1}{\phi_2}$ by \reflemma{Inversion} on \refrule{Load}.
+
+        \todo{I think this is only useful for store}
+        Let $b_2^{*} = s_\text{mem}(i)$.
+        We know that $C_\text{memory}=m$ because it is a premise of \refrule{Load} which we have assumed to hold by \reflemma{Inversion}.
+        Then, $m \leq |(b_2^{*})|$ because it is a premise of $\vdash s: S$ that we have assumed to hold.
+
+        $C \vdash (t.\<const> const_t(b^{*})) : ti_1^{*};l_1;\phi_1 \rightarrow ti_1^{*}\;\ti{t}{a};l_1;\phi_1,\ti{t}{a},(= a\;{})$
 
 \end{itemize}
 \end{proof}
