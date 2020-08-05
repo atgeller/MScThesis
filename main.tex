@@ -1,4 +1,11 @@
-\documentclass[draft,msc]{ubcthesis}
+\documentclass[msc]{ubcthesis}
+\PassOptionsToPackage{pdftex,pdfpagelabels}{hyperref}
+\usepackage{nameref}
+\usepackage{hyperref}
+\usepackage{letltxmacro}
+\LetLtxMacro{\rulelabel}{\label}
+\LetLtxMacro{\lemmalabel}{\label}
+
 \usepackage[usenames]{color}
 \usepackage{savesym}
 \usepackage{amsmath}
@@ -25,7 +32,6 @@
 \usepackage{natbib}
 
 % Always Use these
-\usepackage{hyperref}
 \usepackage{microtype}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -100,7 +106,6 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
 \newcommand{\techprefix}{}
 \newcommand{\rulename}[1]{{\scshape #1}}
 
-\LetLtxMacro{\rulelabel}{\label}
 % For rules in particular
 \newcommand{\@defruleStar}[3][\techprefix]{\phantomsection{\rulename{#3}}\expandafter\rulelabel{rule:#1:#2}}
 \newcommand{\@defruleNoStar}[2][\techprefix]{\@defruleStar[#1]{#2}{#2}}
@@ -112,7 +117,6 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
 
 \newcommand{\lemmaname}[1]{{\scshape #1}}
 
-\LetLtxMacro{\lemmalabel}{\label}
 % For lemmas in particular
 \newcommand{\@deflemmaStar}[3][\techprefix]{\phantomsection{\lemmaname{#3}}\expandafter\lemmalabel{lemma:#1:#2}}
 \newcommand{\@deflemmaNoStar}[2][\techprefix]{\@deflemmaStar[#1]{#2}{#2}}
