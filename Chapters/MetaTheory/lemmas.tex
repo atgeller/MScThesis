@@ -44,18 +44,18 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
     %% get-local
     If $C \vdash \<getlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a_2}$, $l_1 = l_2$, $l_1(i) = \ti{t}{a}$,
-    and $\phi_1,\ti{t}{a},(= a_2\;a) \implies \phi_2$.
+    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $l_1(i) = \ti{t}{a}$,
+    and $\phi_1 \implies \phi_2$.
 
     %% set-local
     If $C \vdash \<setlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$, $C_\text{local}(i) = t$,
-    and $\phi_1,\ti{t}{a_2},(= a_2\;a) \implies \phi_2$.
+    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1[i := \ti{t}{a}$, $C_\text{local}(i) = t$,
+    and $\phi_1 \implies \phi_2$.
 
     %% tee-local
     If $C \vdash \<teelocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti_2^{*} = ti^{*} \; \ti{t}{a}$, $l_2 = l_1 \text{ except } l_2(i) = \ti{t}{a_2}$, $C_\text{local}(i) = t$,
-    and $\phi_1,\ti{t}{a_2},(= a_2\;a) \implies \phi_2$.
+    then $ti_1^{*} = ti_2^{*} = ti^{*} \; \ti{t}{a}$, $l_2 = l_1[i := \ti{t}{a}]$, $C_\text{local}(i) = t$,
+    and $\phi_1 \implies \phi_2$.
 
     %% get-global
     If $C \vdash \<getglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
@@ -68,11 +68,6 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
     and $\phi_1 \implies \phi_2$.
 
     %% composition
-    If $C \vdash e_1^{*} \; e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$,
-    $C \vdash e_2 : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_4$,
-    and $\phi_4 \implies \phi_2$.
-
     If $C \vdash e_1^{*} \; e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$,
     then $C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
     and $C \vdash e_2 : ti_2^{*};l_2;\phi_2 \rightarrow ti_3^{*};l_3;\phi_3$.
@@ -128,6 +123,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
 \begin{lemma}{(Coherence)}
     \todo{Nested composition can be expressed with only one subtyping relation.}
+    \thought{Is this needed?}
 \end{lemma}
 \begin{proof}
 \end{proof}

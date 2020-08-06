@@ -491,14 +491,13 @@ By case analysis on the reduction rules.
 
         By $inversion$ on $composition$,
         $C \vdash v' : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti_3^{*};l_3;\phi_3$,
-        $C \vdash \<setlocal> j : ti_3^{*};l_3;\phi_3 \rightarrow ti^{*};l;\phi_4$,
-        and $\satisfies{\phi_4}{ti^{*}\;l}{\phi}$.
+        $C \vdash \<setlocal> j : ti_3^{*};l_3;\phi_3 \rightarrow ti^{*};l;\phi$.
 
         Recalling that $t = C_\text{local}(j)$;
         by $inversion$ on $set-local$,
         $ti_3^{*} = ti^{*} \; \ti{t}{a'}$,
         $l = l_3 \text{ except } l(j) = \ti{t}{a_l}$,
-        and $\satisfies{\phi_3,\ti{t}{a_l},(= a_l\;a')}{ti^{*}\;l}{\phi_4}$.
+        and $\satisfies{\phi_3,\ti{t}{a_l},(= a_l\;a')}{ti^{*}\;l}{\phi}$.
 
         By $inversion$ on $const$,
         $t.\<const> c' = v'$, $ti^{*} = \epsilon$, $l_1 = l_3$, and\\
@@ -553,6 +552,15 @@ By case analysis on the reduction rules.
         $S;\epsilon \vdash_i v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by $admin-code$, using the premises from $inversion$.
 
         Therefore, $\vdash_i s;v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by $admin-program$.
+
+    \item Case: $\vdash s;v_l^{*};v \; (\<setglobal> j) : ti^{*};l;\phi$
+    \\ $\land$ $s;v \; (\<setglobal> j) \hookrightarrow_i s';\epsilon$, where $s' = s$ with $\text{glob}(i,j) = v$
+
+        By $inversion$ on $admin-program$, ...
+
+        By $inversion$ on $admin-code$, ...
+
+        By $inversion$ on $composition$, ...
 
     \item Case: $C \vdash v \; (\<setglobal> j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     $\land$ $\vdash s : S$

@@ -405,20 +405,18 @@ By case analysis on the reduction rules.
 
         By $inversion$ on $local$, $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
         $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};v^n : ti^n;l_3;\phi_3$,
-        and $\satisfies{\phi_1,\phi_3}{ti_2^{*}\;l_2}{\phi_2}$.
+        and $\phi_1,\phi_3 \implies \phi_2$.
 
         By $inversion$ on $admin-code$, $(\vdash v_l : ti_l;\phi_l)^{*}$,
         and $S;C_l \vdash v^n : \epsilon:ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$.
 
         By $inversion$ on $admin-const$, $\phi_l^{*} = \circ,\ti{t}{a}^{*},(= a \ti{t}{c})^{*}$.
 
-        By $inversion$ on $const$, $\satisfies{\phi_l^{*},\phi_v}{ti^n\;l_3}{\phi_3}$.
+        By $inversion$ on $const$, $\phi_l^{*},\phi_v^n \implies \phi_3$.
 
-        Since $l_2 \not\in \phi_3$; $\satisfies{\phi_l^{*},\phi_v}{ti^n\;l_2}{\phi_3}$.
+        Since $l_2$ are free in the reduced program, $\phi_v^n \implies \phi_3$.
 
-        Since $a^{*} \not\in \phi_v,ti^n,l_2$; $\satisfies{\phi_v}{ti^n\;l_2}{\phi_l^{*},\phi_v}$.
-
-        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v$ by $const$.
+        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v^n$ by $const$.
 
         $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by $subtyping$.
 
@@ -429,7 +427,7 @@ By case analysis on the reduction rules.
     \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
 
-        Trivially, $S;C \vdash \<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $trap$.
+        Trivially, $S;C \vdash \<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Trap}.
 
     \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
@@ -466,111 +464,137 @@ By case analysis on the reduction rules.
 
         Therefore $S;C \vdash v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
 
-    \item Case: $C \vdash \<getlocal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-    \\ $\land$ $v_1^j \; v \; v_2^k;\<getlocal> j \hookrightarrow v$
+    \item Case: $S;\epsilon \vdash_i v_1^j\;v\;v_2^k;\<getlocal> j : ti^{*};l;\phi$
+    \\ $\land$ $v_1^j\;v\;v_2^k;\<getlocal> j \hookrightarrow v$
 
-        By $inversion$ on $get-local$, $ti_2^{*} = \ti{t}{a_1} \; ti_1^{*}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a_1},(= a_1 \; a) \implies \phi_2$, where $\ti{t}{a} = l_1(j)$.
+        By \reflemma{Inversion} on \refrule{Code},
+        $\vdash v : \ti{t}{a};\phi_v$,
+        and $S;C \vdash \<getlocal> j : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$.
 
-        By $inversion$ on $admin-code$ and $admin-const$, $\phi_1 = \circ,\phi_{v_1}^j, \ti{t}{a}, (= a \; \ti{t}{c}), \phi_{v_2}^k$, where $v = (t.\<const> c)$.
+        By \reflemma{Inversion} on \refrule{Get-Local},
+        $ti^{*} = \ti{t}{a}$, $l_1 = l$, and $\phi_1^j,\phi_v,\phi_2^k \implies \phi$.
 
-        $C \vdash v : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a_1};l_2;\phi_1,\ti{t}{a_1},(= a_1 \; \ti{t}{c})$ by $const$.
+        By \reflemma{Inversion} on \refrule{Admin-Const},
+        $t.\<const> c = v$, and $\phi_v = \circ,\ti{t}{a},(= a\;\ti{t}{c})$.
 
-        $\phi_1,\ti{t}{a_1},(= a_1 \; \ti{t}{c}) \iff \phi_1,\ti{t}{a_1},(= a_1 \; a)$ because $\phi_1$ contains the constraint $(= a \; \ti{t}{c})$.
+        $C \vdash v : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k \rightarrow \ti{t}{a};l;\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a},(= a\;\ti{t}{c})$ by \refrule{Const}.
 
-        $C \vdash v : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a_1};l_2;\phi_2$ by $subtyping$.
+        \todo{Figure out if typing $v$ with a stale index variable is a problem.}
 
-        Therefore, $C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+        $\phi_v \iff \phi_v,\ti{t}{a},(= a\;\ti{t}{c})$ trivially.
+
+        $C \vdash v : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k \rightarrow \ti{t}{a};l;\phi$ by \refrule{Implies}.
+
+        Therefore, $S;\epsilon \vdash_i v_1^j\;v\;v_2^k;v : ti^{*};l;\phi$ by \refrule{Code}.
 
     \item Case: $S;\epsilon \vdash_i v_1^j \; v \; v_2^k; v' \; (\<setlocal> j) : ti^{*};l;\phi$
     \\ $\land$ $v_1^j \; v \; v_2^k;v' \; \<setlocal> j \hookrightarrow v_1^j \; v' \; v_2^k;\epsilon$
 
-        By $inversion$ on $admin-code$, $\vdash v : \ti{t}{a};\phi_v$,\\
+        By \reflemma{Inversion} on \refrule{Admin-Code}, $\vdash v : \ti{t}{a};\phi_v$,\\
         $S;C \vdash v' \; (\<setlocal> j) : \epsilon:l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$,\\
         $l_1(j) = \ti{t}{a}$, and $C_\text{local}(j) = t$.
 
-        By $inversion$ on $admin-const$, $t.\<const> c = v$, and\\
+        By \reflemma{Inversion} on \refrule{Admin-Const}, $t.\<const> c = v$, and\\
         $\phi_v = \circ,\ti{t}{a},(= a \; \ti{t}{c})$.
 
-        By $inversion$ on $composition$,
+        By \reflemma{Inversion} on \refrule{Composition},
         $C \vdash v' : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti_3^{*};l_3;\phi_3$,
-        $C \vdash \<setlocal> j : ti_3^{*};l_3;\phi_3 \rightarrow ti^{*};l;\phi_4$,
-        and $\satisfies{\phi_4}{ti^{*}\;l}{\phi}$.
+        $C \vdash \<setlocal> j : ti_3^{*};l_3;\phi_3 \rightarrow ti^{*};l;\phi$.
 
         Recalling that $t = C_\text{local}(j)$;
-        by $inversion$ on $set-local$,
+        by \reflemma{Inversion} on \refrule{Set-Local},
         $ti_3^{*} = ti^{*} \; \ti{t}{a'}$,
-        $l = l_3 \text{ except } l(j) = \ti{t}{a_l}$,
-        and $\satisfies{\phi_3,\ti{t}{a_l},(= a_l\;a')}{ti^{*}\;l}{\phi_4}$.
+        $l = l_3[j := \ti{t}{a'}]$,
+        and $\phi_3 \implies \phi$.
 
-        By $inversion$ on $const$,
+        By \reflemma{Inversion} on \refrule{Const},
         $t.\<const> c' = v'$, $ti^{*} = \epsilon$, $l_1 = l_3$, and\\
-        $\satisfies{\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'})}{\ti{t}{a'}\;l_1}{\phi_3}$.
+        $\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a'\;\ti{t}{c'}) \implies \phi_3$.
 
-        $C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi$ by $empty$.
+        $C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi$ by \refrule{Empty}.
 
-        $C \vdash \epsilon : \epsilon;l;\phi_3,\ti{t}{a_l},(= a_l\;a') \rightarrow \epsilon;l;\phi$ by $subtyping$.
+        $C \vdash \epsilon : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a'\;\ti{t}{c'}) \rightarrow \epsilon;l;\phi$ by \refrule{Implies}.
 
-        Since $a_l \not\in \phi_3$; $\satisfies{\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'})}{l}{\phi_3}$.
+        % Since $a$ is fresh in the typing derivation, $C \vdash \epsilon : \epsilon;l;\phi_1^j,\phi_2^k,\ti{t}{a'},(= a'\;\ti{t}{c'}) \rightarrow \epsilon;l;\phi$.
 
-        Since $a \not\in \phi_1^j,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'}),l$;\\
-        $\satisfies{\phi_1^j,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'})}{l}{\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'})}$.
+        Since $a$ is fresh, $\phi_1^j,\phi_2^k,\ti{t}{a'},(= a'\;\ti{t}{c'}) \implies \phi_1^j,\phi_v,\phi_2^k,\ti{t}{a'},(= a'\;\ti{t}{c'})$.
 
-        $C \vdash \epsilon : \epsilon;l;\phi_1^j,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'}),\ti{t}{a_l},(= a_l\;a') \rightarrow \epsilon;l;\phi$ by $subtyping$.
+        $C \vdash \epsilon : \epsilon;l;\phi_1^j,\phi_2^k,\ti{t}{a'},(= a'\;\ti{t}{c'}) \rightarrow \epsilon;l;\phi$ by \refrule{Implies}.
 
-        Trivially, $\ti{t}{a'},(= a' \; \ti{t}{c'}),\ti{t}{a_l},(= a_l\;a') \iff \ti{t}{a'},(= a' \; \ti{t}{c'}),\ti{t}{a_l},(= a_l \; \ti{t}{c'})$.
+        $\vdash v' : \ti{t}{a'};\circ,\ti{t}{a'},(= a'\;\ti{t}{c'})$ by \refrule{Admin-Const}.
 
-        Since $a' \not\in \phi_1^j,\phi_2^k,\ti{t}{a_l},(= a_l \; \ti{t}{c'}),l$;\\
-        $\satisfies{\phi_1^j,\phi_2^k,\ti{t}{a_l},(= a_l \; \ti{t}{c'})}{l}{\phi_1^j,\phi_2^k,\ti{t}{a'},(= a' \; \ti{t}{c'}),\ti{t}{a_l},(= a_l\;a')}$.
-
-        $C \vdash \epsilon : \epsilon;l;\phi_1^j,\ti{t}{a_l},(= a_l \; \ti{t}{c'}),\phi_2^k \rightarrow \epsilon;l;\phi$ by $subtyping$.
-
-        $\vdash v' : \ti{t}{a_l};\circ,\ti{t}{a_l},(= a_l \; \ti{t}{c'})$ by $admin-const$.
-
-        Therefore, $S;\epsilon \vdash_i v_1^j\;v'\;v_2^k;\epsilon : ti^n;l;\phi$.
+        Therefore, $S;\epsilon \vdash_i v_1^j\;v'\;v_2^k;\epsilon : ti^n;l;\phi$ by \refrule{Code}.
 
         \thought{I set out to write a very verbose proof case, but I didn't expect it to be this verbose.}
 
     \item Case: $C \vdash \<getglobal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-    $\land$ $\vdash s : S$
     \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
 
-        By $inversion$, $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a} \implies \phi_2$, where $C_\text{global}(j) = \text{mut}^{?} \; t$.
+        By \reflemma{Inversion} on \refrule{Program}, $\vdash s : S$, and $S;\epsilon \vdash_i v^{*};\<getglobal> j : ti^{*};l;\phi$.
 
-        $\vdash s_\text{glob}(i,j) : \ti{t}{a_2};\phi_v$ because it is a premise of $S \vdash s_\text{inst}(i) : C$, which is a sub-derivation of $\vdash s : S$.
+        By \reflemma{Inversion} on \refrule{Code}, $S;C \vdash \<getglobal> j : \epsilon;l_1;\phi_v^{*} \rightarrow ti^{*};l;\phi$.
 
-        $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_1,\ti{t}{a},(= a \; \ti{t}{c})$ by $const$.
+        By \reflemma{Inversion} on \refrule{Get-Global}, $ti^{*} = \ti{t}{a}$, $l = l_1$, $C_\text{global}(j) = \text{mut}^{?} t$,
+        and $\phi_v^{*},\ti{t}{a} \implies \phi$.
 
-        $C \vdash s_\text{glob}(i,j) : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;\phi_2$ by $subtyping$.
+        By \reflemma{Inversion} on \refrule{Store}, $S \vdash s_\text{inst}(i) : C$.
 
-        Therefore, $C \vdash s_\text{glob}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+        Recalling that $C_\text{global}(j) = \text{mut}^{?} t$;
+        by \reflemma{Inversion} on \refrule{Instance}, $\vdash s_\text{glob}(i,j) : \ti{t}{a_1};\phi_1$.
 
-    \item Case: $C \vdash v \; (\<setglobal> j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-    $\land$ $\vdash s : S$
+        $S;C \vdash t.\<const> c : \epsilon;l;\phi_v^{*} \rightarrow \ti{t}{a};l;\phi_v^{*},\ti{t}{a},(= a \; \ti{t}{c})$ by \refrule{Const},
+        where $t.\<const> c = s_\text{glob}(i,j)$.
+
+        $\ti{t}{a},(= a\;\ti{t}{c}) \implies \ti{t}{a}$ trivially.
+
+        $S;C \vdash s_\text{glob}(i,j) : \epsilon;l;\phi_v^{*} \rightarrow \ti{t}{a};l;\phi$ by \refrule{Implies}.
+
+        $S;\epsilon \vdash_i v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by \refrule{Code}, using the premises from \reflemma{Inversion}.
+
+        \todo{Phrase this better.}
+
+        Therefore, $\vdash_i s;v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by \refrule{Program}.
+
+    \item Case: $\vdash_i s;v_l^{*};v \; (\<setglobal> j) : ti^{*};l;\phi$
     \\ $\land$ $s;v \; (\<setglobal> j) \hookrightarrow_i s';\epsilon$, where $s' = s$ with $\text{glob}(i,j) = v$
 
-        By $inversion$, $ti_2^{*} = ti_1^{*}$, $l_2 = l_1$, and $\phi_1,\ti{t}{a},(= a \; \ti{t}{c}) \implies \phi_2$, where $(t.\<const> c) = v$.
+        By \reflemma{Inversion} on \refrule{Program}, $\vdash s : S$, $S;\epsilon \vdash_i v_l^{*};v \; (\<setglobal> j) : ti^{*};l;\phi$.
 
-        Because $a$ is fresh in $ti_2^{*}$, $l_2$, and $\phi_1$, $\phi_1 \implies \phi_1,\ti{t}{a},(= a \; \ti{t}{c})$.
+        By \reflemma{Inversion} on \refrule{Code}, $S;C \vdash v \; (\<setglobal> j) : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$.
 
-        $C \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_2;\phi_1$ by $empty$.
+        By \reflemma{Inversion} on \refrule{Composition}, \refrule{Set-Global}, and \refrule{Const},
+        $t.\<const> c = v$, $ti^{*} = \epsilon$, $l_1 = l$, $C_\text{global}(j) = \text{mut}\;t$,
+        and $\phi_1,\ti{t}{a},(= a\;\ti{t}{c}) \implies \phi$.
 
-        $C \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_2;\phi_2$ by $subtyping$.
+        % By \reflemma{Inversion} on \refrule{Composition},
+        % $C \vdash v : \epsilon;l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+        % and $C \vdash \<setglobal> j : ti_2^{*};l_2;\phi_2 \rightarrow ti^{*};l;\phi$.
 
-        Therefore, $C \vdash \epsilon : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+        % By \reflemma{Inversion} on \refrule{Set-Global},
+        % $ti_2^{*} = ti^{*} \; \ti{t}{a}$, $l_2 = l$, $C_\text{global}(j) = \text{mut}\;t$,
+        % and $\phi_2, \implies \phi$.
 
-        $C_\text{global}(j) = \text{mut} \; t$ because it is a premise of $set-global$ which we have assumed to hold.
+        % By \reflemma{Inversion} on \refrule{Const},
+        % $t.\<const> c = v$, $ti_2^{*} = \ti{t}{a}$, $l_1 = l_2$,
+        % and $\phi_1,\ti{t}{a},(= a\;\ti{t}{c}) \implies \phi_2$.
 
-        $\vdash v_0 : \ti{t}{a_0};\phi_0$, where $v_0 = s_\text{glob}(i,j)$ because it is a premise of $S \vdash s_\text{inst}(i) : C$, which is a sub-derivation of $\vdash s : S$.
+        $S;C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi$ by \refrule{Empty}.
 
-        $\vdash v : \ti{t}{a_1};\phi_v$ by $admin-const$.
+        Since $a$ is fresh, $\phi_1 \implies \phi_1,\ti{t}{a},(= a\;\ti{t}{c})$.
 
-        $S \vdash s'_\text{inst}(i) : C$ by $instance$, note that the other premises are the same as the premises from $S \vdash s_\text{inst}(i) : C$.
+        $S;C \vdash \epsilon : \epsilon;l;\phi_1 \rightarrow \epsilon;l;\phi$ by \refrule{Implies}.
 
-        \thought{Maybe I should explicitly invoke the other premises?}
+        $S;\epsilon \vdash_i v_l^{*};\epsilon : ti^{*};l;\phi$ by \refrule{Code}.
 
-        Therefore, $\vdash s' : S$ by $store$, note that the other premises are the same as the premises from $\vdash s : S$.
+        By \reflemma{Inversion} on \refrule{Store}, $S \vdash s_\text{inst}(i) : C$.
 
-        \thought{Ditto here.}
+        By \reflemma{Inversion} on \refrule{Instance}, $\vdash s_\text{glob}(i,j) : \ti{t}{a_g};\phi_g$.
+
+        $s' : S$ by \refrule{Instance} and \refrule{Store}.
+
+        \thought{This might be skipping too much.}
+
+        Therefore $\vdash s';\epsilon : ti^{*};l;\phi$ by \refrule{Program}.
 
     \item Case: $C \vdash (\<ithreetwo>.\<const> k) \; (t.\<load> tp\_sx\; align\; o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     $\land$ $\vdash s : S$
