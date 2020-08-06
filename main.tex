@@ -81,17 +81,18 @@
 
 % Some custom notations for object language stuff
 % Typeset object language notation in blue with sans serif font
-\newcommand{\tbbf}[1]{\textbf{\color{blue}#1}}
-\reservestyle{\keywords}{\tbbf}
+\newcommand{\tbsf}[1]{\textsf{\color{blue}#1}}
+\reservestyle{\keywords}{\tbsf}
 \keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], ne[ne\;], eqz[eqz\;], le[le\;], add[add\;], ge[ge\;], unreachable[unreachable], nop[nop], drop[drop], select[select], block[block], end[\;end], loop[loop], if[if], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], getglobal[get\rule{1ex}{.4pt}global\;], setglobal[set\rule{1ex}{.4pt}global\;], trap[trap], func[func\;], local[local], global[global\;], table[table\;], memory[memory\;], label[label], div[div], load[load\;], store[store\;], currentmemory[current\rule{1ex}{.4pt}memory\;], growmemory[grow\rule{1ex}{.4pt}memory\;], divpc[div\textsubscript{prechk}], callindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], loadpc[load\textsubscript{prechk}\;], storepc[store\textsubscript{prechk}\;], module[module\;], fthreetwo[f32], fsixfour[f64], ieight[i8], isixteen[i16], clz[clz], ctz[ctz], popcnt[popcnt],
-sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[convert], reinterpret[reinterpret], nsend[end]}
+sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[convert], reinterpret[reinterpret], nsend[end], tab[tab\;]}
 
-\mathlig{;}{\tbbf{;\;}}
+\mathlig{;}{\tbsf{;\;}}
 \mathlig{:}{:}
 
-\newcommand{\trsf}[1]{\textcolor{red}{\mathsf{#1}}}
-\reservestyle{\wkeywords}{\trsf}
-\wkeywords{withreetwo[i32], wisixfour[i64], wbinop[binop], wtestop[testop], wrelop[relop], wconst[const\;], weq[eq\;], wneq[neq\;], weqz[eqz\;], wle[le\;], wadd[add\;], wge[ge\;], wunreachable[unreachable], wnop[nop], wdrop[drop], wselect[select], wblock[block\;], wend[\;end], wloop[loop\;], wif[if\;], welse[\;else\;], wbr[br\;], wbrif[br\rule{1ex}{.4pt}if\;], wbrtable[br\rule{1ex}{.4pt}table\;], wreturn[return], wcall[call\;], wcallindirect[call\rule{1ex}{.4pt}indirect\;], wgetlocal[get\rule{1ex}{.4pt}local\;], wsetlocal[set\rule{1ex}{.4pt}local\;], wteelocal[tee\rule{1ex}{.4pt}local\;], wgetglobal[get\rule{1ex}{.4pt}global\;], wsetglobal[set\rule{1ex}{.4pt}global\;], wtrap[trap], wfunc[func\;], wlocal[local], wglobal[global\;], wtable[table\;], wmemory[memory\;], wlabel[label], wdiv[div], wload[load\;], wstore[store\;], wcurrentmemory[current\rule{1ex}{.4pt}memory\;], wgrowmemory[grow\rule{1ex}{.4pt}memory\;], wdivpc[div\textsubscript{prechk}], wcallindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], wloadpc[load\textsubscript{prechk}\;], wstorepc[store\textsubscript{prechk}\;], wmodule[module\;]}
+\newcommand{\mathredbold}[1]{\textcolor{red}{\mathbf{#1}}}
+\newcommand{\trbf}[1]{\textcolor{red}{\textbf{#1}}}
+\reservestyle{\wkeywords}{\trbf}
+\wkeywords{withreetwo[i32], wisixfour[i64], wbinop[binop], wtestop[testop], wrelop[relop], wconst[const\;], weq[eq\;], wneq[neq\;], weqz[eqz\;], wle[le\;], wadd[add\;], wge[ge\;], wunreachable[unreachable], wnop[nop], wdrop[drop], wselect[select], wblock[block\;], wend[\;end], wloop[loop\;], wif[if\;], welse[\;else\;], wbr[br\;], wbrif[br\rule{1ex}{.4pt}if\;], wbrtable[br\rule{1ex}{.4pt}table\;], wreturn[return], wcall[call\;], wcallindirect[call\rule{1ex}{.4pt}indirect\;], wgetlocal[get\rule{1ex}{.4pt}local\;], wsetlocal[set\rule{1ex}{.4pt}local\;], wteelocal[tee\rule{1ex}{.4pt}local\;], wgetglobal[get\rule{1ex}{.4pt}global\;], wsetglobal[set\rule{1ex}{.4pt}global\;], wtrap[trap], wfunc[func\;], wlocal[local], wglobal[global\;], wtable[table\;], wmemory[memory\;], wlabel[label], wdiv[div], wload[load\;], wstore[store\;], wcurrentmemory[current\rule{1ex}{.4pt}memory\;], wgrowmemory[grow\rule{1ex}{.4pt}memory\;], wdivpc[div\textsubscript{prechk}], wcallindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], wloadpc[load\textsubscript{prechk}\;], wstorepc[store\textsubscript{prechk}\;], wmodule[module\;], wtab[tab\;]}
 
 \hyphenation{Web-Assembly}
 
@@ -177,7 +178,6 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
 \include{Preamble/dedication}
 
 \tableofcontents                %% Mandatory
-\listoftables                   %% Mandatory if thesis has tables
 \listoffigures                  %% Mandatory if thesis has figures
 
 \mainmatter
