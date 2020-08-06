@@ -32,7 +32,7 @@ Formally, however, these are different instructions with different semantics and
 An indexed type language uses an index language in the type system to encode information within types.
 We use the index language to encode linear constraints on program variables within types.
 \autoref{fig:itsyntax} shows the syntax for the index type language.
-Remember, syntax written in a \tbbf{blue, bold font} denotes a \wasm keyword.
+Remember, syntax written in a \tbsf{blue sans serif font} denotes a \wasm keyword.
 Below is a quick overview of each of the terms.
 
 \begin{figure}[t]
@@ -162,7 +162,6 @@ The \wasm type system is not expressive enough to ensure these preconditions sta
 Thus, ``\prechk-tagged'' instructions can assume that the preconditions on their behavior hold because it is enforced by the \name type system.
 This can be seen in the reduction rules for the ``\prechk-tagged'' instructions in Figure \autoref{fig:prechkredux}, where they do not have rules to trap when their preconditions do not hold.
 
-\label{sec:newinstructions}
 \begin{figure}[t]
     \begin{mathpar}
         \boxed{s;v^{*};e^{*} \rightarrow s';v'^{*};e'^{*}}
@@ -385,28 +384,25 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
     \inferrule*[right=\defrule{Get-Local}]{ %% get_local
         C_{\text{local}}(i) = t \and
         l(i) = \ti{t}{a} \and
-        a_2 \text{ is fresh}
     }
     {
-        C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi, \ti{t}{a_2}, (= a_2\; a)
+        C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi
     }
 
     \inferrule*[right=\defrule{Set-Local}]{ %% set_local
         C_{\text{local}}(i) = t \and
-        l_2 = l_1[i := \ti{t}{a_2}] \and
-        a_2 \text{ is fresh}
+        l_2 = l_1[i := \ti{t}{a}] \and
     }
     {
-        C \vdash \<setlocal> i : \ti{t}{a};l_1;\phi \rightarrow \epsilon;l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
+        C \vdash \<setlocal> i : \ti{t}{a};l_1;\phi \rightarrow \epsilon;l_2;\phi
     }
 
     \inferrule*[right=\defrule{Tee-Local}]{ %% tee_local
         C_{\text{local}}(i) = t \and
         l_2 = l_1[i := \ti{t}{a_2}] \and
-        a_2 \text{ is fresh}
     }
     {
-        C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a};l_2;\phi, \ti{t}{a_2}, (= a_2\; a)
+        C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a};l_2;\phi
     }
 \end{mathpar}
 
@@ -555,8 +551,8 @@ As an aside, recall that $a_3 \not\in \phi$ ensures that $a_3$ is fresh.
 
 Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid.
 Since \wasm and \name use linear memory which is a contiguous block of memory, we simply have to ensure that the index is within those bounds.
-The initial memory size is the number of $64$ Ki pages ($65,536$ bytes), so we check that the constraints in the index type context ensure that the memory index plus the static offset is between $0$ and $65536-(the size of the value being loaded/stored)$.
-We use $width$ as a shorthand to denote the number of bytes requires for the value, it is equal to $|t|/8$ if $tp^{?}=\epsilon$, and otherwise equal to $|tp|/8$.
+The initial memory size is the number of $64$ Ki pages ($65,536$ bytes), so we check that the constraints in the index type context ensure that the memory index plus the static offset is between $0$ and $65,536-width$.
+We use $width$ as a shorthand to denote the number of bytes that is being stored/loaded, it is equal to $|t|/8$ if $tp^{?}=\epsilon$, and otherwise equal to $|tp|/8$.
 
 Unfortunately, while the size of memory may be grown during program execution, we are currently unable to reason about changing memory size.
 Therefore, we just use the initial memory size.

@@ -8,7 +8,7 @@ It is recommended that the reader first skim this section to understand the basi
 \autoref{fig:wasmsyntaxtypes} shows the types of \wasm.
 Primitive \wasm types and values, represented as $t$, include 32 and 64-bit floats and integers.
 Packed types, $tp$, include 8, 16, and 32 bit integers, they are used in memory operations.
-Function types, $tf$, map from one sequence of types to another, but they are just syntax, not function types in the traditional sense, as explained in \autoref{subsec:wasmtyping}.
+Function types, $tf$, map from one sequence of types to another, but they are just syntax, not function types in the traditional sense, as explained in \autoref{sec:wasmtyping}.
 
 \begin{figure}
 \begin{math}
@@ -24,8 +24,8 @@ Function types, $tf$, map from one sequence of types to another, but they are ju
 \end{figure}
 
 The \wasm syntax uses the Kleene star within its BNF to refer to possibly empty sequences.
-Kleene stars are commonly used in regular expressions to denote any number of a certain pattern, for example, $Nat^{*}= 1\; 2\; 3$, or $Nat^{*} = 1\; 1$.
-For example, instructions, represented by the metavariable $e$, are usually grouped into sequences $e^{*}$, which are possibly empty $\epsilon$.
+Kleene stars ($\empty^{*}$) are commonly used in regular expressions to denote any number of a certain pattern: $t^{*}$ matches both $\<ithreetwo>\; \<ithreetwo>$ and $\<ithreetwo>\; \<isixfour>\; \<ithreetwo>$.
+Instructions, represented by the metavariable $e$, are usually grouped into sequences $e^{*}$, which are possibly empty $\epsilon$.
 $e_1$ and $e_2$ refer to different instructions (although the actual instruction they represent may be the same).
 Similarly, $e_1^{*}$ and $e_2^{*}$ refer to different sequences of instructions (again, the sequences may be the same).
 
@@ -38,7 +38,7 @@ The Kleene star may be replaced with an exact value $n$ when we know that the se
 We can also use a question mark to represent either an empty sequence ($\epsilon$), or a sequence with exactly one item (\eg, $v^{?}=v' \lor v^{?}=\epsilon$).
 
 With this notation in mind, we can now look over the \wasm instructions in \autoref{fig:wasminstructions}.
-As a convention, syntax written in a \tbbf{blue, bold font} denotes a keyword, while text written in $italics$ represents a metavariable.
+As a convention, syntax written in a \tbsf{blue sans serif font} denotes a keyword, while text written in $italics$ represents a metavariable.
 Throughout the \wasm syntax there are many metavariables used to represent natural numbers: $n$ and $m$ are usually used for the table and memory sizes, $i$ and $j$ are often used as indexes (\eg to reference a local variable), $o$ and $align$ are used within memory operations (we replace $a$ with $align$ for clarity and since we use $a$ elsewhere), and lastly $c$ is used as a constant variable (which could also be a float).
 Confusingly enough, $iN$ is used to annotate operations that support integers, and $fN$ is used to annotate operations that support floats.
 
@@ -129,7 +129,9 @@ Before we introduce the \wasm semantics, we first must introduce some administra
 $cl$ represents a \wasm closures.
 Closures include the module instance that the function is defined in, as well as the function definition (which cannot be an import) with any exports erased.
 Intuitively, a closure represents a function closed under linking.
+A table instance $tabinst$ contains a list of closures that can be called.
 $b$ represents a byte.
+A memory instance $meminst$ is a sequence of bytes.
 The runtime store, $s$, includes runtime instances for every module ($inst^{*}$), as well as all of the tables ($tabinst^{*}$), and memory chunks ($meminst^{*}$).
 In other words, $s$ includes full definitions for every module.
 Module runtime instances, $inst$, refer to their table/memory (if they have one), by indexing into the list of runtime instances of tables/memory chunks.
