@@ -102,7 +102,7 @@ Memory load and store operations require run-time bounds checks to ensure that t
 
 \section{\wasm Dynamic Semantics}
 \label{sec:wasmsemantics}
-\wasm is a stack-based assembly language that uses reduction semantics.
+\wasm is a stack-based assembly language that uses reduction semantics \footnote{For those unfamiliar with reduction semantics, I highly recommended these notes by Ron Garica: \hyperlink{https://www.cs.ubc.ca/~rxg/cpsc509/05-reduction.pdf}{https://www.cs.ubc.ca/~rxg/cpsc509/05-reduction.pdf}}.
 Before we introduce the \wasm semantics, we first must introduce some administrative instructions that are used in the reduction relation.
 \autoref{fig:wasmadmin} shows the new administrative instructions.
 
@@ -153,14 +153,14 @@ Locals blocks are how closure calls get expanded.
 They introduce an environment consisting of the module instance and local variables inside which their body is reduced \todo{Executed? Reduced? Can we use them interchangeably? I think this comes up in other places as well, something to watch out for}.
 
 Finally, we introduce reduction contexts, $L^{k}$, where $k$ is the nesting depth.
-Reduction contexts are based on label blocks, so $L^{k}$ essentially contains $k$ nested local blocks.
+Reduction contexts are based on label blocks, so $L^{k}$ contains $k$ nested label blocks.
 
 There are a few final notational digressions we must make before describing the reduction relation.
-First, objects such as $s=\{\text{inst } inst^{*}, \text{tab } tabinst^{*}, \text{mem } meminst^{*}\}$ can be deferenced using their keywords (\eg inst).
+First, objects such as $s=\{\text{inst } inst^{*}, \text{tab } tabinst^{*}, \text{mem } meminst^{*}\}$ can be derefenced using their keywords (\eg inst).
 For example, $s_\text{inst}=inst^{*}$ given the above definition of $s$.
 Second, we can index into a sequence to get a specific element (\eg $inst^{*}(i)$ returns the $i$th $inst$ in $inst^{*}$).
 Lastly, \wasm uses several shorthands to get information out of module instances in $s$: $s_\text{func}(i)(j)=s_\text{inst}(i)_\text{func}(j)$.
-Essentially, this allows us to implicity deference the $i$th module instance to get the $j$th function inside of the instance.
+Essentially, this allows us to implicity derefence the $i$th module instance to get the $j$th function inside of the instance.
 This shorthand is used similarly for glob, tab, and mem.
 
 \subsection{The \wasm Reduction Relation}
@@ -182,8 +182,9 @@ This way of decomposing ensures that all of the instructions preceding an instru
 Binary and relation operations consume two values and either return the specified operation applied to those values, or trap if it is not defined (in the case of dividing by zero).
 Test operators only consume one value, and do not trap, but are otherwise similar.
 
-\<unreachable> causes a trap, \<nop> reduces to the empty sequence, and \<drop> consumes one value and reduces to the empty sequence.
-We have shown the true case of select, which returns the second value consumes ($k+1$ is a common shorthand for a non-zero value).
+\<unreachable> causes a trap, \<nop> reduces to the empty sequence, and \<drop> consumes one value and reduces to the empty sequence (\ie it discards the value on top of the stack).
+\<select> is a ternary operator (like $?:$ in C) that consumes three values and produces either the first or the second depending on the third value.
+The true/non-zero case of select returns the first value consumed ($k+1$ is a common shorthand for a non-zero value), and the false/zero case returns the second value consumed.
 
 \begin{mathpar}
     \begin{array}{rcl}
@@ -208,7 +209,7 @@ We have shown the true case of select, which returns the second value consumes (
 \end{mathpar}
 
 Blocks and loops reduce to labels.
-Stored instructions are only added by reduced a \<loop>, in which case it stores the loop code so it can run the loop again.
+Stored instructions are only added when reducing a \<loop>, in which case it stores the loop code so it can run the loop again.
 We show the true case of an $\<if>$ block, which reduces to the first body inside of a block, the false case does the same but with the second body.
 If the body of a label block is a \<trap> or a sequence of values then the \<trap>/values replace the block.
 Since decomposition happens on label blocks, we have included the inductive reduction rule, which intuitively pulls instructions out of the context, reduces them outside the context, and then plugs them right back in.
