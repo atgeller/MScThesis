@@ -59,12 +59,12 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
     %% get-global
     If $C \vdash \<getglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut}^{?} t$,
+    then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut}^{?} \; t$,
     and $\phi_1,\ti{t}{a} \implies \phi_2$.
 
     %% set-global
     If $C \vdash \<setglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut} t$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut} \; t$,
     and $\phi_1 \implies \phi_2$.
 
     %% composition
@@ -93,7 +93,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
     %% instance
     If $S \vdash inst : C$,
     then $inst = \{ \text{func } cl^{*}, \text{glob } v^{*}, \text{tab } i^{?}, \text{mem } j^{?} \}$,
-    $C = \{ \text{func } tfi^{*}, \text{global } (\text{mut}^{?} t)^{*}, \text{table } n^{?}, \text{memory } m^{?} \}$,
+    $C = \{ \text{func } tfi^{*}, \text{global } (\text{mut}^{?} \; t)^{*}, \text{table } n^{?}, \text{memory } m^{?} \}$,
     $(S \vdash cl : tfi)^{*}$,
     $(\vdash v : \ti{t}{a};\phi_v)^{*}$,
     $(S_\text{tab}(i) = n)^{?}$,
