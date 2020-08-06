@@ -5,25 +5,41 @@ To accomplish this, it must (1) have instructions that do not require dynamic ch
 In \name, we extend \wasm with new instructions that explicitly do not require dynamic checks, and design an indexed type system to reason about the safety of removing checks.
 
 \section{\name Syntax}
-The syntax of \name is highly similar to that of \wasm except for two additions.
+The syntax of \name has the same structure as \wasm, but different instructions and representations of types.
 First, \name introduces four additional instructions, which are referred to as ``\prechk-tagged'' instructions.
-Second, \name changes the representation of types within \wasm instructions and functions.
+Second, \name does not support floating point values or unary operators on integers since they are difficult to reason about (this is explained in more detail in \autoref{chp:implementation}).
+\name uses a different representation of types within instructions and functions, as we will see in \autoref{subsec:indexlang}.
 
 Recall from \autoref{sec:wasmsemantics} that there are four \wasm instructions that require run-time checks: integer division, indirect function calls, and memory loads and stores.
 ``\prechk-tagged'' instructions refer to a set of four \name instructions, listed in \autoref{fig:newinstructions}, that are counterparts to these four \wasm instructions.
 Intuitively, we are simply adding a tag to the instruction to show that it doesn't require run-time checks.
 Formally, however, these are different instructions with different semantics and different typing rules, as explained below.
 
-\begin{figure}[t]
-    \begin{align*}
-        &t.\<divpc> \mid
-        t.\<callindirectpc> \mid
-        \\
-        &t.\<loadpc> (tp\_sx)^{?}\; a\;o \mid
-        t.\<storepc> tp^{?\;} a\;o
-    \end{align*}
-    \caption{The four \prechk-tagged instructions}
-    \label{fig:newinstructions}
+\begin{figure}
+    \begin{math}
+    \begin{array}{rcl}
+        testop_{iN} & ::= & \<eqz> \\
+        binop_{iN} & ::= & \<add> \mid \<sub> \mid \<shl> \mid \<or> \mid ... \\
+        relop_{iN} & ::= & \<eq> \mid \<ne> \mid \<gt> \mid \<ge> \mid ... \\
+    \end{array}
+    \end{math}
+
+    \begin{math}
+    \begin{array}{rcl}
+        e & ::= & \<unreachable> \mid \<nop> \mid \<drop> \mid \<select> \mid \\
+        && \<block>\; tfi\; e^{*} \<end> \mid \<loop>\; tfi\; e^{*} \<end> \mid \<if>\; tfi\; e^{*} \<else> e^{*} \<end> \mid \\
+        && \<br> i \mid \<brif> i \mid \<brtable> i^{+} \mid \<return> \mid \<call> i \mid \<callindirect> tfi \mid \\
+        && \<getlocal> i \mid \<setlocal> i \mid \<teelocal> i \mid \<getglobal> i \mid \\
+        && \<setglobal> i \mid t.\<load> (tp\_sx)^{?}\; align\; o \mid t.\<store> tp^{?}\; align\; o \mid \\
+        && \<currentmemory> \mid \<growmemory> \mid t.\<const> c \mid \\
+        && t.binop_t \mid t.testop_t \mid t.relop_t \mid \\
+        \hline
+        && t.\<divpc> \mid t.\<callindirectpc> \mid \\
+        && t.\<loadpc> (tp\_sx)^{?}\; align\;o \mid t.\<storepc> tp^{?\;} align\;o \\
+    \end{array}
+    \end{math}
+    \caption{\name syntax including the four \prechk-tagged instructions}
+    \label{fig:wasminstructions}
 \end{figure}
 
 \subsection{The \name Index Language}
@@ -35,11 +51,11 @@ We use the index language to encode linear constraints on program variables with
 Remember, syntax written in a \tbsf{blue sans serif font} denotes a \wasm keyword.
 Below is a quick overview of each of the terms.
 
-\begin{figure}[t]
+\begin{figure}
     \begin{math}
         \begin{array}{rcl}
             t &:: & \<ithreetwo> \mid \<isixfour> \\
-            a &::= & Index\; Variable \\
+            a &::= & IndexVariable \\
             x\;y &::=& a \mid \ti{t}{c} \mid (\<binop>\;x\;y) \mid (\<testop>\;x) \mid (\<relop>\;x\;y) \\
             P &::=& (=\; x \; y) \mid (\text{if}\; P\; P\; P) \mid \neg P \mid P \land P \mid P \lor P \\
             \phi &::=& \circ \mid \phi, \ti{t}{a} \mid \phi, P \\

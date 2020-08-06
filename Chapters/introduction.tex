@@ -48,7 +48,7 @@ Using TIL in the compilation of programs led to up to $\%50$ faster programs.
 TIL focuses on compiler optimizations and eventually translates into untyped languages and finally runnable assembly, so the guarantees of the type system are lost along the way.
 
 %% PCC
-Proof carrying code (PCC) was introduced by \citet{PCC}.
+Proof-carrying code (PCC) was introduced by \citet{PCC}.
 PCC attached explicit proofs that low-level code satisfies some safety properties.
 The proof can then be quickly checked to ensure the safety of the code before it is run.
 While typed intermediate languages require types to be considered as part of the language, PCC adds a separate logical framework on top.
@@ -72,12 +72,9 @@ Their language, a dependently typed assembly language (\dtal), used a limited de
 The goal of \dtal, similar to TAL, was to support type-preserving compilation from a high-level language for both optimizations and safety.
 \dtal intended to support type-preserving compilation from Dependent ML as well as SML.
 
-%% LTAL
-\todo{LTAL}
-
 %% Wasm
 After almost two decades of JavaScript being the dominant language in browsers, it was decided that an alternative was necessary for performance-critical code.
-The alternative that was jointly created by the major browser developers was WebAssembly (\wasm) ~\cite{WASM}.
+The alternative that was jointly created by the major browser developers was WebAssembly (\wasm) \cite{WASM}.
 \wasm is a stack-based assembly language with structured control flow.
 It is designed to be safe as well as performant, with a small binary footprint.
 The \wasm type system is simple, only encoding primitive types, but strong enough to ensure type safety.

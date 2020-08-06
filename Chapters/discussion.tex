@@ -1,53 +1,49 @@
 \chapter{Discussion}
 \label{chp:discussion}
+ 
+By creating \name, we have taken the first step towards creating a practical system in which an expressive type system is used with a low-level language for safety and performance.
+This is a first step in the sense that it provides the scaffolding to build such a system: unlike prior work, \name provides \emph{concrete} ways to use type information for compiler optimization at the assembly language level.
+However, there are still a number of unanswered questions.
+We have a number of future ideas for this work some based on what we think is necessary to realize our eventual goal of making \name practical in the real-world, and others based on problems identified during the course of the project so far.
 
-\section{\name Model}
-To ensure the feasibility of implementing the \name language we modeled it in Redex \todo{citation}.
-We were able to model the entirety of the type system and use the model to typecheck several test programs.
-Further, we were able to use the model to typecheck programs using precheck instructions.
+\paragraph{Empirical Evaluation}
+The first step would be to implement a compiler for name so we are able to perform experiments and measure the real performance benefit provided by \name.
+This would allow us to empirically test whether \name actually improves performance.
+Our plan is to implement \name in Rust building on the CraneLift compilier.
+This will also require constructing an algorithm to build typing derivations as well as checking them.
 
-\subsection{Constraint Solving in Practice}
-In our model, we reason about implication by using the Z3 theorem prover \todo{citation needed}.
-To test whether the satisfiability of one index type context $\phi_1$ implies that some other index type context $\phi_2$ is satisfiable, we first generate Z3 constraints based on the propositions in both contexts.
-Then, we assert that the constraints generated for the first context must hold.
-Finally, we ask Z3 to find an assignment to the variables declared in the type index contexts where the constraints from the second context do not hold (a counterexample).
-If a counterexample cannot be found then the implication must hold, otherwise it does not hold.
-
-\paragraph{Impact of using Z3}
-Our choice of using Z3 has impacted \name in several ways.
-\begin{itemize}
-    \item The biggest impact is that we currently do not supporting floating point values and certain unary and binary operators because Z3 is unable to reason about them.
-    \item The requirement of adding explicit type annotations for index variables and constants that appear in type indices comes from needing to know what width the variable will be when we convert it to a Z3 bitvector.
-    \item Although there are performance concerns when using an SMT solver, our small examples programs have been near instantaneous to typecheck.
-    We do not expect to see the extremely large constraint sets that would cause a significant slowdown for Z3, as we expect that most programs will not need to reason about large amounts of variables at any given point.
-\end{itemize}
-
-\section{Future Work}
-We have a number of future ideas for this work some based on what we think is necessary to make using \name practical in the real-world, and others based on problems identified during the course of the project so far.
-The first obvious step would be to implement a compiler for name so we are able to perform experiments and measure the real performance benefit provided by \name.
+\paragraph{More optimizations}
 There is also the potential to find other optimizations we can perform with the additional type information.
+\todo{Instruction elimination, constant propagation, etc...}
 
 \paragraph{Where Do Types Annotations Come From?}
 Recall that the embedding of \wasm into \name from Section \ref{subsec:embedding} does not take advantage of the possibility of using type annotations on functions and blocks to check stronger guarantees about programs.
 Type annotations can be added by the developer, who will then get stronger guarantees of correctness along with the potential for more optimizations.
 However, we would prefer for the developer not to have to hand-annotate compiled \wasm.
 Instead, we could use static analysis to try to find the weakest preconditions that guarantee the safety of \prechk-tagging instructions.
-We could also attempt to have have a compiler from a higher-level language to \wasm add annotations as a form of type preserving compilation similar to FToTal.
+We could also attempt to have have a compiler from a higher-level language to \wasm add annotations as a form of type preserving compilation similar to Sytem F to Typed Assembly Language \cite{FtoTAL}.
 
 \paragraph{How to Reason About Global Variables?}
-Reasoning about global variables is made difficult because static typechecking is restricted to within the module you are checking.
-Thus, it is extremely difficult to reason about global variables imported from another module.
-We tried to support reasoning about global variables statically, but found that there were far too many ways to cross module boundaries, making it extremely difficult to figure out which global variables to track with indexed types.
-This is mainly a problem for mutable global variables, so we may be able to add support for reasoning about non-mutable globals to the type system in the future.
+Reasoning about global variables is made difficult because static typechecking is restricted to within the module we are checking.
+Thus, it is difficult to reason about global variables imported from another module.
+Concretely, imagine, in the $j$th module calling a function $f$ that was imported from the $i$th module.
+The call instruction will be reduced to $\<call> \{\text{inst } i, \text{ func } f\}$ where $i$ is the module index for the module instance where $f$ is defined.
+Theoretically, $f$ should not change the global variables in the $j$th module.
+However, it may call a function in the $j$th module which could change the globals in the $j$th module, and since we do not know what the behavior of $f$ is statically within $j$, we have to assume the worst and can make no assumptions about the global variables after $f$ returns.
 
 \paragraph{How to Handle the Dynamic Resizing of Memory?}
 While linear memory chunks are initialized with a static size, \wasm supports dynamically growing memory using the $\<growmemory>$ instruction.
 Currently, \name only supports erasing memory bounds checks based on the static size.
-However, it would be possible to reason about the size of memory being increased by inserting a dependency on the result of the $\<growmemory>$ instruction.
+However, it should be possible to reason about the size of memory being increased by inserting a dependency on the result of the $\<growmemory>$ instruction.
 If the result is -1, we know that the memory will not have grown and remains the same size.
 Otherwise, the result will be equal to the new memory size.
+This would require more dependency in the type system then we currently have with indexed types, since static type values would depend on dynamic control flow.
 
 \paragraph{Support Streaming Compilation.}
 The format of \wasm code allows compilation and execution to begin with only part of the program downloaded.
 Similar streaming compilation is theoretically possible with \name, but there are unanswered questions about how to work in typechecking in such a compilation pipeline.
-\todo{More...}
+Here are two examples of problems that we expect to face implementing such a system.
+First of all, we must make sure such a system is safe, which is complicated by the fact that we may begin executing code before we have finished type checking.
+This should not be too much of an issue as long as we ensure code is type checked before we can execute it, so we only execute well-typed code and if we come across code that is not well typed we halt execution and throw a type error.
+Second of all, this will require highly efficient type checking, preferably performed in parallel to type check many functions at one.
+We could also try to be clever and prioritize type checking on functions that we expect to be executed sooner.
