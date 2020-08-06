@@ -61,11 +61,12 @@
 \newcommand{\ie}[0]{\emph{i.e.,}\xspace}
 \newcommand{\eg}[0]{\emph{e.g.,}\xspace}
 
-\newcommand{\erase}[1]{erase(#1)}
-\newcommand{\embed}[1]{embed(#1)}
+\newcommand{\erase}[2][\empty]{erase_{#1}(#2)}
+\newcommand{\embed}[2][\empty]{embed_{#1}(#2)}
 
 \theoremstyle{definition}
 \newtheorem{definition}{\theoremstyle{definition}Definition}
+\newcommand{\definitionautorefname}{Definition}
 \newtheorem{theorem}{Theorem}
 \theoremstyle{plain}
 \newtheorem{lemma}{Lemma}
@@ -81,6 +82,7 @@
 
 % Some custom notations for object language stuff
 % Typeset object language notation in blue with sans serif font
+\newcommand{\mathbluesf}[1]{\textcolor{blue}{\mathsf{#1}}}
 \newcommand{\tbsf}[1]{\textsf{\color{blue}#1}}
 \reservestyle{\keywords}{\tbsf}
 \keywords{ithreetwo[i32], isixfour[i64], binop[binop], testop[testop], relop[relop], const[const\;], eq[eq\;], ne[ne\;], eqz[eqz\;], le[le\;], add[add\;], ge[ge\;], unreachable[unreachable], nop[nop], drop[drop], select[select], block[block], end[\;end], loop[loop], if[if], else[\;else\;], br[br\;], brif[br\rule{1ex}{.4pt}if\;], brtable[br\rule{1ex}{.4pt}table\;], return[return], call[call\;], callindirect[call\rule{1ex}{.4pt}indirect\;], getlocal[get\rule{1ex}{.4pt}local\;], setlocal[set\rule{1ex}{.4pt}local\;], teelocal[tee\rule{1ex}{.4pt}local\;], getglobal[get\rule{1ex}{.4pt}global\;], setglobal[set\rule{1ex}{.4pt}global\;], trap[trap], func[func\;], local[local], global[global\;], table[table\;], memory[memory\;], label[label], div[div], load[load\;], store[store\;], currentmemory[current\rule{1ex}{.4pt}memory\;], growmemory[grow\rule{1ex}{.4pt}memory\;], divpc[div\textsubscript{prechk}], callindirectpc[call\rule{1ex}{.4pt}indirect\textsubscript{prechk}\;], loadpc[load\textsubscript{prechk}\;], storepc[store\textsubscript{prechk}\;], module[module\;], fthreetwo[f32], fsixfour[f64], ieight[i8], isixteen[i16], clz[clz], ctz[ctz], popcnt[popcnt],

@@ -1,62 +1,153 @@
 \subsection{Erasing \name to \wasm}
 \label{subsec:erasure}
 We provide an erasure function for \name that transforms \name programs into \wasm programs by discarding the extra information from the \name type system and replacing \prechk-tagged instructions with their non-tagged counterparts.
-Erasure is useful for demonstrating backwards compatibility.
-Additionally, erasure is useful in the type safety proof in Section \ref{subsec:progress}.
-We show that erasing a well-typing \name program produces a well-typed \wasm program.
+Erasure is useful in the type safety proof because it lets us reuse much of the proof of progress from \wasm (see \autoref{subsec:progress}).
+Therefore, we define erasure not just for the surface syntax, like we did for embedding, but also for typing constructs (such as the module type context), administrative instructions, and runtime data structures (such as the store).
+We show that erasing a well-typed \name program produces a well-typed \wasm program.
 
-We typeset \name instructions in a \tbbf{bold blue font} and \wasm instruction in a \textcolor{red}{\textsf{red, sans serif font}} to set them apart.
+As with the presentation of the embedding, we typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruction in a \trbf{bold red font}.
 
-\begin{definition}{$\erase{tfi} = \trsf{tf}$}
+Erasing an indexed type function keeps only the primitive \wasm types ($t_1^{*}$ and $t_2^{*}$) from the indexed types representing the stack ($\ti{t_1}{a_1}^{*}$ and $\ti{t_2}{a_2}^{*}$), and discards everything else.
 
-    $\erase{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2} = \trsf{t_1^{*} \rightarrow t_2^{*}}$
+\begin{definition}{$\erase{tfi} = \mathredbold{tf}$}
+
+    $\erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2} = t_1^{*} \rightarrow t_2^{*}$
 \end{definition}
 
-\begin{definition}{$\erase{e} = \trsf{e}$}
+Erasing instructions involves erasing the indexed function types for every instruction that includes it as part of their syntax (blocks and indirect function calls).
+We must also remove the \prechk tag from \prechk-tagged instructions to turn them into instructions that exist in \wasm.
+
+\begin{definition}{$\erase[e]{e} = \mathredbold{e}$}
     \begin{mathpar}
-        \erase{\<block> tfi\; e^{*} \<end>} = \<wblock> \erase{tfi}\; \erase{e^{*}} \<wend>
+        \begin{array}{rcl}
+            \erase[e]{\<block>\; tfi\; e^{*} \<end>} &=& \<wblock> \erase[tfi]{tfi}\; \erase[e]{e^{*}} \<wend> \\
 
-        \erase{\<loop> tfi\; e^{*} \<end>} = \<wloop> \erase{tfi}\; \erase{e^{*}} \<wend>
+            \erase[e]{\<loop>\; tfi\; e^{*} \<end>} &=& \<wloop> \erase[tfi]{tfi}\; \erase[e]{e^{*}} \<wend> \\
 
-        \erase{\<if> tfi\; e_1^{*}\; e_2^{*} \<end>} = \<wif> \erase{tfi}\; \erase{e_1^{*}}\; \erase{e_2^{*}} \<wend>
+            \erase[e]{\<if>\; tfi\; e_1^{*}\; e_2^{*} \<end>} &=& {\begin{stackTL}\<wif> {\begin{stackTL}\erase[tfi]{tfi} \\ \erase[e]{e_1^{*}} \\ \erase[e]{e_2^{*}} \end{stackTL}} \\ \<wend> \end{stackTL}} \\
 
-        \erase{\<callindirect> tfi} = \<wcallindirect> \erase{tfi}
+            \erase[e]{\<callindirect> tfi} &=& \<wcallindirect> \erase[tfi]{tfi} \\
 
-        \thought{Does it really make sense to have prechk instructions here for the progress proof? I guess it's fine cause we list them explicitly.}
+            \erase[e]{t.\<divpc>} &=& t.\<wdiv> \\
 
-        \erase{t.\<divpc>} = t.\<wdiv>
+            \erase[e]{t.\<callindirectpc>} &=& t.\<wcallindirect> \\
 
-        \erase{t.\<callindirectpc>} = t.\<wcallindirect>
+            \erase[e]{t.\<storepc> tp^{?}\; align\; o} &=& t.\<wstore> tp^{?}\; align\; o \\
 
-        \erase{t.\<storepc> tp^{?}\; align\; o} = t.\<wstore> tp^{?}\; align\; o
+            \erase[e]{t.\<loadpc> (tp\_sx)^{?}\; align\; o} &=& t.\<wload> (tp\_sx)^{?}\; align\; o \\
+
+            \erase[e]{e} &=& e \text{, otherwise} \\
+        \end{array}
+    \end{mathpar}
+\end{definition}
 
         \erase{t.\<loadpc> (tp\_sx)^{?}\; align\; o} = t.\<wload> (tp\_sx)^{?}\; align\; o
 
-        \erase{e} = e \text{, otherwise}
-    \end{mathpar}
-
-\end{definition}
-
-\begin{definition}{$\erase{C} = \trsf{C}$}
+\begin{definition}{$\erase[c]{C} = \mathredbold{C}$}
     \begin{mathpar}
-        {\begin{stackTL} erase(
-            {\begin{stackTL}
-                \text{func } tfi^{*}, \text{ global } tg^{*}, \text{ table } (n,tfi^{*})^{?}, \text{ memory } m^{?},
-                \\ \text{local } t^{*}, \text{ label } (\ti{t_1}{a_1}^{*};l_1;\phi_1)^{*}, \text{ return } (\ti{t_2}{a_2}^{*};l_2;\phi_2)^{?})
+        \begin{array}{rcl}
+            {\begin{stackTL} erase_C(\{
+                {\begin{stackTL}
+                    \text{func } tfi^{*}, \text{ global } tg^{*},
+                    \\ \text{table } (n,tfi_2^{*})^{?},
+                    \\ \text{memory } m^{?}, \text{ local } t^{*},
+                    \\ \text{label } (\ti{t_1}{a_1}^{*};l_1;\phi_1)^{*},
+                    \\ \text{return } (\ti{t_2}{a_2}^{*};l_2;\phi_2)^{?}\})
+                \end{stackTL}}
             \end{stackTL}}
-        \\=
-        {\begin{stackTL}\{\text{func } \erase{tfi^{*}}, \text{ global } tg^{*}, \text{ table } n^{?}, \text{ memory }\; m^{?},
-            \\ \text{local } t^{*}, \text{ label } (t_1^{*})^{*}, \text{ return } (t_2^{*})^{?}\}
-        \end{stackTL}}
-        \end{stackTL}}
+            &=&
+            \{{\begin{stackTL}
+                \text{func } \erase[tfi]{tfi^{*}},
+                \\ \text{global } tg^{*}, \text{ table } n^{?},
+                \\ \text{memory }\; m^{?}, \text{local } t^{*},
+                \\ \text{label } (t_1^{*})^{*}, \text{ return } (t_2^{*})^{?}\}
+            \end{stackTL}}
+        \end{array}
     \end{mathpar}
 \end{definition}
 
-\begin{definition}{$\erase{S} = \trsf{S}$}
+We show that erasing a \name instruction sequence $e^{*}$, that is well-typed under a module type context $C$, produces a \wasm instruction sequence $e'^{*}=\erase[e]{e^{*}}$ that is well-typed under the erased module type context $C'=\erase[C]{C}$.
 
-    $\erase{\{\text{inst } C^{*}, \text{tab } n^{*}, \text{mem } m^{*}\}}=
-    \{\text{inst } \erase{C}^{*}, \text{tab } n^{*}, \text{mem } m^{*}\}$
+\todo{erased-well-typed-typesys}
+\todo{Do this one for the typing rules explained in \autoref{sec:wasmtyping}}
+
+To erase a function definition $f$, we simply erase the type declaration $tfi$ and the body $e^{*}$.
+We can also erase an imported function by erasing the declared type $tfi$.
+
+\begin{definition}{$\erase[f]{f} = \mathredbold{f}$}
+    \begin{mathpar}
+        \begin{array}{rcl}
+            \erase[f]{\<func> tfi\;\<local>\; t^{*}\; e^{*})}
+            &=&
+            \<wfunc> \erase[tfi]{tfi}\; \<wlocal>\; t^{*}\; \erase[e]{e^{*}} \\
+
+            \erase[f]{\<func> tfi\; im}
+            &=&
+            \<wfunc> \erase[tfi]{tfi}\; im \\
+        \end{array}
+    \end{mathpar}
 \end{definition}
+
+We show that erasing a \name function $f$, that is well-typed under a module type context $C$, produces a \wasm function $\erase[f]{f}$ that is well-typed under the erased module type context $\erase[C]{C}$.
+This is useful not just for erasing the surface syntax, but also because functions are a part of closures which are used at run-time (as part of module instances and tables).
+
+\todo{erased-well-typed-func lemma}
+
+Erasing a module instance erases all of the functions $f$ in the closures (which we have expanded inline to $\{\text{inst } i, \text{ func } f\}$) within the module instance.
+
+\begin{definition}{$\erase[inst]{inst} = \mathredbold{inst}$}
+    \begin{mathpar}
+        \begin{array}{rcl}
+            {\begin{stackTL} erase_inst(\{
+                {\begin{stackTL}
+                    \text{func } \{\text{inst } i, \text{ func } f\}^{*},
+                    \\ \text{global } v^{*}, \text{ table } i^{?},
+                    \\ \text{memory } j^{?}\})
+                \end{stackTL}}
+            \end{stackTL}}
+            &=&
+            \{{\begin{stackTL}
+                \text{func } \{\text{inst } i, \text{ func } \erase{f}\}^{*},
+                \\ \text{global } v^{*}, \text{ table } i^{?},
+                \\ \text{memory } j^{?}\}
+            \end{stackTL}}
+        \end{array}
+    \end{mathpar}
+\end{definition}
+
+We erase store contexts by erasing all of the module type instances $C^{*}$ and table types $(n,tfi^{*})^{*}$ within.
+
+\begin{definition}{$\erase[S]{S} = \mathredbold{S}$}
+    \begin{mathpar}
+        \begin{array}{rcl}
+            erase_S(\{ {\begin{stackTL}
+                    \text{inst } C^{*},
+                    \\ \text{tab } (n,tfi^{*})^{*}, \text{mem } m^{*}\}
+                \end{stackTL}}
+            &=& \{ {\begin{stackTL}
+                \text{inst } \erase[c]{C}^{*},
+                \\ \text{tab } n^{*}, \text{mem } m^{*}\} \end{stackTL}}
+        \end{array}
+    \end{mathpar}
+\end{definition}
+
+We now prove that if a \name module instance $inst$ has type $C$ under the store context $S$, then the erased \wasm instance $\erase{inst}$ will have the erased type $\erase[c]{C}$ under the erased store context $\erase[S]{S}$.
+This will be useful for proving that a well-typed \name store $s$ erases to a well-typed \wasm store $\erase{s}{s}$ since stores contain many instances.
+
+\begin{lemma}{(Erased-Well-Typed-Context)}
+    If $S \vdash inst : C$, then $\erase{S} \vdash \erase{inst} : \erase{C}$
+\end{lemma}
+\begin{proof}
+    We want to prove that erasing index information a \name runtime module instance $inst$ will result in a well-typed \wasm runtime module instance $\mathredbold{inst}$.
+    To do this, we rely on the above lemmas to safely erase index information from function declarations and table declarations (globals and memory have the same type information in both \name and \wasm).
+
+    \todo{Finish using erased-well-typed-func}
+\end{proof}
+
+\todo{erased-well-typed-store}
+
+Before we can proof that erasing a well-typed \name program in reduction form $s;v^{*};e^{*}$ produces a well-typed \wasm program (so we can use erasure in progress), we must prove this property for the \name administrative instruction typing judgement $S;C\vdash e^{*}:tfi$.
+Then, we can prove this of \refrule{Admin-Code} and finally of \refrule{Admin-Program}, which gives us the property we want.
 
 \begin{lemma}{(Erased-Well-Typed-Admin)}
 
@@ -64,9 +155,9 @@ We typeset \name instructions in a \tbbf{bold blue font} and \wasm instruction i
     \\ then $\erase{S};\erase{C} \vdash \erase{e^{*}} : \erase{\epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^{*};l_2;\phi_2}$
 \end{lemma}
 \begin{proof}
-    \thought{These proofs are so simple that I really don't think it's worth it to enumerate them.}
+    \todo{Enumerate local, label, and call cl}
 
-    We proceed by induction over typing rules. Most proof cases are omitted as they are quite simple but we provide a few to give an idea of what the proofs look like.
+    We proceed by induction over typing rules. Most proof cases are omitted as they are simple, but we provide a few to give an idea of what the proofs look like.
 
     \begin{itemize}
         \item $S;C \vdash t.binop : \ti{t}{a_1}\;\ti{t}{a_2};l_1;\phi_1 \rightarrow \ti{t}{a_3};l_1;\phi_1,\ti{t}{a_3},(= a_3\; (binop\;a_1\;a_2))$
@@ -81,3 +172,7 @@ We typeset \name instructions in a \tbbf{bold blue font} and \wasm instruction i
         $\erase{S};\erase{C} \vdash \erase{\<nop>} : \erase{\epsilon;l_1;\phi_1 \rightarrow \epsilon;l_1;\phi_1}$ = $\erase{S};\erase{C} \vdash \<wnop> : \epsilon \rightarrow \epsilon$, which holds under \wasm's type system.
     \end{itemize}
 \end{proof}
+
+\todo{erased well typed admin code}
+
+\todo{erased well typed admin program}

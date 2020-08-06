@@ -133,10 +133,11 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 \end{proof}
 
 The next lemma, \reflemma{Lift-Consts}, shows that if a sequence of constants, $v^n$, has a certain postcondition within a nested context, $L^j$, then it has the same postcondition outside of that context with the precondition of the context.
-We use this rule for branching and returning, when we want to essentially replace $L^j$ with just $v^n$, and show that $v^n$ can reach the same postcondition outside of $L^j$ that it has inside of $L^j$.
+We use this rule for branching and returning when we have some values $v^n$ inside a reduction context $L^j$.
+We will replace $L^j$ (we do not care about how it is filled) with $v^n$, so we show that $v^n$ can reach the same postcondition outside of $L^j$ that it has inside of $L^j$.
 
 The intuition for the proof is that the nature of nested contexts are such that all of the instructions preceding $v^n$ are values and therefore only add fresh index variables which are constrained to be equal to constants.
-Thus, we can pull $v^n$ outside of the nested context and know that we can still get to the postcondition because we can add back in all of the fresh index variables that we would have added from the values preceding it via implication.
+Thus, we can pull $v^n$ outside of the nested context and know that we can still get to the postcondition because we can add back in, using implication, all of the fresh index variables that we would have added from the values preceding.
 
 \begin{lemma}{(\deflemma{Lift-Consts})}
 

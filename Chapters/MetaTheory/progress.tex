@@ -1,6 +1,10 @@
 \subsection{Progress}
 \label{subsec:progress}
 \emph{Progress} ensures that if a program is well-typed then it either: entirely consists of values, traps, or is reducible (\ie there exists another program that it reduces to).
+Proving progress for \name is the key metatheoretic property that ensures that our claim that \name is as safe as \wasm is valid.
+This is because it connects the static guarantees of the type system to the dynamic assumptions of \prechk-tagged instructions.
+By proving that well-typed \prechk-tagged instructions will always be reducible, we prove that the static guarantees are sufficient to ensure that they will not trap and therefore the dynamic checks are unnecessary.
+
 Since most \name instructions have the same semantics as in \wasm, and every \name type includes all the information of a \wasm type, we can reuse the \wasm proof for those instructions by using the erasure function from Section \ref{subsec:erasure}.
 The intuition for this is that the \name indexed type system provides strictly more information than the \wasm type system.
 However, for \name instructions that do not have the same semantics as in \wasm, specifically \prechk-tagged instructions, we still must prove those cases.
@@ -14,8 +18,6 @@ However, for \name instructions that do not have the same semantics as in \wasm,
     Because $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$, we know that $\vdash s : S$ for some $S$, and that $S; \epsilon \vdash_i v^{*};e^{*}:ti^{*};l;\phi$ because they are premises of $admin-program$ which we have assumed to hold.
 
     Then we know that $(\vdash v: \ti{t_v}{a_v};\phi_v)^{*}$ and $S;S_\text{inst}(i),\text{local } t_v^{*} \vdash e^{*} : \epsilon;\ti{t_v}{a_v}^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ because they are premises of $admin-code$ which we have assumed to hold.
-
-    \todo{Part about expressions to the left reducing or not}
 
     \begin{itemize}
         \item Case: $\vdash_i s;v^{*};v_2^{*}\;t.\<divpc>$

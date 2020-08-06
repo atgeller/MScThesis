@@ -7,8 +7,8 @@ It is crucial to ensure the safety of the code being executed in these contexts.
 \todo{Find some examples of javascript exploits}
 Typically, \emph{sandboxing} and/or \emph{dynamic safety checks} are used to ensure the safety of untrusted code.
 
-Sandboxing involves placing untrusted code into a secure environment to contain the damage caused by unsafe behavior ~\cite{sandboxes}.
-For example, Mozilla's Firefox places the running scripts for each website in separate processes so that unsafe code cannot access the address space of other websites or the broswer ~\cite{foxbox}.
+Sandboxing involves placing untrusted code into a secure environment to contain the damage caused by unsafe behavior \cite{sandboxes}.
+For example, Mozilla's Firefox places the running scripts for each website in separate processes so that unsafe code cannot access the address space of other websites or the broswer \cite{foxbox}.
 However, sandboxing in this way requires additional run time resources, as processes require overhead in most OSes.
 
 Dynamic safety checks are run time checks that catch any attempted unsafe operations.
@@ -91,9 +91,9 @@ Towards that goal, we introduce \name, an extension of the WebAssembly (\wasm) l
 
 \name introduces new versions of \wasm instructions which require no dynamic checks, but also require stronger type-level safety guarantees than their \wasm counterparts (\autoref{sec:newinstructions}).
 To facilitate type-checking these new instructions, \name uses an indexed type system which is able to encode linear constraints on program variables and therefore ensure safety properties of the new \name instructions (\autoref{sec:typesys}).
-We ensure that \name is as safe as \wasm by providing a type safety proof of the \name indexed type system (\autoref{sec:typesoundness}).
+We ensure that \name is as safe as \wasm by providing a type safety proof of the \name indexed type system (\autoref{sec:typesafety}).
 Together, these additions mean that \name is as safe as \wasm while potentially improving performance.
-We show that \name is backwards compatible with \wasm by showing a type erasure to \wasm (\autoref{subsec:erasure}), and that \wasm programs can be turned into \name programs (\autoref{subsec:embedding}).
+We show that \name is backwards compatible with \wasm by showing that \wasm programs can be turned into \name programs (\autoref{subsec:embedding}), and we show that we can go in the other direction, too (\autoref{subsec:erasure}).
 
 \section{Thesis Statement}
 \begin{adjustwidth}{1cm}{1cm}

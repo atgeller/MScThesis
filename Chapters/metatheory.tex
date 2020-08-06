@@ -1,27 +1,30 @@
 \chapter{Metatheory}
 \label{chp:metatheory}
 
-\section{Converting Between \wasm and \name}
-We want to show two properties about the relationship between \wasm and \name.
-First, we want to show that well-typed \name programs are backwards compatible with \wasm programs.
-This is accomplished in \autoref{subsec:erasure} using an erasure function that turns \name programs and types into \wasm programs and types.
-Second, it should be possible to convert well-typed \wasm programs into well-typed \name programs with no additional developer effort.
-We demonstrate a simple yet naive way of embedding \wasm programs into \name in \autoref{subsec:embedding}.
+Now that we have introduced \name and shown how it can be used for reasoning, it is time to reason about \name itself.
+First, we will take a look at the relationship between \wasm and \name, by showing methods to convert \wasm programs to \name programs and vice versa.
+Then, we will prove the type safety of \name, to ensure that our claim that \name is as safe as \wasm is valid.
+However, before we can do any of that, we must ``complete'' our reasoning ability by creating a way to connect the reduction relation form with the type system.
 
-\input{Chapters/MetaTheory/erasure.tex}
-\input{Chapters/MetaTheory/embedding.tex}
+\section{Administrative Typing Rules}
+While we have shown the \name typing rules for instructions within a static context, we still need typing rules for administrative instructions and the store used in reduction.
+\autoref{fig:programrules} shows the \name typing rules for module instances $inst$, the run time store $s$, and various data structures contained within $s$.
+$S$ is the store context, it is to $s$ as $C$ is to $inst$.
+That is, it contains the type information for everything in $s$.
 
-\section{Type Soundness}
-\label{sec:typesoundness}
-\emph{Type soundness} is the property that a well-typed program either reduces to another well-typed program, is an irreducible expression (in the case of \name, a sequence of values), or throws an error (trap, in the case of \name).
-Thus, type soundness assures us that the behavior of a well-typed program is always well-defined.
-The type soundness of \wasm guarantees a number of important properties, including type safety and memory safety.
-Proving the type soundness of \name gives us a high degree of assurance that it has the same level of safety properties as \wasm.
+Closures are type checked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to type check the function definition inside of the closure.
+\refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to type check local and global variables.
 
-\paragraph{Run Time Typing Rules}
+\refrule{Instance} checks that a module instance is well-typed by the index module context under the store context $S$.
+It checks all of the closures $cl^{*}$ against their expected types $tfi^{*}$ in $C$, and similarly for all of the globals ($v^{*}$ and $()\text{mut}^{?} t)^{*}$).
+The table and memory indices ($i$ and $j$, respectively) are used to lookup the the relevant types ($(n,tfi^{*})$ and $m$, respectively) in the store context $S$.
+
+\refrule{Store} uses \refrule{Instance} to check that a run time store, $s$ is well typed by the store context $S$ by ensuring that every module instance $inst$ in $s$ has the type of the index module context $C$ in $S$
+Further, \refrule{Store} ensures that all of the closures in all of the tables in $s$ are well typed, and the the sizes of all the tables and memory chunks in $S$ do not exceed the actual size of their implementations.
+
 \begin{figure}
     \begin{mathpar}
-        \inferrule*[right=\defrule{Closure}]{ %% closure
+        \inferrule*[right=\protect\defrule{Closure}]{ %% closure
             S_\text{inst}(i) \vdash f : tfi
         } {
             S \vdash \{ \text{inst} \; i, \text{code} \; f \} : tfi
@@ -40,7 +43,7 @@ Proving the type soundness of \name gives us a high degree of assurance that it 
         } {
             S \vdash
             {\begin{stackTL}
-                \{ \text{func} \; cl^{*}, \text{glob} \; v^{*}, \text{tab} \; i^{?}, \text{mem} \; j^{?} \} 
+                \{ \text{func} \; cl^{*}, \text{glob} \; v^{*}, \text{tab} \; i^{?}, \text{mem} \; j^{?} \}
                 \\ : \{ \text{func} \; tfi^{*}, \text{global} \; (\text{mut}^{?} \; t)^{*}, \text{table} \; n^{?}, \text{memory} \; m^{?} \}
             \end{stackTL}}
         }
@@ -70,18 +73,11 @@ Proving the type soundness of \name gives us a high degree of assurance that it 
             \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
         }
     \end{mathpar}
-    \caption{\name Program and Store Typing Rules}
+    \caption{\protect\name Program and Store Typing Rules}
     \label{fig:programrules}
 \end{figure}
 
-\autoref{fig:programrules} shows the \name typing rules for module instances, the run time store, and \name programs.
-Closures are type checked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to type check the function definition inside of the closure.
-\refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to type check local and global variables.
-
-\refrule{Instance} checks that the module instance $inst$ has the type of the index module context $C$.
-It checks all of the closures in $inst$ against their expected types in $C$, and similarly for all of the globals and the size of the table and memory.
-\refrule{Store} uses \refrule{Instance} to check that a run time store, $s$ is well typed by the store context $S$ by ensuring that every module instance in $s$ has the type of the index module context in $S$
-Further, \refrule{Store} ensures that all of the closures in all of the tables in $s$ are well typed, and the the sizes of all the tables and memory chunks in $S$ do not exceed the actual size of their implementations.
+Further, we must provide a typing rule that has the same form as the reduction relation (\ie a typing rule for $s;v;e$) to be able to get the type of a program during reduction.
 
 \refrule{Code} checks that a sequence of instructions is well typed with an empty stack and the indexed types and constraints for the given local variables in the precondition.
 Since local variables are values, we know that each one of them is equal to some constant, so \refrule{Code} is really just checking that the sequence of instructions has some postcondition reachable from the given local variables.
@@ -127,13 +123,25 @@ Finally, \refrule{Label} typechecks the body of the label block with the precond
 This was, if the label was generated by a loop, then the precondition of the saved values is the precondition of the loop, and we know the loop is well-typed.
 Otherwise, the saved instructions will be an empty sequence and will be well typed from the precondition.
 
-\todo{FreshVar}
-It can be useful to introduce fresh index variables and use them in constraints as sort of a scratch value.
-We handle this by having implication range over a set a variables $ti^{*}$, as in $\satisfies{\phi_0}{ti^{*}}{\phi_1}$.
-Intuitively, this means that the $\phi_0$ implies that all of the constraints in $\phi_1$ on index variables $ti^{*}$ are true.
-For example, $\satisfies{\circ,\ti{\<ithreetwo>}{a},(> a \ti{\<ithreetwo>}{10})}{\ti{\<ithreetwo>}{a}}{\circ,\ti{\<ithreetwo>}{a},(> a \ti{\<ithreetwo>}{0}),\ti{\<ithreetwo>}{b},(= b 0)}$, because $(> a \ti{\<ithreetwo>}{10})$ implies that $(> a \ti{\<ithreetwo>}{0})$, and the constraints on $b$ are not taken into account.
+Given these additional typing judgments and rules, we can now show the metatheoretic properties mentioned above.
 
-Given these additional typing judgments and rules, we can now prove the two theorems necessary to show type soundness: subject-reduction (\autoref{subsec:subject-reduction}) and progress (\autoref{subsec:progress}).
+\section{Relationship Between \wasm and \name}
+We want to show two properties about the relationship between \wasm and \name.
+First, we want \name to be backwards compatible with \wasm.
+It should be possible to convert well-typed \wasm programs into well-typed \name programs with no additional developer effort.
+We demonstrate a simple yet naive way of embedding \wasm programs into \name in \autoref{subsec:embedding}.
+Second, we want to show that well-typed \name programs can be turned into \wasm programs.
+This is accomplished in \autoref{subsec:erasure} using an erasure function that turns \name programs and types into \wasm programs and types.
+
+\input{Chapters/MetaTheory/embedding.tex}
+\input{Chapters/MetaTheory/erasure.tex}
+
+\section{Type Safety}
+\label{sec:typesafety}
+\emph{Type safety} is the property that a well-typed program either reduces to another well-typed program, is an irreducible expression (in the case of \name, a sequence of values), or throws an error (trap, in the case of \name).
+Thus, type safety assures us that the behavior of a well-typed program is always well-defined.
+The type safety of \wasm guarantees a number of important properties, including memory safety.
+Proving the type safety of \name gives us a high degree of assurance that it has the same level of safety as \wasm.
 
 \input{Chapters/MetaTheory/subject-reduction.tex}
 \input{Chapters/MetaTheory/progress.tex}

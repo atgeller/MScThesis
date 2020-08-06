@@ -1,8 +1,7 @@
 \subsection{Subject Reduction}
 \label{subsec:subject-reduction}
 \emph{Subject reduction}, also sometimes referred to as ``type preservation'', ensures that if a program has a specific type, then the program will have the same type after a reduction step.
-We use a number of lemmas in the subject reduction proof.
-\todo{Worst transition sentence ever}
+Before we present the subject reduction proof, we first introduce a number of useful lemmas.
 
 \input{Chapters/MetaTheory//lemmas.tex}
 
@@ -12,8 +11,8 @@ After reduction, the intermediate state is no longer present, so we lose those i
 
 For example, $(t.\<const> c)\; \<drop>$ could be typed as $\epsilon;l;\phi \rightarrow \epsilon;l;\phi,\ti{t}{a},(= a\; \ti{t}{c})$ where $a$ represent the value on the stack $t.\<const> c$.
 This would reduce to $\epsilon$, and then we lose the information about $a$ in the postcondition index type system.
-However, this can be solved using implication, as we know $a$ is fresh from the const rule, and therefore $\satisfies{\phi}{l}{\phi,\ti{t}{a},(= a\; \ti{t}{c})}$ after reduction.
-This type of pattern will appear in any case of the proof that consumes values.
+However, this can be solved using implication, as we know $a$ is fresh from the const rule, and therefore we allow saying $\phi \implies \phi,\ti{t}{a},(= a\; \ti{t}{c})$ after reduction.
+This pattern will appear in any case of the proof that consumes values.
 
 \begin{theorem}{Subject Reduction}
   If $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$ and $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$ then $\vdash_i s';v'^{*};e'^{*} : ti^{*};l;\phi$.
@@ -578,7 +577,7 @@ By case analysis on the reduction rules.
     \\ $\land$ $s;(\<ithreetwo>.\<const> k) \; (t.\<load> tp\_sx\; align\; o) \hookrightarrow_i s;(t.\<const> const_t(b^{*}))$, where $s_\text{mem}(i,k+o,|t|)=b^{*}$
 
         By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Load}, we know that $l_2=l_1$, $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$ where $a \not\in \phi_3$, and $\satisfies{\phi_1,\ti{t}{a_1},(= a_1 \; \ti{\<ithreetwo>}{k})}{ti_1^{*}\;\ti{\<ithreetwo>}{a_1}\;l_1}{\phi_3}$.
-        We also then know that $\satisfies{\phi_3,\ti{t}{a}}{ti_1^{*}\;\ti{\<ithreetwo>}{a}\;l_1}{\phi_2}$ by \reflemma{Inversion} on \refrule{Load}.
+        %%We also then know that $\satisfies{\phi_3,\ti{t}{a}}{ti_1^{*}\;\ti{\<ithreetwo>}{a}\;l_1}{\phi_2}$ by \reflemma{Inversion} on \refrule{Load}.
 
         \todo{I think this is only useful for store}
         Let $b_2^{*} = s_\text{mem}(i)$.
