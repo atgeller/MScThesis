@@ -16,12 +16,14 @@ We typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruc
 \begin{definition}{$\embed[e]{e}^{t^{*}}=\mathbluesf{e}$}
     \label{def:embed-e}
     \begin{mathpar}
-        {\begin{stackTL}
-            \embed{\<wblock> (t_1^{*}\rightarrow t_2^{*})\; e^{*} \<wend>} = \<block> tfi\; \embed{e^{*}} \<end>
-            \\ \text{where } tfi=
-            {\begin{stackTL}
-                \ti{t_1}{a_1}^{*};\ti{t_3}{a_3}^{*};\circ,\ti{t_1}{a_1}^{*},\ti{t_3}{a_3}^{*})
-                \\ \rightarrow \ti{t_2}{a_2}^{*};\ti{t_4}{a_4}^{*};\circ,\ti{t_2}{a_2}^{*},\ti{t_4}{a_4}^{*}
+        \begin{array}{rcl}
+            embed_e({\begin{stackTL}
+                \<wblock>
+                {\begin{stackTL}
+                    (t_1^{*}\rightarrow t_2^{*})\;
+                    \\e^{*}
+                \end{stackTL}}\\
+            \<wend>)
             \end{stackTL}}
             &=& \<block>\;
                 {\begin{stackTL}
@@ -31,12 +33,13 @@ We typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruc
             \end{stackTL}} \\
             && \<nsend>\\
 
-        {\begin{stackTL}
-            \embed{\<wloop> (t_1^{*}\rightarrow t_2^{*})\; e^{*} \<wend>} = \<loop> tfi\; \embed{e^{*}} \<end>
-            \\ \text{where } tfi=
-            {\begin{stackTL}
-                \ti{t_1}{a_1}^{*};\ti{t_3}{a_3}^{*};\circ,\ti{t_1}{a_1}^{*},\ti{t_3}{a_3}^{*}
-                \\ \rightarrow \ti{t_2}{a_2}^{*};\ti{t_4}{a_4}^{*};\circ,\ti{t_2}{a_2}^{*},\ti{t_4}{a_4}^{*}
+            embed_e({\begin{stackTL}
+                \<wloop>
+                {\begin{stackTL}
+                    (t_1^{*}\rightarrow t_2^{*})\;
+                    \\e^{*}
+                \end{stackTL}}\\
+            \<wend>)
             \end{stackTL}}
             &=& \<loop>\;
                 {\begin{stackTL}
@@ -46,12 +49,13 @@ We typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruc
             \end{stackTL}} \\
             && \<nsend>\\
 
-        {\begin{stackTL}
-            \embed{\<wif> (t_1^{*}\rightarrow t_2^{*})\; e_1^{*}\; e_2^{*} \<wend>} = \<if> tfi\; \embed{e_1^{*}}\; \embed{e_2^{*}} \<end>
-            \\ \text{where } tfi=
-            {\begin{stackTL}
-                \ti{t_1}{a_1}^{*};\ti{t_3}{a_3}^{*};\circ,\ti{t_1}{a_1}^{*},\ti{t_3}{a_3}^{*}
-                \\ \rightarrow \ti{t_2}{a_2}^{*};\ti{t_4}{a_4}^{*};\circ,\ti{t_2}{a_2}^{*},\ti{t_4}{a_4}^{*}
+            embed_e({\begin{stackTL}
+                \<wif>
+                {\begin{stackTL}
+                    (t_1^{*}\rightarrow t_2^{*})\;
+                    \\e^{*}
+                \end{stackTL}}\\
+            \<wend>)
             \end{stackTL}}
             &=& \<if>\;
                 {\begin{stackTL}

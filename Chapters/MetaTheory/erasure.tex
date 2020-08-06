@@ -41,7 +41,9 @@ We must also remove the \prechk tag from \prechk-tagged instructions to turn the
     \end{mathpar}
 \end{definition}
 
-        \erase{t.\<loadpc> (tp\_sx)^{?}\; align\; o} = t.\<wload> (tp\_sx)^{?}\; align\; o
+To erase a module type context, we must erase all of the function types $tfi^{*}$, the table type $(n,tfi_2^{*})$ if one is present, and the postconditions in the label stack $(\ti{t_1}{a_1}^{*};l_1;\phi_1)^{*}$ and the return stack $(\ti{t_2}{a_2}^{*};l_2;\phi_2)^{?}$.
+We erasing postconditions the same way we erase the postconditions of indexed function types.
+Erasing a table type means discarding the type information about the functions in the table.
 
 \begin{definition}{$\erase[c]{C} = \mathredbold{C}$}
     \begin{mathpar}
