@@ -538,6 +538,31 @@ By case analysis on the reduction rules.
 
         \thought{I set out to write a very verbose proof case, but I didn't expect it to be this verbose.}
 
+    \item Case: $C \vdash v \; (\<teelocal> j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $v \; (\<teelocal> j) \hookrightarrow v\;v\;(\<setlocal> j)$
+
+        By \reflemma{Inversion} on \refrule{Composition},
+        $C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$,
+        and $C \vdash \<teelocal> j : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        By \reflemma{Inversion} on \refrule{Tee-Local},
+        $ti_3^{*} = ti^{*} \; \ti{t}{a}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_2}$, $l_2 = l_3[j := \ti{t}{a}]$,
+        and $\phi_3,\ti{t}{a_2},(= a_2\;a) \implies \phi_2$.
+
+        By \reflemma{Inversion} on \refrule{Const},
+        $t.\<const> c = v$, $ti_1^{*} = ti^{*}$, $l_3 = l_1$,
+        and $\phi_1,\ti{t}{a},(= a\;\ti{t}{c}) \implies \phi_3$.
+
+        $C \vdash v\;v : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a_2}\;\ti{t}{a};l_1;\phi_1,\ti{t}{a_2},(= a_2\;\ti{t}{c}),\ti{t}{a},(= a\;\ti{t}{c})$ by \refrule{Const}.
+
+        $\ti{t}{a_2},(= a_2\;\ti{t}{c}),\ti{t}{a},(= a\;\ti{t}{c}) \iff \ti{t}{a_2},(= a_2\;a),\ti{t}{a},(= a\;\ti{t}{c})$ trivially.
+
+        $C \vdash v\;v : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a_2}\;\ti{t}{a};l_1;\phi_2$ by \refrule{Implies}.
+
+        $C \vdash \<setlocal> j : \ti{t}{a};l_1;\phi_2 \rightarrow \epsilon;l_1[j := \ti{t}{a}];\phi_2$ by \refrule{Set-Local}.
+
+        Therefore, $C \vdash v\;v\;(\<setlocal> j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Composition} and \refrule{Stack-Poly}.
+
     \item Case: $C \vdash \<getglobal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
 

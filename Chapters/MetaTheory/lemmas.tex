@@ -54,8 +54,8 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
     %% tee-local
     If $C \vdash \<teelocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti_2^{*} = ti^{*} \; \ti{t}{a}$, $l_2 = l_1[i := \ti{t}{a}]$, $C_\text{local}(i) = t$,
-    and $\phi_1 \implies \phi_2$.
+    then $ti_1^{*} = ti^{*} \; \ti{t}{a}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_2}$, $l_2 = l_1[i := \ti{t}{a}]$, $C_\text{local}(i) = t$,
+    and $\phi_1,\ti{t}{a_2},(= a_2\;a) \implies \phi_2$.
 
     %% get-global
     If $C \vdash \<getglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
