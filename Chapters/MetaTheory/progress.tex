@@ -20,15 +20,113 @@ However, for \name instructions that do not have the same semantics as in \wasm,
     Then we know that $(\vdash v: \ti{t_v}{a_v};\phi_v)^{*}$ and $S;S_\text{inst}(i),\text{local } t_v^{*} \vdash e^{*} : \epsilon;\ti{t_v}{a_v}^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ because they are premises of $admin-code$ which we have assumed to hold.
 
     \begin{itemize}
-        \item Case: $\vdash_i s;v^{*};v_2^{*}\;t.\<divpc>$
+        \item Case: $\vdash_i s;v^{*};(t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc>$
 
-        We have $S;S_\text{inst}(i),\text{local } t_v^{*} \vdash v_2^{*}\;t.\<divpc> : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$.
+        We must show that $(t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc> \hookrightarrow e'^{*}$ for some $e'^{*}$.
 
-        $v_2^{*} : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a_1}\;\ti{t}{a_2};l_1;\phi_1,\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; \ti{t}{c_2})$, where $\satisfies{\phi_1,\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; \ti{t}{c_2})}{\ti{t}{a_2}}{\neg(= a_2\; \ti{t}{0})}$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Div-Prechk}.
+        We have $S;() \vdash_i v^{*};(t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc> : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
 
-        Suppose $c_2=0$, this would mean that $\satisfies{\phi_1,\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; \ti{t}{c_2})}{\ti{t}{a_2}}{\neg(= a_2\; \ti{t}{0})}$ would be a contradiction.
+        Then, $(\vdash v : \ti{t_v}{a_v};\phi_v)^{*}$ for some $\ti{t_v}{a_v}^{*}$ and $\phi_v^{*}$, since it is a premise of \refrule{Code} which we have assumed to hold.
 
-        Therefore, it must be the case that $c_2\neq 0$, and therefore there must exist some $c_3$ such that $c_3=div(c_1,c_2)$.
-        Then, $s;v^{*};v_2^{*}\;t.\<divpc> \hookrightarrow_i s;v^{*};(t.\<const> c_3)$.
+        It is important to note that $\phi_v^{*}$ cannot contain a contradiction because it contains a single equality constraint per fresh index variable (see \refrule{Admin-Const}).
+
+        Further,
+        $$S;S_\text{inst}(i),\text{local } t_v^{*}\;
+        {\begin{stackTL}
+            \vdash (t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc>
+            \\: \epsilon;\ti{t_v}{a_v}^{*});\phi_v^{*} \rightarrow ti^{*};l;\phi
+        \end{stackTL}}$$
+        because it too is a premise of \refrule{Code}.
+
+        Then,
+        $$S_\text{inst}(i)
+        {\begin{stackTL}
+            \vdash (t.\<const> c_1)\;(t.\<const> c_2)
+            \\ : \epsilon;\ti{t_v}{a_v}^{*});\phi_v^{*}
+            \\ \;\; \rightarrow \ti{t}{a_1}\;\ti{t}{a_2};\ti{t_v}{a_v}^{*});\phi_v^{*},
+            {\begin{stackTL}
+                \ti{t}{a_1},(= a_1\; \ti{t}{c_1}),
+                \\ \ti{t}{a_2},(= a_2\; \ti{t}{c_2})
+            \end{stackTL}}
+        \end{stackTL}}$$
+        where $\\phi_v^{*},\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; \ti{t}{c_2}) \implies \neg(= a_2\; \ti{t}{0})$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Div-Prechk}.
+
+        If $c_2=0$, then
+        $$\phi_v^{*},\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; 0) \implies \neg(= a_2\; \ti{t}{0})$$
+        which is a contradiction since $a_2$ is fresh and therefore cannot be otherwise be constrained in $\phi_v^{*}$
+
+        Therefore, it must be the case that $c_2\neq 0$, and therefore there must exist some $c_3$ such that $c_3=div(c_1,c_2)$ since $div(c_1,c_2)$ is well-defined when $c_2$ is non-zero.
+        Then, $s;(t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc> \hookrightarrow_i (t.\<const> c_3)$.
+
+        \item Case: $\vdash_i s;v^{*};(t.\<const> c)\;t.\<loadpc> (tp\_sx)\; align\;o$
+
+        We must show that $s;(t.\<const> c)\;t.\<loadpc> (tp\_sx)\; align\;o \hookrightarrow e'^{*}$ for some $e'^{*}$.
+
+        We have $S;() \vdash_i v^{*};(t.\<const> c)\;t.\<loadpc> (tp\_sx)\; align\;o : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
+
+        We also have that $\vdash s : S$, and therefore $(n \leq |b^{*}|)^{*}$ where $S_\text{tab}=n^{*}$ and $s_\text{mem}=(b^{*})^{*}$.
+
+        Then, $(\vdash v : \ti{t_v}{a_v};\phi_v)^{*}$ for some $\ti{t_v}{a_v}^{*}$ and $\phi_v^{*}$, since it is a premise of \refrule{Code} which we have assumed to hold.
+
+        It is important to note that $\phi_v^{*}$ cannot contain a contradiction because it contains a single equality constraint per fresh index variable (see \refrule{Admin-Const}).
+
+        Further, we have that
+        $$S;S_\text{inst}(i),\text{local } t_v^{*}\;
+        {\begin{stackTL}
+            \vdash (t.\<const> c)\;t.\<loadpc> (tp\_sx)\; align\;o
+            \\ : \epsilon;\ti{t_v}{a_v}^{*});\phi_v^{*} \rightarrow ti^{*};l;\phi
+        \end{stackTL}}$$
+        because it too is a premise of \refrule{Code}.
+
+        Then,
+        $$S_\text{inst}(i) \vdash (t.\<const> c) :
+        {\begin{stackTL}
+            \epsilon;\ti{t_v}{a_v}^{*});\phi_v^{*}
+            \\ \rightarrow \ti{t}{a}\;\ti{t_v}{a_v}^{*});\phi_v^{*}, \ti{t}{a},(= a\; \ti{t}{c})
+        \end{stackTL}}$$
+        where
+        $$\phi_v^{*},\ti{t}{a},(= a\; \ti{t}{c}) \implies
+        {\begin{stackTL}
+            (\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}),
+            \\ (\<le>
+            {\begin{stackTL}
+                (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))
+                \\ \ti{\<ithreetwo>}{n_2*64 \text{Ki}})
+            \end{stackTL}}
+        \end{stackTL}}$$ and $n_2*64 \text{Ki} = S_\text{mem}(i,j)$
+        by \reflemma{Inversion} on \refrule{Composition} and \refrule{Load-Prechk}.
+
+        If $c+o<0$, then
+        $$\phi_v^{*},\ti{t}{a},(= a\; \ti{t}{c}) \implies
+        {\begin{stackTL}
+            (\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}),
+            \\ (\<le>
+            {\begin{stackTL}
+                (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))
+                \\ \ti{\<ithreetwo>}{n_2*64 \text{Ki}})
+            \end{stackTL}}
+        \end{stackTL}}$$
+        is a contradiction since $a+o<0$ and therefore $(\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0})$ is contradictory.
+
+        If $c+o+|tp|>=n_2*64 \text{Ki}$, then
+        $$\phi_v^{*},\ti{t}{a},(= a\; \ti{t}{c}) \implies
+        {\begin{stackTL}
+            (\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}),
+            \\ (\<le>
+            {\begin{stackTL}
+                (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))
+                \\ \ti{\<ithreetwo>}{n_2*64 \text{Ki}})
+            \end{stackTL}}
+        \end{stackTL}}$$
+        is a contradiction since $c+o+|tp|>n_2*64 \text{Ki}$, and therefore the proposition $(\<le> (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))\; \ti{\<ithreetwo>}{n_2*64 \text{Ki}})$ is contradictory.
+
+        Recall $\vdash s : S$, then, since $n_2*64 \text{Ki} = S_\text{mem}(i,j)$, we have $s_\text{mem}(i,j)=b_2^{*}$ where $n_2*64 \text{Ki} \leq |b_2^{*}|$.
+
+        Therefore, it must be the case that $c+o \geq 0$ and $c+o+|tp|<|b_2^{*}|$, and therefore $s_\text{mem}(i,k+0,|tp|)=b_3^{*}$ for some $b_3^{*}$ that is a subsequence of $b_2^{*}$.
+        Then, $s;(t.\<const> c)\;t.\<loadpc> (tp\_sx)\; align\;o \hookrightarrow_i t.\<const> \text{const}_t^{sx}(b_3^{*})$.
+
+        \item Case: $\vdash_i s;v^{*};(t.\<const> c)\;t.\<loadpc> align\;o$
+
+        Same as above, except with $|t|$ replacing $|tp|$ and $\text{const}_t^(b_3^{*})$.
     \end{itemize}
 \end{proof}
