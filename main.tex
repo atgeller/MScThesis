@@ -1,4 +1,4 @@
-\documentclass[msc]{ubcthesis}
+\documentclass[gpscopy,onehalfspacing,11pt]{ubcdiss}
 \PassOptionsToPackage{pdftex,pdfpagelabels}{hyperref}
 \usepackage{nameref}
 \usepackage{hyperref}
@@ -138,6 +138,7 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
     Preamble/acknowledgements,
     Preamble/dedication,
     Preamble/abstract,
+    Preamble/laysummary,
     Chapters/introduction,
     Chapters/background,
     Chapters/wasm-prechk,
@@ -153,38 +154,54 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
 \title{An Indexed Type System for Faster and Safer WebAssembly}
 %% \subtitle{With a Subtitle}
 
+\degreetitle{Masters of Science}
+
 \institution{The University Of British Columbia}
 \faculty{The Faculty of Graduate Studies}
-\institutionaddress{Vancouver}
-\program{Computer Science}
+\campus{Vancouver}
 \department{Computer Science}
+
+\examiningcommittee{William J. Bowman, Computer Science}{Co-supervisor}
+\examiningcommittee{Ivan Beschastnikh, Computer Science}{Co-supervisor}
+\examiningcommittee{Ronald Garcia, Computer Science}{Additional Examiner}
 
 %%\previousdegree{AAS-DTA (With High Distinction), Bellevue College, 2016}
 %%\previousdegree{B.Sc., The University of Washington, 2018}
 
-\copyrightyear{2020}
-\submitdate{\monthname\ \number\year} % The "\ " is required after
+\submissionmonth{August}
+\submissionyear{2020}
+%%\submitdate{\monthname\ \number\year} % The "\ " is required after
                                       % \monthname to prevent the
                                       % command from eating the space.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
-\frontmatter
 
 \maketitle
+
+\makecommitteepage
 
 \include{Preamble/abstract}
+\cleardoublepage
 
-\maketitle
-
-\include{Preamble/acknowledgements}
-
-\include{Preamble/dedication}
+\include{Preamble/laysummary}
+\cleardoublepage
 
 \tableofcontents                %% Mandatory
-\listoffigures                  %% Mandatory if thesis has figures
+\cleardoublepage
+
+\listoffigures                  %% Mandatory
+\cleardoublepage
+
+\include{Preamble/acknowledgements}
+\cleardoublepage
+
+\include{Preamble/dedication}
+\cleardoublepage
 
 \mainmatter
+
+\raggedbottom
 
 \include{Chapters/introduction}
 \include{Chapters/background}
