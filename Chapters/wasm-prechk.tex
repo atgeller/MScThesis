@@ -395,15 +395,18 @@ The same two differences described above between the expected indexed function t
 
 The only instructions that actually mutate the local index store are those that operate on local variables.
 $\<getlocal>$ produces a fresh indexed type $\ti{t}{a_2}$ that is constrained to be equal to the index variable associated with the local being retrieved.
-$\<setlocal>$ works in the reverse direction, replacing the index variable associated with the local being set with a fresh indexed type constrained to be equal to the value consumed.
-Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediately regurgitates the indexed type back onto the stack, like the Unix tool ``tee''.
+$\<setlocal>$ works in the reverse direction, replacing the index variable associated with the local being set.
+Because $\<setlocal>$ reasons about local variables, which are not part of the instruction sequence (unlike values on the stack), we can copy the index variable instead of creating a fresh one and constraining it to be equal like for $\<getlocal>$
+Finally, $\<teelocal>$ is effectively a combined $\<setlocal>$ and $\<getlocal>$ that consumes and immediately regurgitates a value, like the Unix tool ``tee''.
+Thus, the typing rule is similarly a combination of the $\<setlocal>$ and $\<getlocal>$ rules, where the indexed type from the stack replaces the local variable indexed type, and a fresh indexed type is produced that is constrained to be equal to the consumed index variable.
 \begin{mathpar}
     \inferrule*[right=\defrule{Get-Local}]{ %% get_local
         C_{\text{local}}(i) = t \and
         l(i) = \ti{t}{a} \and
+        a_2 \text{is fresh}
     }
     {
-        C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi
+        C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2},(= a_2 \; a)
     }
 
     \inferrule*[right=\defrule{Set-Local}]{ %% set_local
@@ -416,10 +419,11 @@ Finally, $\<teelocal>$ is effectively a $\<setlocal>$ that consumes and immediat
 
     \inferrule*[right=\defrule{Tee-Local}]{ %% tee_local
         C_{\text{local}}(i) = t \and
-        l_2 = l_1[i := \ti{t}{a_2}] \and
+        l_2 = l_1[i := \ti{t}{a}] \and
+        a_2 \text{is fresh}
     }
     {
-        C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a};l_2;\phi
+        C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a_2};l_2;\phi,\ti{t}{a_2},(= a_2 \; a)
     }
 \end{mathpar}
 
