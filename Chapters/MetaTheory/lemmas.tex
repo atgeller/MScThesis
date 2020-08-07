@@ -45,7 +45,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
     %% get-local
     If $C \vdash \<getlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
     then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $l_1(i) = \ti{t}{a}$,
-    and $\phi_1 \implies \phi_2$.
+    and $\phi_1,\ti{t}{a_2},(= a_2\;a) \implies \phi_2$.
 
     %% set-local
     If $C \vdash \<setlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,

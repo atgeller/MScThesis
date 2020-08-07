@@ -485,18 +485,16 @@ By case analysis on the reduction rules.
         and $S;C \vdash \<getlocal> j : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$.
 
         By \reflemma{Inversion} on \refrule{Get-Local},
-        $ti^{*} = \ti{t}{a}$, $l_1 = l$, and $\phi_1^j,\phi_v,\phi_2^k \implies \phi$.
+        $ti^{*} = \ti{t}{a_2}$, $l_1 = l$, and $\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a_2},(= a_2\;a) \implies \phi$.
 
         By \reflemma{Inversion} on \refrule{Admin-Const},
         $t.\<const> c = v$, and $\phi_v = \circ,\ti{t}{a},(= a\;\ti{t}{c})$.
 
-        $C \vdash v : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k \rightarrow \ti{t}{a};l;\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a},(= a\;\ti{t}{c})$ by \refrule{Const}.
+        $C \vdash v : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k \rightarrow \ti{t}{a_2};l;\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a_2},(= a_2\;\ti{t}{c})$ by \refrule{Const}.
 
-        \todo{Figure out if typing $v$ with a stale index variable is a problem.}
+        $\phi_v,\ti{t}{a_2},(= a_2\;\ti{t}{c}) \iff \phi_v,\ti{t}{a_2},(= a_2\;a)$ trivially.
 
-        $\phi_v \iff \phi_v,\ti{t}{a},(= a\;\ti{t}{c})$ trivially.
-
-        $C \vdash v : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k \rightarrow \ti{t}{a};l;\phi$ by \refrule{Implies}.
+        $C \vdash v : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k \rightarrow \ti{t}{a_2};l;\phi$ by \refrule{Implies}.
 
         Therefore, $S;\epsilon \vdash_i v_1^j\;v\;v_2^k;v : ti^{*};l;\phi$ by \refrule{Code}.
 
