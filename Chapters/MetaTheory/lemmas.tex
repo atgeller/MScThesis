@@ -39,7 +39,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
     %% return
     If $C \vdash \<return> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $C_\text{return} = ti^{*};l_1;\phi_3$,
+    then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $l_1 = l_3$, $C_\text{return} = ti^{*};l_3;\phi_3$,
     and $\phi_1 \implies \phi_3$.
 
     %% get-local
@@ -103,7 +103,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
     If $S;(ti^n;l;\phi)^{?} \vdash_i s;v^{*};e^{*} : ti^n;l;\phi$,
     then $(\vdash v : \ti{t}{a};\phi_v)^{*}$,
     and $S;C \vdash e^{*} : \epsilon;\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi$,
-    where $C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}$.
+    where $C = S_\text{inst}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}$.
 
     %% admin-const
     If $\vdash v : ti;\phi_v$,

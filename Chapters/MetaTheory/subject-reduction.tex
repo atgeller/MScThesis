@@ -403,26 +403,28 @@ By case analysis on the reduction rules.
     \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; v^n \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v^{*}_l \} \; v^n \<end> \hookrightarrow_j \; v^n$
 
-        By $inversion$ on $local$, $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
+        By \reflemma{Inversion} on \refrule{Local}, $ti_2^{*} = ti_2^{*} \; ti^n$, $l_1 = l_2$,
         $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};v^n : ti^n;l_3;\phi_3$,
         and $\phi_1,\phi_3 \implies \phi_2$.
 
-        By $inversion$ on $admin-code$, $(\vdash v_l : ti_l;\phi_l)^{*}$,
+        By \reflemma{Inversion} on \refrule{Code}, $(\vdash v_l : ti_l;\phi_l)^{*}$,
         and $S;C_l \vdash v^n : \epsilon:ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$.
 
-        By $inversion$ on $admin-const$, $\phi_l^{*} = \circ,\ti{t}{a}^{*},(= a \ti{t}{c})^{*}$.
+        By \reflemma{Inversion} on \refrule{Admin-Const}, $\phi_l^{*} = \circ,\ti{t}{a}^{*},(= a \ti{t}{c})^{*}$.
 
-        By $inversion$ on $const$, $\phi_l^{*},\phi_v^n \implies \phi_3$.
+        By \reflemma{Inversion} on \refrule{Const}, $\phi_l^{*},\phi_v^n \implies \phi_3$.
 
-        Since $l_2$ are free in the reduced program, $\phi_v^n \implies \phi_3$.
+        Since $a^{*}$ are fresh, $\phi_v^n \implies \phi_3$.
 
-        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v^n$ by $const$.
+        \thought{Is this enough justification?}
 
-        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by $subtyping$.
+        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v^n$ by \refrule{Const}.
 
-        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$ by $subtyping$.
+        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by \refrule{Implies}.
 
-        Therefore $S;C \vdash v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$ by \refrule{Implies}.
+
+        Therefore $S;C \vdash v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Stack-Poly}.
 
     \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
@@ -432,37 +434,48 @@ By case analysis on the reduction rules.
     \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; L^k[v^n \; \<return>] \<end> \hookrightarrow_j \; v^n$
 
-        By $inversion$, $ti_2^{*} = ti_1^{*} \; ti^n$, $\phi_1,\phi_3 \implies \phi_2$, and $l_1 = l_2$.
+        By \reflemma{Inversion} on \refrule{Local}, $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
+        $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};L^k[v^n \; \<return>] : ti^n;l_3;\phi_3$,
+        and $\phi_1,\phi_3 \implies \phi_2$.
 
-        $S;(ti^n;l_3;\phi_3) \vdash_i L^k[v^n \; \<return>] : ti^n;l_3;\phi_3$ because it is a premise of $local$ which we have assumed to hold.
+        By \reflemma{Inversion} on \refrule{Code}, $(\vdash v_l : ti_l;\phi_l)^{*}$,
+        $S;C_l \vdash L^k[v^n \; \<return>] : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$,
+        where $C_l = S_\text{inst}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l_3;\phi_3)$.
 
-        $(\vdash v_l : ti_l;\phi_l)^{*}$, and\\
-        $S;C_l \vdash L^k[v^n \; \<return>] : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$, where\\
-        $C_l = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l_3;\phi_3)$ because they are premises of $admin-code$ which we have assumed to hold.
+        By \reflemma{Inversion} on \refrule{Admin-Const}, $ti_l^{*} = \ti{t_l}{a_l}^{*}$.
 
-        $S;C_l \vdash \<return> : ti_3^{*} \; ti^n;l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$ by $return$.
+        By \reflemma{Inversion} on \refrule{Composition},
+        $C_l \vdash v^n : ti_4^{*};l_4;\phi_4 \rightarrow ti_5^{*};l_5;\phi_5$,
+        and $C_l \vdash \<return> : ti_5^{*};l_5;\phi_5 \rightarrow ti_6^{*};l_6;\phi_6$.
 
-        $S;C_l \vdash v^n : \epsilon;l_3;\phi_5 \rightarrow ti^n;l_3;\phi_6$, where $\phi_6 \implies \phi_3$ by $inversion$ on $const$, $composition$, and $subtyping$.
+        By \reflemma{Inversion} on \refrule{Return},
+        $ti_5^{*} = ti_7^{*}\;ti^n$, $l_5 = l_3$, and $\phi_5 \implies \phi_3$.
 
-        $S;C_l \vdash v^n : \epsilon;l_3;\phi_l^{*} \rightarrow ti^n;l_3;\phi_6$ by (Nested-Type-Preserved).
+        By \reflemma{Inversion} on \refrule{Const},
+        $ti_5^{*} = ti_4^{*}\;ti^n$, $l_4 = l_5$,
+        and $\phi_4,\phi_v^n \implies \phi_5$.
 
-        $\phi_l^{*} = \circ,\ti{t}{a}^{*},(\<eq> a \ti{t}{c})^{*}$ by $admin-const$.
+        $C_l \vdash v^n : \epsilon;l_3;\phi_4 \rightarrow ti^n;l_3;\phi_4,\phi_v^n$ by \refrule{Const}.
 
-        By $inversion$ on $const$, $\phi_6 = \phi_l^{*},\phi_v$.
+        $C_l \vdash v^n : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_4,\phi_v^n$ by \reflemma{Lift-Consts}.
 
-        \thought{Don't have to account for subtyping here because $\phi_6$ is an existential claim.}
+        By \reflemma{Inversion} on \refrule{Const}, $\phi_l^{*} \implies \phi_4$.
 
-        Because $a^{*}$ are fresh, $\phi_v \implies \phi_l^{*},\phi_v$.
+        \thought{This is kinda non-obvious}
 
-        \thought{Uses the same idea from the values case.}
+        Since $a_l^{*}$ are fresh, $\circ \implies \phi_l^{*}$.
 
-        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v$ by $const$.
+        $C_l \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_v^n$ by \refrule{Const}.
 
-        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by $subtyping$.
+        $C_l \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_1,\phi_3$ by \refrule{Implies}.
 
-        $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$ by $subtyping$.
+        \thought{This is using like 5 different implication arrows.}
 
-        Therefore $S;C \vdash v^n : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by $stack-poly$.
+        $C_l \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_2;\phi_2$ by \refrule{Implies}.
+
+        Therefore, $C_l \vdash v^n : ti_1^{*};l_1;\phi_l^{*} \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Stack-Poly}.
+
+        \thought{There has to be a better way to do this proof...}
 
     \item Case: $S;\epsilon \vdash_i v_1^j\;v\;v_2^k;\<getlocal> j : ti^{*};l;\phi$
     \\ $\land$ $v_1^j\;v\;v_2^k;\<getlocal> j \hookrightarrow v$
