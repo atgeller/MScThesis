@@ -39,7 +39,7 @@ Formally, however, these are different instructions with different semantics and
     \end{array}
     \end{math}
     \caption{\name syntax including the four \prechk-tagged instructions}
-    \label{fig:wasminstructions}
+    \label{fig:newinstructions}
 \end{figure}
 
 \subsection{The \name Index Language}
@@ -267,15 +267,27 @@ As a side note, we use $\|binop\|$ to indicate that we are using the $binop$ (or
 Binary operators do not affect or use local variables, they simply propagate, so the local index store. $l$, is the same in the precondition and postcondition.
 \begin{mathpar}
     \inferrule*[right=\defrule{Binop}]{a_3 \text{ is fresh}}{ %% binop
-        C \vdash t.binop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(\|binop\|\;a_1\;a_2))
+        C \vdash t.binop :
+        {\begin{stackTL}
+            \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
+            \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(\|binop\|\;a_1\;a_2))
+        \end{stackTL}}
     }
 
     \inferrule*[right=\defrule{Testop}]{a_2 \text{ is fresh}}{ %% testop
-        C \vdash t.testop : \ti{t}{a_1}\;l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi,\ti{t}{a_2},(= a_2\;(\|testop\|\;a_1))
+        C \vdash t.testop :
+        {\begin{stackTL}
+            \ti{t}{a_1}\;l;\phi
+            \\ \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi,\ti{t}{a_2},(= a_2\;(\|testop\|\;a_1))
+        \end{stackTL}}
     }
 
     \inferrule*[right=\defrule{Relop}]{a_3 \text{ is fresh}}{ %% relop
-        C \vdash t.relop : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(\|relop\|\;a_1\;a_2))
+        C \vdash t.relop :
+        {\begin{stackTL}
+            \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
+            \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(\|relop\|\;a_1\;a_2))
+        \end{stackTL}}
     }
 \end{mathpar}
 
@@ -286,8 +298,11 @@ For this rule we use the type-level ``if'' to allow the constraint on the result
     \inferrule*[right=\defrule{Select}]{a_3 \text{ is fresh}}{ %% select
         C \vdash \<select> : {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;\phi
-            \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},
-                (if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))
+            \\ \rightarrow \ti{t}{a_3};l;\phi,
+            {\begin{stackTL}
+                \ti{t}{a_3},
+                \\ (if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))
+            \end{stackTL}}
         \end{stackTL}}
     }
 \end{mathpar}
@@ -389,7 +404,11 @@ The same two differences described above between the expected indexed function t
         C_\text{table}(i) = (j, tfi_2^{*}) \and
     }
     {
-        C \vdash \<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
+        C\;
+        {\begin{stackTL}
+            \vdash \<callindirect>  ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+            \\ : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
+        \end{stackTL}}
     } \and
 \end{mathpar}
 
@@ -567,7 +586,11 @@ As an aside, recall that $a_3 \not\in \phi$ ensures that $a_3$ is fresh.
         \phi \implies \neg(=\ a_2\ 0) \and
         a_3 \not\in \phi
     }{
-        C \vdash t.\<divpc> : \ti{t}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(div\;a_1\;a_2))
+        C \vdash t.\<divpc> :
+        {\begin{stackTL}
+            \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
+            \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(div\;a_1\;a_2))
+        \end{stackTL}}
     }
 \end{mathpar}
 
@@ -585,12 +608,16 @@ Therefore, we just use the initial memory size.
         a_3 \not\in \phi \\
         \phi \implies
         {\begin{stackTL}
-            (\<ge> (\<add> a_1\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}), 
+            (\<ge> (\<add> a_1\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}),
             \\ (\<le> (\<add> a_1\; (\<add> \ti{\<ithreetwo>}{o+width}))\; \ti{\<ithreetwo>}{n*64 \text{Ki}})
         \end{stackTL}}
     }
     {
-        C \vdash t.\<loadpc> (tp\_sx)^{?}\; align\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
+        C \vdash t.\<loadpc> (tp\_sx)^{?}\; align\; o :
+        {\begin{stackTL}
+            \ti{\<ithreetwo>}{a_1};l;\phi
+            \\ \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
+        \end{stackTL}}
     }
 
     \inferrule*[right=\defrule{Store-Prechk}]{ %% memory store
@@ -598,8 +625,8 @@ Therefore, we just use the initial memory size.
         2^{align} \leq (|tp| <)^{?} |t| \\
         \phi \implies
         {\begin{stackTL}
-            (\<ge> (\<add> a_1\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}), 
-            \\ (\<le> (\<add> a_1\; (\<add> \ti{\<ithreetwo>}{o+width}) \ti{\<ithreetwo>}{0}) \ti{\<ithreetwo>}{n*64\text{Ki}})
+            (\<ge> (\<add> a_1\; \ti{\<ithreetwo>}{o})\; \ti{\<ithreetwo>}{0}),
+            \\ (\<le> (\<add> a_1\; (\<add> \ti{\<ithreetwo>}{o+width}))\; \ti{\<ithreetwo>}{n*64\text{Ki}})
         \end{stackTL}}
     }
     {
@@ -613,17 +640,22 @@ We ensure this by requiring that the type of every function at every possible in
 Further, we must show that the provided table index is within the table boundaries: $\phi \implies 0 \leq c < j$.
 \begin{mathpar}
     \inferrule*[right=\defrule{Call-Indirect-Prechk}]{ %% call_indirect
-        C_{table}(i) = (j, (tfi_2 ...)) \and
-        \phi \implies 0 \leq c < j \\
+        C_{table}(i) = (j, (tfi_2 ...)) \\
+        \phi \implies 0 \leq c < j \and
+        tfis=(tfi_2 ...) \\
         tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
         \forall 0 \leq i < j.\;
         {\begin{stackTL}
-            (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) 
-            \\ \lor\; tfis(i) <: tfi$ where $tfis=(tfi_2 ...)
+            (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a))
+            \\ \lor\; tfis(i) <: tfi
         \end{stackTL}}
     }
     {
-        C \vdash \<callindirectpc> tfi : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
+        C \vdash \<callindirectpc> tfi :
+        {\begin{stackTL}
+            ti_1^{*}\;\ti{i32}{a};l;\phi_1
+            \\ \rightarrow ti_2^{*};l;\phi_1,\phi_2
+        \end{stackTL}}
     } \and
 \end{mathpar}
 
@@ -643,9 +675,9 @@ This means that functions can refer to themselves, other functions, all globals,
 This may seem to be a circular definition, but the type of the module is declared statically (as the combined declared types of all the module components), so it is just checking against the expected module index type context.
 Globals, $glob$, are typechecked under the module index context containing only the global variable declarations preceding the current declaration.
 
-\begin{figure}[h]
+\begin{figure}
     \begin{mathpar}
-        \inferrule*[]{ %% local function
+        \inferrule*[right=\defrule{Func}]{ %% local function
             tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
             C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*};l_2;\phi_2),\text{return } (ti_2^{*},l_2,\phi_2) \\
             C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
@@ -700,7 +732,7 @@ Globals, $glob$, are typechecked under the module index context containing only 
             (C \vdash mem : ex_m^{*}\; n)^{?} \\
             (C_i=\{\text{global } tg^{i-1}\})_i^{*} \and
             ex_f^{*\;*}\; ex_g^{*\;*}\; ex_t^{*\;?}\; ex_m^{*\;?} \text{ distinct} \\
-            C = \{\text{func } tfi^{*}, \text{global } tg^{*}, \text{table } (n,tfi^n)^{?}, \text{memory } n^{?}\}  
+            C = \{\text{func } tfi^{*}, \text{global } tg^{*}, \text{table } (n,tfi^n)^{?}, \text{memory } n^{?}\}
         } {
             \vdash \<module> f^{*}\; glob^{*}\; tab^{?}\; mem^{?}
         }

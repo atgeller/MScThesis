@@ -156,7 +156,7 @@ Finally, we introduce reduction contexts, $L^{k}$, where $k$ is the nesting dept
 Reduction contexts are based on label blocks, so $L^{k}$ contains $k$ nested label blocks.
 
 There are a few final notational digressions we must make before describing the reduction relation.
-First, objects such as $s=\{\text{inst } inst^{*}, \text{tab } tabinst^{*}, \text{mem } meminst^{*}\}$ can be derefenced using their keywords (\eg inst).
+First, objects such as $s=\{\text{inst } inst^{*}, \dots \}$ can be derefenced using their keywords (\eg ``inst'').
 For example, $s_\text{inst}=inst^{*}$ given the above definition of $s$.
 Second, we can index into a sequence to get a specific element (\eg $inst^{*}(i)$ returns the $i$th $inst$ in $inst^{*}$).
 Lastly, \wasm uses several shorthands to get information out of module instances in $s$: $s_\text{func}(i)(j)=s_\text{inst}(i)_\text{func}(j)$.
@@ -461,28 +461,28 @@ For function calls we lookup the type of the function in the context.
 Finally, setting a local variable consumes a value of the type that is given by looking up the type of the local in the context.
 
 \begin{mathpar}
-    \inferrule{ }{C \vdash t.binop : t\; t \rightarrow t}
+    \inferrule*[right=\defrule{Wasm-Binop}]{ }{C \vdash t.binop : t\; t \rightarrow t}
 
-    \inferrule{
+    \inferrule*[right=\defrule{Wasm-Block}]{
         tf = t_1^{n} \rightarrow t_2^{m} \and
         C,\text{label}(t_2^{m})\vdash e^{*} : tf
     }{
         C \vdash \<block>\; tf\; e^{*} \<end> : tf
     }
 
-    \inferrule{
+    \inferrule*[right=\defrule{Wasm-Br}]{
         C,\text{label}(i) = t^{n}
     }{
         C \vdash \<br> i \<end> : t_1^{*}\;t^{n} \rightarrow t_2^{*}
     }
 
-    \inferrule{
+    \inferrule*[right=\defrule{Wasm-Call}]{
         C_\text{func}(i) = tf
     }{
         C \vdash \<call> i \<end> : tf
     }
 
-    \inferrule{
+    \inferrule*[right=\defrule{Wasm-Set-Local}]{
         C_\text{local}(i) = t
     }{
         C \vdash \<setlocal> i : t \rightarrow \epsilon
@@ -494,9 +494,9 @@ An instruction $e_2$ can be appended to a sequence of instructions $e_1^{*}$ if 
 Then, the precondition of the full sequence $e_1^{*}\;e_2$ is the precondition of $e_1^{*}$ and the postcondition of $e_1^{*}\;e_2$ is the postcondition of $e_2$.
 
 \begin{mathpar}
-    \inferrule{ }{C \vdash \epsilon : \epsilon \rightarrow \epsilon}
+    \inferrule*[right=\defrule{Wasm-Empty}]{ }{C \vdash \epsilon : \epsilon \rightarrow \epsilon}
 
-    \inferrule{
+    \inferrule*[right=\defrule{Wasm-Composition}]{
         C \vdash e_1^{*} : t_1^{*} \rightarrow t_2^{*}
         C \vdash e_2 : t_2^{m} \rightarrow t_3^{*}
     }{
