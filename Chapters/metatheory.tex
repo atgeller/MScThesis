@@ -11,6 +11,7 @@ While we have shown the \name typing rules for instructions within a static cont
 \autoref{fig:programrules} shows the \name typing rules for module instances $inst$, the run time store $s$, and various data structures contained within $s$.
 $S$ is the store context, it is to $s$ as $C$ is to $inst$.
 That is, it contains the type information for everything in $s$.
+There are many different judgments being introduced, so we explicitly state the form of the judgment before stating the rule for that judgment.
 
 Closures are type checked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to type check the function definition inside of the closure.
 \refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to type check local and global variables.
@@ -24,16 +25,22 @@ Further, \refrule{Store} ensures that all of the closures in all of the tables i
 
 \begin{figure}
     \begin{mathpar}
+        \boxed{S \vdash cl : tfi} \\
+
         \inferrule*[right=\protect\defrule{Closure}]{ %% closure
             S_\text{inst}(i) \vdash f : tfi
         } {
             S \vdash \{ \text{inst} \; i, \text{code} \; f \} : tfi
         }
 
+        \\ \boxed{\vdash v : ti;\phi} \\
+
         \inferrule*[right=\defrule{Admin-Const}]{ %% admin const
         } {
             \vdash t.\<const> c : \ti{t}{a};\circ,\ti{t}{a},(\<eq> a \; \ti{t}{c})
         }
+
+        \\ \boxed{S \vdash inst : C} \\
 
         \inferrule*[right=\defrule{Instance}]{ %% instance
             (S \vdash cl : tfi)^{*} \and
@@ -48,6 +55,8 @@ Further, \refrule{Store} ensures that all of the closures in all of the tables i
             \end{stackTL}}
         }
 
+        \\ \boxed{\vdash s : S} \\
+
         \inferrule*[right=\defrule{Store}]{ %% store
             S = \{ \text{inst} \; C^{*}, \text{tab} \; n^{*}, \text{mem} \; m^{*} \}\\
             (S \vdash inst : C)^{*} \and
@@ -58,6 +67,8 @@ Further, \refrule{Store} ensures that all of the closures in all of the tables i
             \vdash \{ \text{inst} \; inst^{*}, \text{tab} \; (cl^{*})^{*}, \text{mem} \; (b^{*})^{*} \} : S
         }
 
+        \\ \boxed{S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^{*};l;\phi} \\
+
         \inferrule*[right=\defrule{Code}]{ %% admin code
             (\vdash v : \ti{t}{a};\phi_v)^{*}\\
             C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
@@ -65,6 +76,8 @@ Further, \refrule{Store} ensures that all of the closures in all of the tables i
         } {
             S;(ti^n;l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^n;l;\phi
         }
+
+        \boxed{\vdash s;v^{*};e^{*}} \\
 
         \inferrule*[right=\defrule{Program}]{ %% admin program
             \vdash s : S \and
@@ -85,6 +98,8 @@ There is an optional return postcondition for \refrule{Code} because \refrule{Lo
 \refrule{Program} uses \refrule{Code} without using the optional return postcondition, as well as \refrule{Store}, to ensure that a reducible \name program is well-typed.
 
 \begin{figure}
+    $$\boxed{S;C \vdash e^{*} : tfi}$$
+
     \begin{mathpar}
         \inferrule*[right=\defrule{Local}]{ %% local
             S;(ti^n;l_2;\phi_2) \vdash_i v_l^{*};e^{*} : ti^n;l_2;\phi_2
@@ -100,14 +115,14 @@ There is an optional return postcondition for \refrule{Code} because \refrule{Lo
 
         \inferrule*[right=\defrule{Trap}]{ %% trap
         } {
-            C \vdash \<trap> : tfi
+            S;C \vdash \<trap> : tfi
         }
 
         \inferrule*[right=\defrule{Label}]{ %% label
-            C\vdash e_0^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_2 \\
-            C,\text{label } (ti_3^{*};l_3;\phi_3) \vdash e^{*} : \epsilon;l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+            S;C\vdash e_0^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            S;C,\text{label } (ti_3^{*};l_3;\phi_3) \vdash e^{*} : \epsilon;l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } {
-            C \vdash \<label> \{ e_0^{*} \} \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+            S;C \vdash \<label> \{ e_0^{*} \} \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         }
     \end{mathpar}
     \caption{\name Administrative Instruction Rules}
@@ -117,11 +132,16 @@ There is an optional return postcondition for \refrule{Code} because \refrule{Lo
 \autoref{fig:adminrules} extends the \name typing rules for instructions to include administrative instructions.
 \refrule{Local} typechecks the local block using \refrule{Code} to ensure that the body is well typed with the indexed types and constraints for local variables provided by the local block as the precondition and any postcondition.
 Since local blocks are inline expansions of function calls, we use the optional return postcondition functionality of \refrule{Code} to ensure that returning from inside the local block will be well-typed.
+
 \refrule{Call-Cl} typechecks calling a closure by ensuring that the closure being called has the same type as the call instruction.
 \refrule{Trap} is always well-typed under any precondition and postcondition.
-Finally, \refrule{Label} typechecks the body of the label block with the precondition of the saved instructions pushed onto the label stack.
+
+\refrule{Label} typechecks the body of the label block with the precondition of the saved instructions pushed onto the label stack.
 This was, if the label was generated by a loop, then the precondition of the saved values is the precondition of the loop, and we know the loop is well-typed.
 Otherwise, the saved instructions will be an empty sequence and will be well typed from the precondition.
+
+Additionally, we must keep track of the store context $S$ in all of the other typing rules.
+We do this by ``silently'' adding $S$ to the typing judgment and rules in \autoref{sec:typesys}.
 
 Given these additional typing judgments and rules, we can now show the metatheoretic properties mentioned above.
 

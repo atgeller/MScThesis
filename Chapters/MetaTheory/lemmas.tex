@@ -3,8 +3,7 @@ For example, if we have a typing derivation, $D$ for $C \vdash t.const c : ti_1^
 $D$ can also include any number of applications of \refrule{Subtyping} and \refrule{Stack-Poly}, because they can be applied to any well typed sequence of instructions, as well as \refrule{Composition} since it can be used with the empty sequence and any well-typed single instruction.
 However, the addition of \refrule{Composition} with the empty sequence is trivial because the postcondition of an empty instruction sequence must be immediately reachable from the precondition, and therefore the stack and local index store must be the same in both (and the postcondition index type context being reachable from the precondition index type context).
 
-\begin{lemma}{(Inversion)}
-    \todo{So many cases to write out}
+\begin{lemma}{\deflemma{Inversion}}
 
     %% const
     If $C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
