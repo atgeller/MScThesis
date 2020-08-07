@@ -407,10 +407,10 @@ By case analysis on the reduction rules.
         $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};v^n : ti^n;l_3;\phi_3$,
         and $\phi_1,\phi_3 \implies \phi_2$.
 
-        By \reflemma{Inversion} on \refrule{Code}, $(\vdash v_l : ti_l;\phi_l)^{*}$,
-        and $S;C_l \vdash v^n : \epsilon:ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$.
+        $(\vdash v_l : ti_l;\phi_l)^{*}$ and $S;C_l \vdash v^n : \epsilon:ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$
+        because they are premises of \refrule{Code} which we have assumed to hold.
 
-        By \reflemma{Inversion} on \refrule{Admin-Const}, $\phi_l^{*} = \circ,\ti{t}{a}^{*},(= a\;\ti{t}{c})^{*}$.
+        $\phi_l^{*} = \circ,\ti{t}{a}^{*},(= a\;\ti{t}{c})^{*}$ because it is a premise of \refrule{Admin-Const} which we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Const}, $\phi_l^{*},\phi_v^n \implies \phi_3$.
 
@@ -438,11 +438,11 @@ By case analysis on the reduction rules.
         $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};L^k[v^n \; \<return>] : ti^n;l_3;\phi_3$,
         and $\phi_1,\phi_3 \implies \phi_2$.
 
-        By \reflemma{Inversion} on \refrule{Code}, $(\vdash v_l : ti_l;\phi_l)^{*}$,
-        $S;C_l \vdash L^k[v^n \; \<return>] : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$,
-        where $C_l = S_\text{inst}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l_3;\phi_3)$.
+        $(\vdash v_l : ti_l;\phi_l)^{*}$ and $S;C_l \vdash L^k[v^n \; \<return>] : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$,
+        where $C_l = S_\text{inst}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l_3;\phi_3)$,
+        because they are premises of \refrule{Code} that we have assumed to hold.
 
-        By \reflemma{Inversion} on \refrule{Admin-Const}, $ti_l^{*} = \ti{t_l}{a_l}^{*}$.
+        $ti_l^{*} = \ti{t_l}{a_l}^{*}$ because it is a premise of \refrule{Admin-Const} which we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Composition},
         $C_l \vdash v^n : ti_4^{*};l_4;\phi_4 \rightarrow ti_5^{*};l_5;\phi_5$,
@@ -480,15 +480,13 @@ By case analysis on the reduction rules.
     \item Case: $S;\epsilon \vdash_i v_1^j\;v\;v_2^k;\<getlocal> j : ti^{*};l;\phi$
     \\ $\land$ $v_1^j\;v\;v_2^k;\<getlocal> j \hookrightarrow v$
 
-        By \reflemma{Inversion} on \refrule{Code},
-        $\vdash v : \ti{t}{a};\phi_v$,
-        and $S;C \vdash \<getlocal> j : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$.
+        $\vdash v : \ti{t}{a};\phi_v$ and $S;C \vdash \<getlocal> j : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$,
+        because they are premises of \refrule{Code} that we have assumed to hold.
+
+        $t.\<const> c = v$, and $\phi_v = \circ,\ti{t}{a},(= a\;\ti{t}{c})$, because it is a premise of \refrule{Admin-Const} that we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Get-Local},
         $ti^{*} = \ti{t}{a_2}$, $l_1 = l$, and $\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a_2},(= a_2\;a) \implies \phi$.
-
-        By \reflemma{Inversion} on \refrule{Admin-Const},
-        $t.\<const> c = v$, and $\phi_v = \circ,\ti{t}{a},(= a\;\ti{t}{c})$.
 
         $C \vdash v : \epsilon;l;\phi_1^j,\phi_v,\phi_2^k \rightarrow \ti{t}{a_2};l;\phi_1^j,\phi_v,\phi_2^k,\ti{t}{a_2},(= a_2\;\ti{t}{c})$ by \refrule{Const}.
 
@@ -501,12 +499,11 @@ By case analysis on the reduction rules.
     \item Case: $S;\epsilon \vdash_i v_1^j \; v \; v_2^k; v' \; (\<setlocal> j) : ti^{*};l;\phi$
     \\ $\land$ $v_1^j \; v \; v_2^k;v' \; \<setlocal> j \hookrightarrow v_1^j \; v' \; v_2^k;\epsilon$
 
-        By \reflemma{Inversion} on \refrule{Admin-Code}, $\vdash v : \ti{t}{a};\phi_v$,\\
-        $S;C \vdash v' \; (\<setlocal> j) : \epsilon:l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$,\\
-        $l_1(j) = \ti{t}{a}$, and $C_\text{local}(j) = t$.
+        $\vdash v : \ti{t}{a};\phi_v$,
+        $S;C \vdash v' \; (\<setlocal> j) : \epsilon:l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti^{*};l;\phi$,
+        $l_1(j) = \ti{t}{a}$, and $C_\text{local}(j) = t$ because they are premises of \refrule{Code} that we have assumed to hold.
 
-        By \reflemma{Inversion} on \refrule{Admin-Const}, $t.\<const> c = v$, and\\
-        $\phi_v = \circ,\ti{t}{a},(= a \; \ti{t}{c})$.
+        $t.\<const> c = v$ and $\phi_v = \circ,\ti{t}{a},(= a\;\ti{t}{c})$ because they are premises of \refrule{Admin-Const} that we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Composition},
         $C \vdash v' : \epsilon;l_1;\phi_1^j,\phi_v,\phi_2^k \rightarrow ti_3^{*};l_3;\phi_3$,
@@ -566,17 +563,17 @@ By case analysis on the reduction rules.
     \item Case: $C \vdash \<getglobal> j : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     \\ $\land$ $s;\<getglobal> j \hookrightarrow_i s_\text{glob}(i,j)$
 
-        By \reflemma{Inversion} on \refrule{Program}, $\vdash s : S$, and $S;\epsilon \vdash_i v^{*};\<getglobal> j : ti^{*};l;\phi$.
+        $\vdash s : S$ and $S;\epsilon \vdash_i v^{*};\<getglobal> j : ti^{*};l;\phi$ because they are premises of \refrule{Program} that we have assumed to hold.
 
-        By \reflemma{Inversion} on \refrule{Code}, $S;C \vdash \<getglobal> j : \epsilon;l_1;\phi_v^{*} \rightarrow ti^{*};l;\phi$.
+        $S;C \vdash \<getglobal> j : \epsilon;l_1;\phi_v^{*} \rightarrow ti^{*};l;\phi$ because it is a premise of \refrule{Code} that we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Get-Global}, $ti^{*} = \ti{t}{a}$, $l = l_1$, $C_\text{global}(j) = \text{mut}^{?} t$,
         and $\phi_v^{*},\ti{t}{a} \implies \phi$.
 
-        By \reflemma{Inversion} on \refrule{Store}, $S \vdash s_\text{inst}(i) : C$.
+        $S \vdash s_\text{inst}(i) : C$ because it is a premise of \refrule{Store} that we have assumed to hold.
 
         Recalling that $C_\text{global}(j) = \text{mut}^{?} t$;
-        by \reflemma{Inversion} on \refrule{Instance}, $\vdash s_\text{glob}(i,j) : \ti{t}{a_1};\phi_1$.
+        $\vdash s_\text{glob}(i,j) : \ti{t}{a_1};\phi_1$ because it is a premise of \refrule{Instance} that we have assumed to hold.
 
         $S;C \vdash t.\<const> c : \epsilon;l;\phi_v^{*} \rightarrow \ti{t}{a};l;\phi_v^{*},\ti{t}{a},(= a \; \ti{t}{c})$ by \refrule{Const},
         where $t.\<const> c = s_\text{glob}(i,j)$.
@@ -585,7 +582,7 @@ By case analysis on the reduction rules.
 
         $S;C \vdash s_\text{glob}(i,j) : \epsilon;l;\phi_v^{*} \rightarrow \ti{t}{a};l;\phi$ by \refrule{Implies}.
 
-        $S;\epsilon \vdash_i v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by \refrule{Code}, using the premises from \reflemma{Inversion}.
+        $S;\epsilon \vdash_i v^{*};s_\text{glob}(i,j) : \ti{t}{a};l;\phi$ by \refrule{Code}, having assumed that the other premises hold.
 
         \todo{Phrase this better.}
 
@@ -594,9 +591,9 @@ By case analysis on the reduction rules.
     \item Case: $\vdash_i s;v_l^{*};v \; (\<setglobal> j) : ti^{*};l;\phi$
     \\ $\land$ $s;v \; (\<setglobal> j) \hookrightarrow_i s';\epsilon$, where $s' = s$ with $\text{glob}(i,j) = v$
 
-        By \reflemma{Inversion} on \refrule{Program}, $\vdash s : S$, $S;\epsilon \vdash_i v_l^{*};v \; (\<setglobal> j) : ti^{*};l;\phi$.
+        $\vdash s : S$ and $S;\epsilon \vdash_i v_l^{*};v \; (\<setglobal> j) : ti^{*};l;\phi$ because they are premises of \refrule{Program} that we have assumed to hold.
 
-        By \reflemma{Inversion} on \refrule{Code}, $S;C \vdash v \; (\<setglobal> j) : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$.
+        $S;C \vdash v \; (\<setglobal> j) : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$ because it is a premise of \refrule{Code} that we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Composition}, \refrule{Set-Global}, and \refrule{Const},
         $t.\<const> c = v$, $ti^{*} = \epsilon$, $l_1 = l$, $C_\text{global}(j) = \text{mut}\;t$,
@@ -622,9 +619,9 @@ By case analysis on the reduction rules.
 
         $S;\epsilon \vdash_i v_l^{*};\epsilon : ti^{*};l;\phi$ by \refrule{Code}.
 
-        By \reflemma{Inversion} on \refrule{Store}, $S \vdash s_\text{inst}(i) : C$.
+        $S \vdash s_\text{inst}(i) : C$ because it is a premise of \refrule{Store} that we have assumed to hold.
 
-        By \reflemma{Inversion} on \refrule{Instance}, $\vdash s_\text{glob}(i,j) : \ti{t}{a_g};\phi_g$.
+        $\vdash s_\text{glob}(i,j) : \ti{t}{a_g};\phi_g$ because it is a premise of \refrule{Instance} that we have assumed to hold.
 
         $s' : S$ by \refrule{Instance} and \refrule{Store}.
 
