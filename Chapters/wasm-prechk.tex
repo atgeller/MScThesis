@@ -497,7 +497,7 @@ It is checked against the size of the type of the value being stored/loaded $|t|
         a \text{ is fresh}
     }
     {
-        C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi
+        C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi,\ti{\<ithreetwo>}{a}
     }
 
     \inferrule*[right=\defrule{Grow-Memory}]{ %% grow mem
@@ -505,7 +505,7 @@ It is checked against the size of the type of the value being stored/loaded $|t|
         a_2 \text{ is fresh}
     }
     {
-        C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi
+        C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi,\ti{\<ithreetwo>}{a_2}
     }
 \end{mathpar}
 
