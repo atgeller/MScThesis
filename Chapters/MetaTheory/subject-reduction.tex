@@ -637,7 +637,7 @@ By case analysis on the reduction rules.
         $S;C \vdash (\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$ because it is a premise of \refrule{Code} which we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, \refrule{Mem-Load},
-        $ti^{*} = \ti{t}{a}$, $l_1 = l$, $\phi_1,\ti{t}{a} \implies \phi$.
+        $ti^{*} = \ti{t}{a}$, $l_1 = l$, and $\phi_1,\ti{t}{a} \implies \phi$.
 
         $C \vdash t.\<const> \text{const}_t(b^{*}) : \epsilon;l;\phi_1 \rightarrow \ti{t}{a};l;\phi_1,\ti{t}{a},(= a\;\ti{t}{c})$ by \refrule{Const}.
 
@@ -665,7 +665,7 @@ By case analysis on the reduction rules.
         $S;C \vdash (\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$ because it is a premise of \refrule{Code} which we have assumed to hold.
 
         By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Mem-Store},
-        $ti^{*} = \epsilon$, $l_1 = l$, $\phi_1,\ti{\<ithreetwo>}{a_1},(= a_1\;\ti{\<ithreetwo>}{k}),\ti{t}{a_2},(= a_2\;\ti{t}{c}) \implies \phi$.
+        $ti^{*} = \epsilon$, $l_1 = l$, and $\phi_1,\ti{\<ithreetwo>}{a_1},(= a_1\;\ti{\<ithreetwo>}{k}),\ti{t}{a_2},(= a_2\;\ti{t}{c}) \implies \phi$.
 
         Since $a_1$ and $a_2$ are fresh, $\phi_1 \implies \phi$.
 
@@ -677,7 +677,7 @@ By case analysis on the reduction rules.
 
         \thought{Maybe justify more? Intuitively the contents of the mem function doesn't affect the store typing.}
 
-        $S;\epsilon \vdash v^{*};\epsilon : ti^{*};l;\phi$ by \refrule{Code}.
+        $S;\epsilon \vdash_i v^{*};\epsilon : ti^{*};l;\phi$ by \refrule{Code}.
 
         Therefore, $\vdash_i s';\epsilon : ti^{*};l;\phi$ by \refrule{Program}.
 
@@ -691,6 +691,25 @@ By case analysis on the reduction rules.
     \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp^{?}\;align\;o) \hookrightarrow_i \<trap>$
 
         Trivially, $C \vdash \<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Trap}.
+
+    \item Case: $\vdash_i s;v^{*};\<currentmemory> : ti^{*};l;\phi$
+    \\ $\land$ $s;\<currentmemory> \hookrightarrow_i \<ithreetwo>.\<const> |s_\text{mem}(i,*)|/64\text{Ki}$
+
+        $S;\epsilon \vdash_i v^{*};\<currentmemory> : ti^{*};l;\phi$, and $s : S$ because they are premises of \refrule{Program} which we have assumed to hold.
+
+        $S;C \vdash \<currentmemory> : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$ because it is a premise of \refrule{Code} which we have assumed to hold.
+
+        By \reflemma{Inversion} on \refrule{Current-Memory}, $ti^{*} = \ti{\<ithreetwo>}{a}$, $l_1 = l$, and $\phi_1,\ti{\<ithreetwo>}{a} \implies \phi$.
+
+        Let $c = |s_\text{mem}(i,*)|/64\text{Ki}$.
+
+        $S;C \vdash \<ithreetwo>.\<const> c : \epsilon;l;\phi_1 \rightarrow \ti{\<ithreetwo>}{a};l;\phi_1,\ti{\<ithreetwo>}{a},(= a\;\ti{\<ithreetwo>}{c})$ by \refrule{Const}.
+
+        $S;C \vdash \<ithreetwo>.\<const> c : \epsilon;l;\phi_1 \rightarrow \ti{\<ithreetwo>}{a};l;\phi$ by \refrule{Implies}.
+
+        $S;\epsilon \vdash_i v^{*};\<ithreetwo>.\<const> c : ti^{*};l;\phi$ by \refrule{Code}.
+
+        Therefore, $\vdash_i s;\<ithreetwo>.\<const> |s_\text{mem}(i,*)|/64\text{Ki} : ti^{*};l;\phi$ by \refrule{Program}.
 
 \end{itemize}
 \end{proof}
