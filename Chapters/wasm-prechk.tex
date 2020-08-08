@@ -636,19 +636,16 @@ Therefore, we just use the initial memory size.
 
 Indirect function calls in \wasm require a dynamic check to ensure that the index into the table points to a function of a suitable type (recall the explanation of tables and \<callindirect> from \autoref{sec:wasmsemantics}).
 Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
-We ensure this by requiring that the type of every function at every possible index value has a subtype of the expected type: $\forall 0 \leq i < j. (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor tfis(i) <: tfi$ where $tfis=(tfi_2 ...)$.
-Further, we must show that the provided table index is within the table boundaries: $\phi \implies 0 \leq c < j$.
+We ensure this by requiring that the type of every function at every possible index value has a subtype of the expected type: $\forall i. (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor tfis(i) <: tfi$ where $tfis=(tfi_2 ...)$.
+The $\forall$ and $\lor$ in this case are at the meta level and not within the index language.
+Further, we must show that the provided table index is within the table boundaries: $\phi \implies (\<gt>\; n\; a) \land (\<le> \ti{\<ithreetwo>}{0}\; a)$.
 \begin{mathpar}
     \inferrule*[right=\defrule{Call-Indirect-Prechk}]{ %% call_indirect
-        C_{table}(i) = (j, (tfi_2 ...)) \\
-        \phi \implies 0 \leq c < j \and
+        C_{table}(i) = (n, (tfi_2 ...)) \\
+        \phi \implies (\<gt>\; n\; a) \land (\<le> \ti{\<ithreetwo>}{0}\; a) \and
         tfis=(tfi_2 ...) \\
         tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
-        \forall 0 \leq i < j.\;
-        {\begin{stackTL}
-            (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a))
-            \\ \lor\; tfis(i) <: tfi
-        \end{stackTL}}
+        \forall i.\; (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor\; tfis(i) <: tfi
     }
     {
         C \vdash \<callindirectpc> tfi :

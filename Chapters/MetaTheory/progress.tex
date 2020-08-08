@@ -153,14 +153,17 @@ However, for \name instructions that do not have the same semantics as in \wasm,
         $$S_\text{inst}(i)
         {\begin{stackTL}
             \;\vdash (\<ithreetwo>.\<const> k)\;(t.\<const> c) :
-            \\ \epsilon ; \ti{t_v}{a_v}^{*};\phi_v^{*} \rightarrow \ti{\<ithreetwo>}{a}\;\ti{t}{a_2};\ti{t_v}{a_v}^{*};\phi_v^{*},
-            {\begin{stackTL}
-                \ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{k}),
-                \\ \ti{t}{a_2},(= a_2\;\ti{t}{c})
-            \end{stackTL}}
+            \\ {\begin{stackTL}
+                \epsilon ; \ti{t_v}{a_v}^{*};\phi_v^{*}
+                \\ \rightarrow \ti{\<ithreetwo>}{a}\;\ti{t}{a_2};\ti{t_v}{a_v}^{*};\phi_v^{*},
+                {\begin{stackTL}
+                    \ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{k}),
+                    \\ \ti{t}{a_2},(= a_2\;\ti{t}{c})
+                \end{stackTL}}
+        \end{stackTL}}
         \end{stackTL}}$$
         where
-        $${\begin{stackTL}
+        $$\phi_v^{*},{\begin{stackTL}
             \ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{k}),
             \\ \ti{t}{a_2},(= a_2\;\ti{t}{c})
         \end{stackTL}} \implies
@@ -208,10 +211,49 @@ However, for \name instructions that do not have the same semantics as in \wasm,
 
         It must be the case that $k+o \geq 0$ and $k+o+|tp|<|b_2^{*}|$, and therefore $s_\text{mem}(i,k+0,|tp|)=b_3^{*}$ for some $b_3^{*}$ that is a subsequence of $b_2^{*}$
         Then, we can construct $s'= s$ with $s'_\text{mem}(i,k+o,|tp|)=bits_t^{|tp|}(c)$ because $|bits_t^{|tp|}(c)|=|b_3^{*}|$.
-        Then, $s;(\<ithreetwo>.\<const> k)\;(\<ithreetwo>.\<const> c)\;t.\<storepc> tp\; align\;o \hookrightarrow_i s';\epsilon$.
+        Then, $$s;(\<ithreetwo>.\<const> k)\;(\<ithreetwo>.\<const> c)\;t.\<storepc> tp\; align\;o \hookrightarrow_i s';\epsilon$$
 
         \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> c)\;t.\<loadpc> align\;o$
 
         Same as above, except with $|t|$ replacing $|tp|$.
+
+        \item Case: $\vdash_i (\<ithreetwo>.\<const> c)\;\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+
+        We must show that $(\<ithreetwo>.\<const> c)\;\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \hookrightarrow e'^{*}$ for some $e'^{*}$.
+
+        We have $S;() \vdash_i v^{*};(\<ithreetwo>.\<const> c)\;\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
+
+        We also have that $\vdash s : S$, and therefore $S_\text{tab}(i)=(n,tfi^{n})$ and $(S \vdash cl : tfi)^{*}$ where $s_\text{tab}(i)=cl^{*}$ and $n\leq |cl^{*}|$.
+
+        Then, $(\vdash v : \ti{t_v}{a_v};\phi_v)^{*}$ for some $\ti{t_v}{a_v}^{*}$ and $\phi_v^{*}$, since it is a premise of \refrule{Code} which we have assumed to hold.
+
+        It is important to note that $\phi_v^{*}$ cannot contain a contradiction because it contains a single equality constraint per fresh index variable (see \refrule{Admin-Const}).
+
+        Then,
+        $$S_\text{inst}(i)
+        {\begin{stackTL}
+            \;\vdash (\<ithreetwo>.\<const> c) :
+            \\ {\begin{stackTL}
+                \epsilon ; \ti{t_v}{a_v}^{*};\phi_v^{*}
+                \\ \rightarrow \ti{\<ithreetwo>}{a};\ti{t_v}{a_v}^{*};\phi_v^{*},\ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{c})
+        \end{stackTL}}
+        \end{stackTL}}$$
+        where $\phi_v^{*},\ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{c}) \implies (\<gt>\; n\; a) \land (\<le> \ti{\<ithreetwo>}{0}\; a) $
+        by \reflemma{Inversion} on \refrule{Composition} and \refrule{Call-Indirect-Prechk}.
+
+        We have
+        $$\forall i.\; (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor\; tfis(i) <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$$
+        where $tfis=tfi^{n}$, because it is a premise of \refrule{Call-Indirect-Prechk} which we have assumed to hold by \reflemma{Inversion}.
+        Since $\ti{\<ithreetwo>}{a};\ti{t_v}{a_v}^{*};\phi_v^{*},\ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{c}) \implies (= \ti{\<ithreetwo>}{c}\; a)$, then it has to be the case that $tfis(c) <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        Let, $\{\text{inst } j, \text{ func } f\} = s_\text{tab}(i,c)$.
+        Recall from before that $(S\vdash cl: tfi)^{*}$.
+        Then, $S \vdash \{\text{inst } j, \text{ func } f\} : tfi_2$ for some $tfi_2$.
+
+        $S_\text{inst}(j) \vdash f : tfi_2$, as it is a premise of $S \vdash \{\text{inst } j, \text{ func } f\} : tfi_2$.
+
+        Then, we know that $f= \<func> tfi_2\; \<local> \dots$ because it is a premise of $S_\text{inst}(j) \vdash f : tfi_2$, and we know that $tfi_2<:ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        Thus, $s;(\<ithreetwo>.\<const> c)\;\<callindirect> ti_1^{*};l_1;\phi_1 \hookrightarrow \<call> \{\text{inst } j, \text{ func } f\}$.
     \end{itemize}
 \end{proof}
