@@ -48,7 +48,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
     %% set-local
     If $C \vdash \<setlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1[i := \ti{t}{a}$, $C_\text{local}(i) = t$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1[i := \ti{t}{a}]$, $C_\text{local}(i) = t$,
     and $\phi_1 \implies \phi_2$.
 
     %% tee-local
@@ -65,6 +65,16 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
     If $C \vdash \<setglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
     then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut} \; t$,
     and $\phi_1 \implies \phi_2$.
+
+    %% mem-load
+    If $C \vdash t.\<load> (tp\_sx)^{?}\; align\; o : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_1}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_2}$, $l_1 = l_2$,
+    $C_\text{memory} = n$, $2^{align} \leq (|tp| <)^{?} |t|$, and $\phi_1,\ti{t}{a_2} \implies \phi_2$.
+
+    %% mem-store
+    If $C \vdash t.\<store> tp^{?}\; align\; o : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+    then $ti_1^{*} = ti_2^{*} \; \ti{\<ithreetwo>}{a_1} \; \ti{t}{a_2}$, $l_1 = l_2$, $C_\text{memory} = n$,
+    $2^{align} \leq (|tp| <)^{?} |t|$, and $\phi_1 \implies \phi_2$.
 
     %% composition
     If $C \vdash e_1^{*} \; e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$,

@@ -62,7 +62,7 @@ By case analysis on the reduction rules.
 
     %% Relop
     \item $C\vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.relop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-    \\$\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.relop \hookrightarrow t.\<const> c$ where $c=relop(c_1,c_2)$
+    \\ $\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.relop \hookrightarrow t.\<const> c$ where $c=relop(c_1,c_2)$
 
         Similar to $binop$.
 
@@ -158,7 +158,7 @@ By case analysis on the reduction rules.
             \ti{t}{a_2}, (\<eq> a_2\; \ti{t}{c_2}), \\
             \ti{\<ithreetwo>}{a}, (= a\;\ti{\<ithreetwo>}{0}), \\
             \ti{t}{a_3},(if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\; a_2)\; (= a_3\; a_1))
-        \end{stackTL}} \\$
+        \end{stackTL}} \\ $
 
         Therefore,
         $ C \vdash (t.\<const> c_2) :
@@ -627,21 +627,70 @@ By case analysis on the reduction rules.
 
         \thought{This might be skipping too much.}
 
-        Therefore $\vdash s';\epsilon : ti^{*};l;\phi$ by \refrule{Program}.
+        Therefore, $\vdash s';\epsilon : ti^{*};l;\phi$ by \refrule{Program}.
 
-    \item Case: $C \vdash (\<ithreetwo>.\<const> k) \; (t.\<load> tp\_sx\; align\; o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) : ti^{*};l;\phi$
+    \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) \hookrightarrow_i s;t.\<const> \text{const}_t(b^{*})$, where $s_\text{mem}(i,k+o,|t|) = b^{*}$
+
+        $S;\epsilon \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) : ti^{*};l;\phi$ and $s : S$ because they are premises of \refrule{Program} which we have assumed to hold.
+
+        $S;C \vdash (\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$ because it is a premise of \refrule{Code} which we have assumed to hold.
+
+        By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, \refrule{Mem-Load},
+        $ti^{*} = \ti{t}{a}$, $l_1 = l$, $\phi_1,\ti{t}{a} \implies \phi$.
+
+        $C \vdash t.\<const> \text{const}_t(b^{*}) : \epsilon;l;\phi_1 \rightarrow \ti{t}{a};l;\phi_1,\ti{t}{a},(= a\;\ti{t}{c})$ by \refrule{Const}.
+
+        $C \vdash t.\<const> \text{const}_t(b^{*}) : \epsilon;l;\phi_1 \rightarrow \ti{t}{a};l;\phi$ by \refrule{Implies}.
+
+        $S;\epsilon \vdash_i v^{*};t.\<const> \text{const}_t(b^{*}) : ti^{*};l;\phi$ by \refrule{Code}.
+
+        Therefore, $s;t.\<const> \text{const}_t(b^{*}) : ti^{*};l;\phi$ by \refrule{Program}.
+
+    \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;(t.\<load> tp_sx\;align\;o) : ti^{*};l;\phi$
+    \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<load> tp_sx\;align\;o) \hookrightarrow_i s;t.\<const> \text{const}_t^{sx}(b^{*})$, where $s_\text{mem}(i,k+o,|tp|) = b^{*}$
+
+        Similar to \refrule{Mem-Load} non-packed.
+
+    \item Case: $C \vdash (\<ithreetwo>.\<const> k)\;(t.\<load> tp\_sx^{?}\;align\;o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<load> tp\_sx^{?}\;align\;o) \hookrightarrow_i \<trap>$
+
+        Trivially, $C \vdash \<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Trap}.
+
+    \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) : ti^{*};l;\phi$
+    \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) \hookrightarrow_i s';\epsilon$, where $s' = s \text{with } \text{mem}(i,k+o,|t|) = \text{bits}_t^{|t|}(c)$
+
+        $S;\epsilon \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) : ti^{*};l;\phi$ and $s : S$ because they are premises of \refrule{Program} which we have assumed to hold.
+
+        $S;C \vdash (\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l;\phi$ because it is a premise of \refrule{Code} which we have assumed to hold.
+
+        By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Mem-Store},
+        $ti^{*} = \epsilon$, $l_1 = l$, $\phi_1,\ti{\<ithreetwo>}{a_1},(= a_1\;\ti{\<ithreetwo>}{k}),\ti{t}{a_2},(= a_2\;\ti{t}{c}) \implies \phi$.
+
+        Since $a_1$ and $a_2$ are fresh, $\phi_1 \implies \phi$.
+
+        $C \vdash \epsilon : \epsilon;l;\phi_1 \rightarrow \epsilon;l;\phi_1$ by \refrule{Empty}.
+
+        $C \vdash \epsilon : \epsilon;l;\phi_1 \rightarrow \epsilon;l;\phi$ by \refrule{Implies}.
+
+        $s' : S$ trivially.
+
+        \thought{Maybe justify more? Intuitively the contents of the mem function doesn't affect the store typing.}
+
+        $S;\epsilon \vdash v^{*};\epsilon : ti^{*};l;\phi$ by \refrule{Code}.
+
+        Therefore, $\vdash_i s';\epsilon : ti^{*};l;\phi$ by \refrule{Program}.
+
+    \item Case: $C \vdash (\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp\;align\;o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
     $\land$ $\vdash s : S$
-    \\ $\land$ $s;(\<ithreetwo>.\<const> k) \; (t.\<load> tp\_sx\; align\; o) \hookrightarrow_i s;(t.\<const> const_t(b^{*}))$, where $s_\text{mem}(i,k+o,|t|)=b^{*}$
+    \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp\;align\;o) \hookrightarrow_i s';\epsilon$, where $s' = s \text{with } \text{mem}(i,k+o,|tp|)=\text{bits}_t^{|tp|}(c)$
 
-        By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Load}, we know that $l_2=l_1$, $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$ where $a \not\in \phi_3$, and $\satisfies{\phi_1,\ti{t}{a_1},(= a_1 \; \ti{\<ithreetwo>}{k})}{ti_1^{*}\;\ti{\<ithreetwo>}{a_1}\;l_1}{\phi_3}$.
-        %%We also then know that $\satisfies{\phi_3,\ti{t}{a}}{ti_1^{*}\;\ti{\<ithreetwo>}{a}\;l_1}{\phi_2}$ by \reflemma{Inversion} on \refrule{Load}.
+        Similar to \refrule{Mem-Store} non-packed.
 
-        \todo{I think this is only useful for store}
-        Let $b_2^{*} = s_\text{mem}(i)$.
-        We know that $C_\text{memory}=m$ because it is a premise of \refrule{Load} which we have assumed to hold by \reflemma{Inversion}.
-        Then, $m \leq |(b_2^{*})|$ because it is a premise of $\vdash s: S$ that we have assumed to hold.
+    \item Case: $C \vdash (\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp^{?}\;align\;o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+    \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp^{?}\;align\;o) \hookrightarrow_i \<trap>$
 
-        $C \vdash (t.\<const> const_t(b^{*})) : ti_1^{*};l_1;\phi_1 \rightarrow ti_1^{*}\;\ti{t}{a};l_1;\phi_1,\ti{t}{a},(= a\;{})$
+        Trivially, $C \vdash \<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Trap}.
 
 \end{itemize}
 \end{proof}
