@@ -27,7 +27,7 @@ Further, \refrule{Store} ensures that all of the closures in all of the tables i
     \begin{mathpar}
         \boxed{S \vdash cl : tfi} \\
 
-        \inferrule*[right=\protect\defrule{Closure}]{ %% closure
+        \inferrule*[right=\defrule{Closure}]{ %% closure
             S_\text{inst}(i) \vdash f : tfi
         } {
             S \vdash \{ \text{inst} \; i, \text{code} \; f \} : tfi

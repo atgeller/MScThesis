@@ -248,11 +248,11 @@ Since decomposition happens on label blocks, we have included the inductive redu
     \end{array}
 \end{mathpar}
 
-$\<brif>$ consumes a value and reduces to a branch if the value is non-zero, otherwise it reduces to the empty sequence.
-$\<brtable>$ has a list of one or more numbers that it may branch to.
-It consumes a $\<ithreetwo>\; k$ and branches based on the $k$th number or the last one if there is no $k$th number.
 Branching from inside a label block essentially peels back the specified number of label blocks, and continues executing with the stored instructions $e_0^{*}$ of the containing label block.
 \autoref{fig:branching} has several examples of branching in action.
+$\<brif> j$ consumes a value and reduces to $\<br> j$ if the value is non-zero, otherwise it reduces to the empty sequence.
+$\<brtable>$ has a list of one or more numbers, $i^{+}$ that may be used for a branch.
+It consumes a $\<ithreetwo>\; k$ and reduces to $\<br>$ with the $k$th number, or the last number if there is no $k$th number.
 
 \begin{mathpar}
     \begin{array}{rcl}
@@ -271,6 +271,15 @@ Branching from inside a label block essentially peels back the specified number 
 \begin{figure}
 \begin{math}
 \begin{array}{l}
+    \<label>_0 \{ \<loop> \dots \<end> \}\; \<br> 0 \<end> \\
+    \hookrightarrow \<loop> \dots \<end> \\\\
+    \<label>_0
+    \begin{stackTL}
+        \{ \}\; \\
+        \<label>_0 \{ \<loop> \dots \<end> \}\; \<br> 1 \<end>
+    \end{stackTL} \\
+    \<nsend> \\
+    \hookrightarrow \epsilon\\\\
     {\begin{stackTL}
         \<label>_0
         {\begin{stackTL}
@@ -283,16 +292,7 @@ Branching from inside a label block essentially peels back the specified number 
         \end{stackTL}} \\
         \<nsend>
     \end{stackTL}} \\
-    \hookrightarrow \<label>_0 \{\}\; \<end> \\\\
-    \<label>_0 \{ \<loop> \dots \<end> \}\; \<br> 0 \<end> \\
-    \hookrightarrow \<loop> \dots \<end> \\\\
-    \<label>_0
-    \begin{stackTL}
-        \{ \}\; \\
-        \<label>_0 \{ \<loop> \dots \<end> \}\; \<br> 1 \<end>
-    \end{stackTL} \\
-    \<nsend> \\
-    \hookrightarrow \epsilon
+    \hookrightarrow \<label>_0 \{\}\; \<end>
 \end{array}
 \end{math}
 \caption{Branching Examples}
@@ -452,13 +452,13 @@ Thus, the main \wasm typing judgement is as follows:
 $$\boxed{C \vdash e^{*} : tf}$$
 
 We reproduce and explain a few selected typing rules from \wasm.
-The rule for typing a block typechecks the body $e^{*}$ under the module type context with the postcondition $t_2^{m}$ appended to the label stack.
-This is yet another common notational atrocity where $x,y$ means $x$ extended with $y$.
-The branch rule accepts any precondition, extended with the $i$th postcondition on the label stack (counting backwards), and returns to any postcondition.
+The rule for typing a block, \refrule{Wasm-Block} typechecks the body $e^{*}$ under the module type context with the postcondition $t_2^{m}$ appended to the label stack.
+This is yet another common notational shorthand where $x,y$ means $x$ extended with $y$.
+The branch rule, \refrule{Wasm-Br}, accepts any precondition, extended with the $i$th postcondition on the label stack (counting backwards), and returns to any postcondition.
 A branch will return the $n$ values before it, so it is ok if there are more values on the stack, as they will be discarded.
 Execution does not proceed after branching, so the postcondition can be anything.
-For function calls we lookup the type of the function in the context.
-Finally, setting a local variable consumes a value of the type that is given by looking up the type of the local in the context.
+For function calls we lookup the type of the function in the context (\refrule{Wasm-Call}).
+Finally, setting a local variable consumes a value of the type that is given by looking up the type of the local in the context (\refrule{Wasm-Set-Local}).
 
 \begin{mathpar}
     \inferrule*[right=\defrule{Wasm-Binop}]{ }{C \vdash t.binop : t\; t \rightarrow t}
@@ -471,15 +471,15 @@ Finally, setting a local variable consumes a value of the type that is given by 
     }
 
     \inferrule*[right=\defrule{Wasm-Br}]{
-        C,\text{label}(i) = t^{n}
+        C_\text{label}(i) = t^{n}
     }{
-        C \vdash \<br> i \<end> : t_1^{*}\;t^{n} \rightarrow t_2^{*}
+        C \vdash \<br> i : t_1^{*}\;t^{n} \rightarrow t_2^{*}
     }
 
     \inferrule*[right=\defrule{Wasm-Call}]{
         C_\text{func}(i) = tf
     }{
-        C \vdash \<call> i \<end> : tf
+        C \vdash \<call> i : tf
     }
 
     \inferrule*[right=\defrule{Wasm-Set-Local}]{
@@ -489,8 +489,8 @@ Finally, setting a local variable consumes a value of the type that is given by 
     }
 \end{mathpar}
 
-The empty instruction sequence has an empty precondition and postcondition.
-An instruction $e_2$ can be appended to a sequence of instructions $e_1^{*}$ if the precondition of $e_2$ is the same as the postcondition of $e_1^{*}$.
+The empty instruction sequence has an empty precondition and postcondition (\refrule{Wasm-Empty}).
+An instruction $e_2$ can be appended to a sequence of instructions $e_1^{*}$ if the precondition of $e_2$ is the same as the postcondition of $e_1^{*}$ (\refrule{Wasm-Composition}).
 Then, the precondition of the full sequence $e_1^{*}\;e_2$ is the precondition of $e_1^{*}$ and the postcondition of $e_1^{*}\;e_2$ is the postcondition of $e_2$.
 
 \begin{mathpar}

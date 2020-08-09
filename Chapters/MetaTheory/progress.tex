@@ -254,6 +254,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
 
         Then, we know that $f= \<func> tfi_2\; \<local> \dots$ because it is a premise of $S_\text{inst}(j) \vdash f : tfi_2$, and we know that $tfi_2<:ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-        Thus, $s;(\<ithreetwo>.\<const> c)\;\<callindirect> ti_1^{*};l_1;\phi_1 \hookrightarrow \<call> \{\text{inst } j, \text{ func } f\}$.
+        Thus, ${\begin{stackTL}s;(\<ithreetwo>.\<const> c)\;\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+            \\ \hookrightarrow \<call> \{\text{inst } j, \text{ func } f\}\end{stackTL}}$.
     \end{itemize}
 \end{proof}

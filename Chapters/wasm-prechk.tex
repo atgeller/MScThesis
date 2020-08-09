@@ -92,8 +92,8 @@ Below is a quick overview of each of the terms.
     \label{fig:tfisyntax}
 \end{figure}
 
-Indexed types, $ti$, are used to associate index variables $a$ with values in the program.
-\autoref{fig:tfisyntax} shows the form of an indexed type, which includes both the type $t$ and an index variable $a$.
+Indexed types are used to associate index variables $a$ with values in the program.
+\autoref{fig:tfisyntax} shows the form of an indexed type, $ti$, which includes both the type $t$ and an index variable $a$.
 In \name, we represent the shape of the stack as a sequence of indexed types $ti^{*}$.
 
 The index local store associates index variables with local variables.
@@ -176,8 +176,13 @@ We also have four new instructions, for which we introduce new reduction rules.
 
 The formal reason certain \wasm instructions require run-time checks is because they have preconditions as part of their semantics, and if the preconditions are not met then those instructions trap to avoid undefined behavior (we've reproduced the reduction rules for those instructions in \autoref{fig:checked}).
 The \wasm type system is not expressive enough to ensure these preconditions statically, so they instead must be checked at run-time.
-Thus, ``\prechk-tagged'' instructions can assume that the preconditions on their behavior hold because it is enforced by the \name type system.
+However, the \name type system is capable of statically checking these preconditions.
+
+In \name, ``\prechk-tagged'' instructions can assume that the preconditions on their behavior hold because it is enforced by the \name type system.
 This can be seen in the reduction rules for the ``\prechk-tagged'' instructions in Figure \autoref{fig:prechkredux}, where they do not have rules to trap when their preconditions do not hold.
+For example, in the $\<divpc>$ rule, the second argument $c_2$ is guaranteed to be non-zero, so there will be no trap on division-by-zero.
+\<callindirectpc> can assume that the function that gets pulled from the table $tfi_2$ has a subtype of the expected type $tfi$, so it is a valid type for the indirect call (we will go over subtyping in more detail in \autoref{subsec:subtyping}).
+The \prechk-tagged memory operations $\<loadpc>$ and $\<storepc>$ can assume that the memory operation takes place inside the memory bounds.
 
 \begin{figure}[t]
     \begin{mathpar}
@@ -191,9 +196,10 @@ This can be seen in the reduction rules for the ``\prechk-tagged'' instructions 
             t.\<divpc> & \hookrightarrow & c \\
             && \text{where } c_2 \neq 0 \land c=c_1/c_2 \\
             s;(t.\<const> j) && \\
-            t.\<callindirectpc> & \hookrightarrow_i & \<call> s_{tab}(i,j) \\
+            t.\<callindirectpc> tfi & \hookrightarrow_i & \<call> s_{tab}(i,j) \\
             &&\text{where } s_{tab}(i,j) = \\
-            && \<func> tfi\; \<local>\; t^{*}\;e^{*} \\
+            && \<func> tfi_2\; \<local>\; t^{*}\;e^{*} \\
+            && \text{and } tfi_2<:tfi \\
             s;(\<ithreetwo>.\<const> k) && \\
             (t.\<loadpc> (tp\_sx)^{?}\; a\;o) & \hookrightarrow_i & t.\<const> const_t(b^{*}) \\
             && \text{where } s_{mem}(i,k+o,|t|)=b^{*} \\
@@ -221,7 +227,7 @@ Recall the form of the \name typing judgement for instructions.
 \end{mathpar}
 
 Under $C$, the module type context, $e^{*}$ has the precondition $ti_1^{*};l_1;\phi_1$ and postcondition $ti_2^{*};l_2;\phi_2$.
-We use the abbreviation $tfi ::= ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ as shorthand for the precondition and postcondition of an instruction.
+We sometimes use the abbreviation $tfi ::= ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ as shorthand for the precondition and postcondition of an instruction.
 
 As in \wasm, \name generally has two kinds of typing rules.
 Most rules are for inferring or checking the types of instructions (in which case $e^{*}$ will be a single instruction).
@@ -236,7 +242,7 @@ In \refrule{Nop}, no changes are made from the precondition to the post conditio
 \refrule{Drop} consumes the top value from the stack (without caring about its type) and does not change the local index store or index type context.
 \begin{mathpar}
     \inferrule*[right=\defrule{Unreachable}]{ }{ %% unreachable
-        C \vdash \<unreachable> : tfi
+        C \vdash \<unreachable> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
     \inferrule*[right=\defrule{Nop}]{ }{ %% nop
@@ -550,22 +556,22 @@ If $\phi_1 \implies \phi_2$, then we consider $\phi_1$ to be stronger than $\phi
 This solves the aforementioned problem because we can weaken ``x is greater than 10'' to ``x is greater than 0'' (or equivalently strengthen ``x is greater than 0'' to ``x is greater than 10'').
 
 To fit strengthening and weakening into the type system, we define a subtyping judgment based on implication.
-The \refrule{Implies} says that if an indexed function type $tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $tfi_2$, and is otherwise equivalent, then $tfi_1$ is a subtype of $tfi_2$.
+The \refrule{Implies} says that if an indexed function type $tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $tfi_2$, and is otherwise equivalent, then $tfi_1$ is a subtype of $tfi_2$ since it can safely be used in place of $tfi_2$.
 
 \begin{mathpar}
     \inferrule*[right=\defrule{Implies}]{
         \phi_0 \implies \phi_1 \and
         \phi_2 \implies \phi_3
     }{
-        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+        ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 <: ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
     }
 \end{mathpar}
 
 We then use this in the \name type system by adding a typing rule that allows the indexed function type for a list of instructions to be replaced by a subtype of that indexed function type.
 
 \[
-    \inferrule*[right=\defrule{SubTyping}]{
-        ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 <: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+    \inferrule*[right=\defrule{Subtyping}]{
+        ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 <: ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 \\
         C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }{
         C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
