@@ -309,10 +309,18 @@ This pattern will appear in any case of the proof that consumes values.
         \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};L^{k}[e^{*}] : ti^{*};l;\phi$
         \\ $\land$ $s;v^{*};L^{k}[e^{*}] \hookrightarrow_i s';v'^{*};L^{k}[e'^{*}]$
         \\ where $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$
+
+        \todo{Need a lemma}
+
+        \item Otherwise: we have $(\vdash (t.\<const> c) : \ti{t}{a};(\circ,\ti{t}{a},(= a\; \ti{t}{c})))^{*}$, and $S,S_\text{inst}(i) \vdash e^{*} : \epsilon;\ti{t}{a}^{*};(\circ,\ti{t}{a},(= a\; \ti{t}{c}))^{*} \rightarrow ti;l;\phi$
+
+            By \reflemma{Subject Reduction Without Effects}, we have $S,S_\text{inst}(i) \vdash e'^{*} : \epsilon;\ti{t}{a}^{*};(\circ,\ti{t}{a},(= a\; \ti{t}{c}))^{*} \rightarrow ti;l;\phi$.
+
+            Then, $S;(ti^{*};l;\phi)^{?} \vdash v^{*};e'^{*} : ti;l;\phi$
     \end{itemize}
 \end{proof}
 
-\reflemma{Subject reduction without effects} is used in the subject reduction proof to separate out cases that do not modify state it simplifies the reasoning.
+\reflemma{Subject Reduction Without Effects} is used in the subject reduction proof to separate out cases that do not modify state it simplifies the reasoning.
 Further, by separating these cases, we can abstract out the common pattern of building back up to \refrule{Program} from the instruction typing judgment $S;C\vdash tfi$.
 To avoid needing to do mutual inversion, we do not include the local block case here.
 We do not include any instructions here that modify state, such as $\<setlocal>$ or $\<storepc>$, meaning that this is non-exhaustive.
