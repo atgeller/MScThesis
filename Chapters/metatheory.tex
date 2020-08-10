@@ -8,40 +8,75 @@ However, before we can do any of that, we must ``complete'' our reasoning abilit
 
 \section{Administrative Typing Rules}
 While we have shown the \name typing rules for instructions within a static context, we still need typing rules for administrative instructions and the store used in reduction.
+\emph{Administrative instructions} are introduced for reduction to keep track of information during reduction.
+For example, $\<local>$ is the result of reducing a closure call; it is used to reduce a function body within the closed environment of the closure.
+They are not part of the surface syntax of a language (\eg you cannot put a local block in a \name program), and can only appear as an intermediate term during reduction.
 \autoref{fig:programrules} shows the \name typing rules for module instances $inst$, the run time store $s$, and various data structures contained within $s$.
-$S$ is the store context, it is to $s$ as $C$ is to $inst$.
-That is, it contains the type information for everything in $s$.
 There are many different judgments being introduced, so we explicitly state the form of the judgment before stating the rule for that judgment.
 
-Closures are type checked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to type check the function definition inside of the closure.
-\refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to type check local and global variables.
+During reduction, we use \refrule{Program} to ensure that a \name program (consisting of the store $s$, local variables $v^{*}$, and instruction sequence $e^{*}$) is well typed (notice that it has the same form as the reduction relation).
+It uses \refrule{Code} and \refrule{Store}, to ensure that a reducible \name program is well typed.
+\refrule{Code} checks that a sequence of instructions is well typed with an empty stack, the indexed types and constraints for the given local variables in the precondition, and an optional return postcondition (not used by \refrule{Program}).
+Since local variables are values, we know that each one of them is equal to some constant, so \refrule{Code} is really just checking that the sequence of instructions has some postcondition reachable from the given local variables.
+There is an optional return postcondition for \refrule{Code} because \refrule{Local} has as a premise a judgment of the exactly same form, except with a return postcondition.
 
+In addition to getting the type of the instructions being reduces, we also need to know the type of the store $s$ since it is part of the reduction relation.
+\refrule{Store} checks that a run-time store, $s$ is well typed by the store context $S$.
+The store context $S$ is to $s$ as $C$ is to $inst$.
+That is, it contains the type information for everything in $s$.
+\refrule{Store} ensures that every module instance $inst$ in $s$ has the type of the index module context $C$ in $S$ using \refrule{Instance}.
+Further, \refrule{Store} ensures that all of the closures in all of the tables in $s$ are well typed, and the the sizes of all the tables and memory chunks in $S$ do not exceed the actual size of their implementations.
+
+To get the type of the store, we in turn have to know the types of each of the various run-time data structures.
 \refrule{Instance} checks that a module instance is well-typed by the index module context under the store context $S$.
 It checks all of the closures $cl^{*}$ against their expected types $tfi^{*}$ in $C$, and similarly for all of the globals ($v^{*}$ and $()\text{mut}^{?} t)^{*}$).
 The table and memory indices ($i$ and $j$, respectively) are used to lookup the the relevant types ($(n,tfi^{*})$ and $m$, respectively) in the store context $S$.
-
-\refrule{Store} uses \refrule{Instance} to check that a run time store, $s$ is well typed by the store context $S$ by ensuring that every module instance $inst$ in $s$ has the type of the index module context $C$ in $S$
-Further, \refrule{Store} ensures that all of the closures in all of the tables in $s$ are well typed, and the the sizes of all the tables and memory chunks in $S$ do not exceed the actual size of their implementations.
+Closures are type checked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to type check the function definition inside of the closure.
+\refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to type check local and global variables.
 
 \begin{figure}
+    $$ S ::= \{ \text{inst } C^{*}, \text{ tab } n^{*}, \text{ mem } m^{*} \} $$
+
+    $ \boxed{\vdash s;v^{*};e^{*}} $
+
     \begin{mathpar}
-        \boxed{S \vdash cl : tfi} \\
-
-        \inferrule*[right=\defrule{Closure}]{ %% closure
-            S_\text{inst}(i) \vdash f : tfi
+        \inferrule*[right=\defrule{Program}]{ %% admin program
+            \vdash s : S \and
+            S;\epsilon \vdash_i v^{*};e^{*} : ti^{*};l;\phi
         } {
-            S \vdash \{ \text{inst} \; i, \text{code} \; f \} : tfi
+            \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
         }
+    \end{mathpar}
 
-        \\ \boxed{\vdash v : ti;\phi} \\
+    $ \boxed{S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^{*};l;\phi} $
 
-        \inferrule*[right=\defrule{Admin-Const}]{ %% admin const
+    \begin{mathpar}
+    \inferrule*[right=\defrule{Code}]{ %% admin code
+        (\vdash v : \ti{t}{a};\phi_v)^{*}\\
+        C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
+        S;C \vdash e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
+    } {
+        S;(ti^n;l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^n;l;\phi
+    }
+    \end{mathpar}
+
+    $ \boxed{\vdash s : S} $
+
+    \begin{mathpar}
+        \inferrule*[right=\defrule{Store}]{ %% store
+            S = \{ \text{inst} \; C^{*}, \text{tab} \; n^{*}, \text{mem} \; m^{*} \}\\
+            (S \vdash inst : C)^{*} \and
+            ((S \vdash cl : tfi)^{*})^{*} \and
+            (n \leq |cl^{*}|)^{*} \and
+            (m \leq |b^{*}|)^{*}
         } {
-            \vdash t.\<const> c : \ti{t}{a};\circ,\ti{t}{a},(\<eq> a \; \ti{t}{c})
+            \vdash \{ \text{inst} \; inst^{*}, \text{tab} \; (cl^{*})^{*}, \text{mem} \; (b^{*})^{*} \} : S
         }
+    \end{mathpar}
 
-        \\ \boxed{S \vdash inst : C} \\
+    $ \boxed{S \vdash inst : C} $
 
+    \begin{mathpar}
         \inferrule*[right=\defrule{Instance}]{ %% instance
             (S \vdash cl : tfi)^{*} \and
             (\vdash v : \ti{t}{a},\phi_v)^{*} \\
@@ -54,48 +89,33 @@ Further, \refrule{Store} ensures that all of the closures in all of the tables i
                 \\ : \{ \text{func} \; tfi^{*}, \text{global} \; (\text{mut}^{?} \; t)^{*}, \text{table} \; n^{?}, \text{memory} \; m^{?} \}
             \end{stackTL}}
         }
+    \end{mathpar}
 
-        \\ \boxed{\vdash s : S} \\
+    $ \boxed{\vdash v : ti;\phi} $
 
-        \inferrule*[right=\defrule{Store}]{ %% store
-            S = \{ \text{inst} \; C^{*}, \text{tab} \; n^{*}, \text{mem} \; m^{*} \}\\
-            (S \vdash inst : C)^{*} \and
-            ((S \vdash cl : tfi)^{*})^{*} \and
-            (n \leq |cl^{*}|)^{*} \and
-            (m \leq |b^{*}|)^{*}
+    \begin{mathpar}
+        \inferrule*[right=\defrule{Admin-Const}]{ %% admin const
         } {
-            \vdash \{ \text{inst} \; inst^{*}, \text{tab} \; (cl^{*})^{*}, \text{mem} \; (b^{*})^{*} \} : S
-        }
-
-        \\ \boxed{S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^{*};l;\phi} \\
-
-        \inferrule*[right=\defrule{Code}]{ %% admin code
-            (\vdash v : \ti{t}{a};\phi_v)^{*}\\
-            C = S_{\text{inst}}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l;\phi)^{?}\\
-            S;C \vdash e^{*} : \epsilon:\ti{t}{a}^{*};\phi_v^{*} \rightarrow ti^n;l;\phi
-        } {
-            S;(ti^n;l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^n;l;\phi
-        }
-
-        \boxed{\vdash s;v^{*};e^{*}} \\
-
-        \inferrule*[right=\defrule{Program}]{ %% admin program
-            \vdash s : S \and
-            S;\epsilon \vdash_i v^{*};e^{*} : ti^{*};l;\phi
-        } {
-            \vdash_i s;v^{*};e^{*} : ti^{*};l;\phi
+            \vdash t.\<const> c : \ti{t}{a};\circ,\ti{t}{a},(\<eq> a \; \ti{t}{c})
         }
     \end{mathpar}
-    \caption{\protect\name Program and Store Typing Rules}
+
+    $ \boxed{S \vdash cl : tfi} $
+
+    \begin{mathpar}
+        \inferrule*[right=\defrule{Closure}]{ %% closure
+            S_\text{inst}(i) \vdash f : tfi
+        } {
+            S \vdash \{ \text{inst} \; i, \text{code} \; f \} : tfi
+        }
+    \end{mathpar}
+    \caption{\name Program and Store Typing Rules}
     \label{fig:programrules}
 \end{figure}
 
 Further, we must provide a typing rule that has the same form as the reduction relation (\ie a typing rule for $s;v;e$) to be able to get the type of a program during reduction.
 
-\refrule{Code} checks that a sequence of instructions is well typed with an empty stack and the indexed types and constraints for the given local variables in the precondition.
-Since local variables are values, we know that each one of them is equal to some constant, so \refrule{Code} is really just checking that the sequence of instructions has some postcondition reachable from the given local variables.
-There is an optional return postcondition for \refrule{Code} because \refrule{Local} has as a premise a judgment of the exactly same form, except with a return postcondition.
-\refrule{Program} uses \refrule{Code} without using the optional return postcondition, as well as \refrule{Store}, to ensure that a reducible \name program is well-typed.
+
 
 \begin{figure}
     $$\boxed{S;C \vdash e^{*} : tfi}$$

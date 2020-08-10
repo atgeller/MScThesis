@@ -4,16 +4,93 @@ We present a way to embed \wasm programs in \name.
 The embedding function takes a \wasm program and replaces all of the type annotations with indexed function types that have no constraints on the variables.
 Intuitively, this is the only part of the surface syntax of \wasm that isn't in \name, so we must figure out a way to bring it over.
 While this embedding requires no additional developer effort, it provides no information to the indexed type system beyond what can be inferred from the instructions in the program.
-We conjecture that a well-typed \wasm program embedded in \name is also well-typed, but we have not proved it.
-
-The embedding replaces all function types used within the \wasm syntax with \name indexed function types, and adds the function types for all of the functions in a table to the table's type declaration.
-This occurs within blocks and indirect function calls, as shown in \autoref{def:embed-e}.
-The indexed types simply have fresh index variables which are different in the precondition and postcondition, and the primitive types for the stack are known from the \wasm type $t_1^{*} \rightarrow t_2^{*}$
-To know what the local variables are, we parameterize the embedding over the types of local variables ($t^{*}$).
+We conjecture that a well typed \wasm program embedded in \name is also well typed, but we have not proved it.
 
 We typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruction in a \trbf{bold red font} to set them apart.
 
-\begin{definition}{$\embed[e]{e}^{t^{*}}=\mathbluesf{e}$}
+\begin{conjecture}{Well Typed \wasm Programs Embedded in \name are Well Typed}
+
+    If $\vdash \<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{?}$,
+    \\then $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{?}}$
+\end{conjecture}
+
+Embedding works purely over the surface syntax of the languages.
+As such, we define embedding over modules: the pinnacle syntactic objects of both the \wasm and \name surface syntax hierarchies.
+Embedding a module $module$ means embedding all of the functions $f^{*}$ in the module, and embedding the table $tab$ parameterized with all of the function definitions $f^{*}$.
+We do not have to embed globals $glob^{*}$ or the memory $mem^{?}$ as they have the same syntax in both \wasm and \name.
+We explain how to embed tables $tab$ in \autoref{def:embed-tab}, and functions $f$ in \autoref{def:embed-f}.
+
+\begin{definition}{\fbox{$\embed[module]{module}^{C}=\mathbluesf{module}$}}
+    \label{def:embed-t}
+    \begin{mathpar}
+        \begin{array}{rcl}
+            embed_{module}(\<wmodule> f^{*}\; glob^{*}\; tab^{?}\; mem^{?})
+            &=& \<module>
+            \begin{stackTL}
+                \embed[f]{f}^{*}
+                \\ glob^{*}
+                \\ \embed[tab]{tab^{?}}^{f^{*}}
+                \\ mem^{?}
+            \end{stackTL} \\
+        \end{array}
+    \end{mathpar}
+\end{definition}
+
+Tables in \name must also provide the indexed function types of all the functions they contain, so to embed them we must include those types.
+We do this by parameterizing the embedding of the table $tab$ with all of the declared functions $f^{*}$.
+Then, we retrieve the indexed function type $ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2$ of the function pointed to by the function index $i$ in $f^{*}$ for every function index $i$ in the table.
+We cannot embed imported tables because we have no way of accessing the types of the functions included in the table.
+
+\begin{definition}{\fbox{$\embed[tab]{tab}^{f^{*}}=\mathbluesf{tab}$}}
+    \label{def:embed-t}
+    \begin{mathpar}
+        \begin{array}{rcl}
+            embed_{tab}(\<wtab> n\; i^{n})
+            &=& \<tab> n\; (ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2)^{n} \\
+            && \text{where } \forall i. f^{*}(i) = \<func> 
+            \begin{stackTL}
+                ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2\;
+                \\ \<local>\; t^{*}\; e^{*}
+            \end{stackTL}  \\
+        \end{array}
+    \end{mathpar}
+\end{definition}
+
+The embedding of functions, \autoref{def:embed-f}, both must construct an indexed function type for itself and embed its body.
+Function bodies have their local variables defined by the function that they are enclosed in.
+Thus, when the function body is embedded we pass the local types ($t_1^{*}\;t^{*}$) so the body knows how to constrain local variables.
+We construct an indexed function type that has the precondition of the expected values on the stack turned into indexed types using fresh index variables and the types $t_1^{*}$ from the \wasm type, and do the same with the postcondition and $t_2^{*}$.
+We cannot embed imported functions because we have no way of accessing the types of the local variables of the function.
+
+\begin{definition}{\fbox{$\embed[f]{f}=\mathbluesf{f}$}}
+    \label{def:embed-f}
+    \begin{mathpar}
+        \begin{array}{rcl}
+            embed_f(\<wfunc> {\begin{stackTL}
+                (t_1^{*}\rightarrow t_2^{*})
+                \\\<wlocal>\; t^{*}\; e^{*})
+            \end{stackTL}}
+            &=& \<func>\;
+                {\begin{stackTL}
+                    (\ti{t_1}{a_1}^{*};\epsilon;(\circ,\ti{t_1}{a_1}^{*})
+                    \\ \rightarrow
+                    \begin{stackTL}
+                        \ti{t_2}{a_2}^{*};\ti{t_1}{a_3}^{*}\;\ti{t}{a_4}^{*};
+                        \\ \quad (\circ,\ti{t_2}{a_2}^{*},\ti{t_1}{a_3}^{*}\ti{t}{a_4}^{*}))
+                    \end{stackTL}
+                    \\ t^{*}\; ()\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}
+                \end{stackTL}} \\
+            && \<nsend>\\
+        \end{array}
+    \end{mathpar}
+\end{definition}
+
+Embedding instructions replaces all function types used within the \wasm syntax with \name indexed function types, and adds the function types for all of the functions in a table to the table's type declaration.
+This occurs within blocks and indirect function calls, as shown in \autoref{def:embed-e}.
+The indexed types simply have fresh index variables that are different in the precondition and postcondition, and the primitive types for the stack are known from the \wasm type $t_1^{*} \rightarrow t_2^{*}$.
+To know what the local variables are, we parameterize the embedding over the types of local variables ($t^{*}$).
+
+\begin{definition}{\fbox{$\embed[e]{e}^{t^{*}}=\mathbluesf{e}$}}
     \label{def:embed-e}
     \begin{mathpar}
         %% SPACE HACKS
@@ -84,71 +161,7 @@ We typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruc
     \end{mathpar}
 \end{definition}
 
-The embedding of functions, \autoref{def:embed-f}, both must construct an indexed function type for itself and embed its body.
-Function bodies have their local variables defined by the function that they are enclosed in.
-Thus, when the function body is embedded we pass the local types ($t_1^{*}\;t^{*}$) so the body knows how to constrain local variables.
-The indexed function type that gets constructed has the precondition of the expected values on the stack turned into indexed types using fresh index variables and the types $t_1^{*}$ from the \wasm type.
-The postcondition does the same for the stack with $t_2^{*}$.
-We cannot embed imported functions because we have no way of accessing the types of the local variables of the function.
-
-\begin{definition}{$\embed[f]{f}=\mathbluesf{f}$}
-    \label{def:embed-f}
-    \begin{mathpar}
-        \begin{array}{rcl}
-            embed_f(\<wfunc> {\begin{stackTL}
-                (t_1^{*}\rightarrow t_2^{*})
-                \\\<wlocal>\; t^{*}\; e^{*})
-            \end{stackTL}}
-            &=& \<func>\;
-                {\begin{stackTL}
-                    (\ti{t_1}{a_1}^{*};\epsilon;(\circ,\ti{t_1}{a_1}^{*})
-                    \\ \rightarrow
-                    \begin{stackTL}
-                        \ti{t_2}{a_2}^{*};\ti{t_1}{a_3}^{*}\;\ti{t}{a_4}^{*};
-                        \\ \quad (\circ,\ti{t_2}{a_2}^{*},\ti{t_1}{a_3}^{*}\ti{t}{a_4}^{*}))
-                    \end{stackTL}
-                    \\ t^{*}\; \embed[e^{*}]{e^{*}}^{(t_1^{*}\;t^{*})}
-                \end{stackTL}} \\
-            && \<nsend>\\
-        \end{array}
-    \end{mathpar}
-\end{definition}
-
-Tables in \name must also provide the indexed function types of all the functions they contain.
-We do this by parameterizing the embedding of the table $tab$ with all of the declared functions $f^{*}$.
-Then, we retrieve the indexed function type $tfi$ of the function pointed to by the function index $i$ in $f^{*}$ for every function index $i$ in the table.
-We cannot embed imported tables because we have no way of accessing the types of the functions included in the table.
-
-\begin{definition}{$\embed[tab]{tab}^{f^{*}}=\mathbluesf{tab}$}
-    \label{def:embed-t}
-    \begin{mathpar}
-        \begin{array}{rcl}
-            embed_{tab}(\<wtab> n\; i^{n})
-            &=& \<tab> n\; tfi^{n} \\
-            && \text{where } \forall i. f^{*}(i) = \<func> tfi\; \<local>\; t^{*}\; e^{*} \\
-        \end{array}
-    \end{mathpar}
-\end{definition}
-
-Finally, since tables and functions live in modules, which are the pinnacle syntactic object of the \wasm surface syntax hierarchy, we must embed modules.
-Embedding a module $module$ means embedding all of the functions $f^{*}$ in the module, and embedding the table $tab$ parameterized with all of the function definitions $f^{*}$.
-
-\begin{definition}{$\embed[module]{module}^{C}=\mathbluesf{module}$}
-    \label{def:embed-t}
-    \begin{mathpar}
-        \begin{array}{rcl}
-            embed_{module}(\<module> f^{*}\; glob^{*}\; tab^{?}\; mem^{?})
-            &=& \<module>
-            \begin{stackTL}
-                \embed[f]{f^{*}}
-                \\ glob^{*}
-                \\ \embed[tab]{tab^{?}}^{f^{*}}
-                \\ mem^{?}
-            \end{stackTL} \\
-        \end{array}
-    \end{mathpar}
-\end{definition}
-
 These are not the only differences in the surface syntax between \wasm and \name: we also introduced four new instructions (the \prechk-tagged instructions).
 The definition of embedding we have introduced has been entirely syntactic, but that will not work for replacing non-\prechk-tagged instructions with \prechk-tagged versions during embedding since we must be able to ensure that stronger guarantees are met.
-Instead, one could, for example, check at every $\<div>$, $\<callindirect>$, $\<load>$, and $\<store>$ whether the \prechk-tagged version of the instruction is well-typed, and only if it is well-typed replace the instruction with the \prechk-tagged version.
+Instead, one could, for example, check at every $\<div>$, $\<callindirect>$, $\<load>$, and $\<store>$ whether the \prechk-tagged version of the instruction is welltyped, and only if it is well typed replace the instruction with the \prechk-tagged version.
+However, a more sophisticated static analysis could be able to provide more precise type annotations and therefore potentially allow even check eliminations.
