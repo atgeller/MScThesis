@@ -300,7 +300,7 @@ This pattern will appear in any case of the proof that consumes values.
 
             Now, we invoke the inductive hypothesis and use it to rebuild the original type.
 
-            Since $S;(ti^{*};l;\phi) \vdash_i v^{*};e^{*} : ti^{*};l;\phi_0$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$, then by the inductive hypothesis we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};e'^{*}$.
+            Since $S;(ti^{*};l;\phi) \vdash_i v^{*};e^{*} : ti^{*};l;\phi_0$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$, then by the inductive hypothesis we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};e'^{*} : ti^{*};l;\phi_0$.
 
             Thus, $S;S_\text{inst}(j) \vdash \<local>\{i;v'^{*}\}\; e'^{*} : \epsilon;ti_v^{*};\phi_{v0}^{*} \rightarrow ti^{*};l;\phi$ by \refrule{Local}.
 
