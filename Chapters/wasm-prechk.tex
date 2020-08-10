@@ -707,7 +707,7 @@ Globals, $glob$, are typechecked under the module index context containing only 
             C \vdash ex^{*}\; \<global> tg\; im : ex^{*}\; tg
         } \and
 
-        \inferrule*[]{ %% local table
+        \inferrule*[right=\defrule{Table}]{ %% local table
             (C_{\text{func}}(i) = tfi)^n
         } {
             C \vdash ex^{*}\; \<table> n\; i^n : ex^{*}\; (n,tfi^n)
