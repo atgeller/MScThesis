@@ -310,7 +310,85 @@ This pattern will appear in any case of the proof that consumes values.
         \\ $\land$ $s;v^{*};L^{k}[e^{*}] \hookrightarrow_i s';v'^{*};L^{k}[e'^{*}]$
         \\ where $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$
 
-        \todo{Need a lemma}
+            We want to show that $\vdash_i s';v'^{*};L^k[e'^{*}] : ti^{*};l;\phi$.
+
+            First, we will derive the type of the body of the local context.
+
+            We have $S;C \vdash L^k[e^{*}] : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$, where
+            $C = S_\text{inst}(i),\text{local } t_v^{*},\text{return } (ti^{*};l;\phi)^{?}$ because it is a premise of \refrule{Code}.
+
+            \begin{itemize}
+                \item Case: $k = 0$
+
+                    $L^k[e^{*}] = v_0^{*}\; e^{*}\; e_0^{*}$.
+
+                    By \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}
+                    $S;C \vdash e^{*} : ti_1^{*};ti_v^{*};\phi_v^{*},\phi_{v0}^{*} \rightarrow ti_2^{*};l_2;\phi_2$ and
+                    $S;C \vdash e_0^{*} : ti_2^{*};l_2;\phi_2 \rightarrow ti^{*};l;\phi$.
+
+                    Since $s;v^{*};e^{*}$ reduces, $e^{*}$ can be typed with an empty stack precondition.
+                    Therefore $ti_2^{*} = ti_1^{*}\;ti_3^{*}$ and $S;C \vdash e^{*} : \epsilon;ti_v^{*};\phi_v^{*},\phi_{v0}^{*} \rightarrow ti_3^{*};l_2;\phi_2$.
+
+                    Since $\phi_{v0}^{*}$ only contains fresh index variables, $\phi_v^{*} \implies \phi_v^{*},\phi_{v0}^{*}$.
+
+                    $S;C \vdash e^{*} : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti_3^{*};l_2;\phi_2$ by \refrule{Implies}.
+
+                    Then, $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};e^{*} : ti_3^{*};l_2;\phi_2$ by \refrule{Code}.
+
+                    Now, we invoke the \reflemma{Subject Reduction for Code} inductive hypothesis and rebuild the type using the reduced expression.
+
+                    Since $S;(ti^{*};l;\phi)^{*} \vdash_i v^{*};e^{*} : ti_3^{*};l_2;\phi_2$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v';e'^{*}$, then by the inductive hypothesis we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};e'^{*} : ti_3^{*};l_2;\phi_2$.
+
+                    $S;C \vdash e'^{*} : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti_3^{*};l_2;\phi_2$ because it is a premise of \refrule{Code}.
+
+                    % $S;C \vdash v_0^{*}\; e'^{*}\; e_0^{*} : \epsilon;ti_{v'}^{*};\phi_{v'}^{*},\phi_{v0}^{*} \rightarrow ti^{*};l;\phi$ by \refrule{Const}, \refrule{Implies}, and \refrule{Composition}.
+
+                    $S;C \vdash v_0^{*} : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti_1^{*};ti_{v'}^{*};\phi_{v'}^{*},\phi_{v0}^{*}$ by \refrule{Const}.
+
+                    $S;C \vdash e'^{*} : ti_1^{*};ti_{v'}^{*};\phi_{v'}^{*},\phi_{v0}^{*} \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Implies} and \refrule{Stack-Poly}.
+
+                    $S;C \vdash v_0^{*}\; e'^{*}\; e_0^{*} : \epsilon;ti_{v'}^{*};\phi_{v'}^{*},\phi_{v0}^{*} \rightarrow ti^{*};l;\phi$ by \refrule{Composition}.
+
+                    Therefore, $S;(ti^{*};l;\phi)^{*} \vdash_i L^k[e'^{*}] : ti^{*};l;\phi$ and $\vdash s' : S$.
+
+                \item Case: $k > 0$
+
+                    $L^k[e^{*}] = v_k^{*}\; \<label>_n \{ e_0^{*} \}\; L^{k-1}[e^{*}] \<end>\; e_k^{*}$.
+
+                    By \reflemma{Inversion} on \refrule{Const} and \refrule{Composition},
+                    $S;C \vdash \<label>_n \{ e_0^{*} \}\; L^{k-1}[e^{*}] \<end> : ti_1^{*};ti_v^{*};\phi_v^{*},\phi_{vk}^{*} \rightarrow ti_2^{*};l_2;\phi_2$ and
+                    $S;C \vdash e_k^{*} : ti_2^{*};l_2;\phi_2 \rightarrow ti^{*};l;\phi$.
+
+                    By \reflemma{Inversion} on \refrule{Label},
+                    $ti_2^{*} = ti_1^{*} \; ti_3^{*}$,
+                    $S;C \vdash e_0^{*} : ti_4^{*};l_4;\phi_4 \rightarrow ti_3^{*};l_2;\phi_2$, and
+                    $S;C,\text{label } (ti_4^{*};l_4;\phi_4) \vdash L^{k-1}[e^{*}] : \epsilon;ti_v^{*};\phi_v^{*},\phi_{vk}^{*} \rightarrow ti_3^{*};l_2;\phi_2$.
+
+                    Since $\phi_{vk}^{*}$ only contains fresh index variables, $\phi_v^{*} \implies \phi_v^{*},\phi_{vk}^{*}$.
+
+                    $S;C,\text{label } (ti_4^{*};l_4;\phi_4) \vdash L^{k-1}[e^{*}] : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti_3^{*};l_2;\phi_2$ by \refrule{Implies}.
+
+                    $S;(ti^{*};l;\phi)^{?} \vdash v^{*};L^{k-1}[e^{*}] : ti_3^{*};l_2;\phi_2$ by \refrule{Code}.
+
+                    \thought{It might seem like we can't do this, but the store typing never specifies what the labels of it's contexts are, so we can just do whatever?}
+
+                    Now, we invoke the \thought{I'm not sure I'm even doing induction right} inductive hypothesis and rebuild the type using the reduced expression.
+
+                    Since $S;(ti^{*};l;\phi)^{*} \vdash_i v^{*};L^{k-1}[e^{*}] : ti_3^{*};l_2;\phi_2$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v';e'^{*}$, then by the inductive hypothesis we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};L^{k-1}[e'^{*}] : ti_3^{*};l_2;\phi_2$.
+
+                    $S;C,\text{label } \vdash L^{k-1}[e'^{*}] : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti_3^{*};l_2;\phi_2$ because it is a premise of \refrule{Code}.
+
+                    $S;C \vdash v_k^{*} : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti_1^{*};ti_{v'}^{*};\phi_{v'}^{*},\phi_{vk}^{*}$ by \refrule{Const}.
+
+                    $S;C \vdash \<label>_n \{ e_0^{*} \}\; L^{k-1}[e'^{*}] \<end> : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti_3^{*};l_2;\phi_2$ by \refrule{Label}.
+
+                    $S;C \vdash \<label>_n \{ e_0^{*} \}\; L^{k-1}[e'^{*}] \<end> : ti_1^{*};ti_{v'}^{*};\phi_{v'}^{*},\phi_{vk}^{*} \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Implies} and \refrule{Stack-Poly}.
+
+                    $S;C \vdash v_k^{*}\; \<label>_n \{ e_0^{*} \}\; L^{k-1}[e^{*}] \<end>\; e_k^{*} : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti^{*};l;\phi$ by \refrule{Composition}.
+
+                    Therefore, $S;(ti^{*};l;\phi)^{*} \vdash_i L^k[e'^{*}] : ti^{*};l;\phi$ and $\vdash s' : S$.
+
+            \end{itemize}
 
         \item Otherwise: we have $(\vdash (t.\<const> c) : \ti{t}{a};(\circ,\ti{t}{a},(= a\; \ti{t}{c})))^{*}$, and $S,S_\text{inst}(i) \vdash e^{*} : \epsilon;\ti{t}{a}^{*};(\circ,\ti{t}{a},(= a\; \ti{t}{c}))^{*} \rightarrow ti;l;\phi$
 
