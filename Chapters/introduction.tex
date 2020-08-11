@@ -2,7 +2,7 @@
 \label{chp:intro}
 
 \section{Unsafe Code}
-Browsers and Internet-of-Things (IoT) require running untrusted code, that may have been downloaded from anywhere.
+Browsers and the Internet-of-Things (IoT) require running untrusted code, that may have been downloaded from anywhere.
 It is crucial to ensure the safety of the code being executed in these contexts.
 \todo{Find some examples of javascript exploits}
 Typically, \emph{sandboxing} and/or \emph{dynamic safety checks} are used to ensure the safety of untrusted code.
@@ -12,13 +12,13 @@ For example, Mozilla's Firefox places the running scripts for each website in se
 However, sandboxing in this way requires additional run time resources, as processes require overhead in most OSes.
 
 Dynamic safety checks are run time checks that catch any attempted unsafe operations.
-For example, WebAssembly (\wasm) is a low-level language designed to be both safe and fast to use in place of JavaScript for performance-critical applications in browsers.
+For example, WebAssembly (\wasm) is a low-level language designed to be both safe and fast to execute in place of JavaScript for performance-critical applications in browsers.
 While \wasm is type safe and its semantics enforce the separation of control flow and data, it still relies on dynamic checks to ensure certain type and memory safety properties at run time.
 These dynamic checks potentially slow down programs by introducing unnecessary instructions to perform the checks.
 
 We chose \wasm because it is used in browsers and IoT devices.
 Both browsers and IoT require strong safety guarantees since they download and execute code from unknown sources.
-Further, the use case for \wasm is often performance critical applications, such as in-browser games and cryptographic algorithms.
+Further, the use case for \wasm is often performance-critical applications such as in-browser games and cryptographic algorithms.
 
 We have designed an extension to \wasm, called \name, that adds new instructions that do not require dynamic safety checks.
 However, under the existing \wasm model the new \name instructions have potentially unsafe semantics, as they require stronger static guarantees to ensure safety than \wasm can provide.
@@ -28,15 +28,14 @@ To provide these additional static guarantees, we equip \name with a more advanc
 \section{Type Systems}
 Types systems are useful for reasoning about programs.
 They can be used to reason about the correctness of programs, usually in the form of safety guarantees.
-\todo{Is this really type safety? Or should it be type soundess?}
-For example, type safety is the property that a well-typed program will never become \emph{stuck}, that is, it will always be able to reduce the current expression or the current expression is a well-formed irreducible value.
+For example, type safety is the property that a well-typed program will never become \emph{stuck}; that is, it will always be able to reduce the current expression or the current expression is a well-formed irreducible value.
 The safety guarantees of type systems provide a degree of trust in programs, as a well-typed program implicitly contains a checkable proof that it will only exhibit safe behavior.
 
-Generally, low-level languages are either untyped or have simple type systems.
-More expressive type systems that can encode richer invariants, enabling ruling out more bad behaviors with static checks alone.
+Generally, low-level languages are either untyped and provide no guarantees or have simple type systems that provide minimal guarantees.
+More expressive type systems can encode richer invariants, enabling ruling out more bad behaviors with static checks alone.
 Generally, such type systems are attached to high-level languages, where explicit abstractions make it easy to reason about programs compared to low-level languages.
 Conversely, using expressive type systems in low-level languages often requires reasoning about program state and unstructured control flow (\ie $goto$), which introduces more complexity into the type system.
-However, prior work has attached expressive type systems, that permit complex correctness guarantees, to simple low-level languages.
+However, prior work has attached expressive type systems that permit rich correctness guarantees to simple low-level languages.
 
 \section{Related Work}
 \label{sec:relwork}
@@ -44,13 +43,13 @@ However, prior work has attached expressive type systems, that permit complex co
 Using type information to improve compiler optimizations is not a new idea.
 \citet{TIL} used strongly typed intermediate languages (TIL) to improve optimizations of SML code.
 Compiling SML involves many translations to intermediate languages, and by preserving type information through those translations and in the intermediate language \citet{TIL} were able to safely perform additional compiler operations.
-Using TIL in the compilation of programs led to up to $\%50$ faster programs.
+Using TIL in the compilation of programs led to up to $50\%$ faster programs.
 TIL focuses on compiler optimizations and eventually translates into untyped languages and finally runnable assembly, so the guarantees of the type system are lost along the way.
 
 %% PCC
 Proof-carrying code (PCC) was introduced by \citet{PCC}.
 PCC attached explicit proofs that low-level code satisfies some safety properties.
-The proof can then be quickly checked to ensure the safety of the code before it is run.
+The proof can then be checked to ensure the safety of the code before it is run.
 While typed intermediate languages require types to be considered as part of the language, PCC adds a separate logical framework on top.
 Thus, PCC can be used with any language, and requires no support from the language.
 However, because PCC has no support from the language, it has a higher proof burden then using types inside a language.
@@ -90,7 +89,7 @@ Towards that goal, we introduce \name, an extension of the WebAssembly (\wasm) l
 To facilitate type-checking these new instructions, \name uses an indexed type system which is able to encode linear constraints on program variables and therefore ensure safety properties of the new \name instructions (\autoref{sec:typesys}).
 We ensure that \name is as safe as \wasm by providing a type safety proof of the \name indexed type system (\autoref{sec:typesafety}).
 Together, these additions mean that \name is as safe as \wasm while potentially improving performance.
-We show that \name is backwards compatible with \wasm by showing that \wasm programs can be turned into \name programs (\autoref{subsec:embedding}), and we show that we can go in the other direction, too (\autoref{subsec:erasure}).
+We show that \name is backwards compatible with \wasm by showing that \wasm programs can be turned into \name programs (\autoref{subsec:embedding}), and we show that we can go in the other direction, as well (\autoref{subsec:erasure}).
 
 \section{Thesis Statement}
 \begin{adjustwidth}{1cm}{1cm}

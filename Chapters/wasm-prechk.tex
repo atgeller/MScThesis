@@ -8,6 +8,7 @@ In \name, we extend \wasm with new instructions that explicitly do not require d
 The syntax of \name has the same structure as \wasm, but different instructions and representations of types.
 First, \name introduces four additional instructions, which are referred to as ``\prechk-tagged'' instructions.
 Second, \name does not support floating point values or unary operators on integers since they are difficult to reason about (this is explained in more detail in \autoref{chp:implementation}).
+While it would be possible to support them, we would have no more type information about them then \wasm, and the focus of this work is on the type information.
 \name uses a different representation of types within instructions and functions, as we will see in \autoref{subsec:indexlang}.
 
 Recall from \autoref{sec:wasmsemantics} that there are four \wasm instructions that require run-time checks: integer division, indirect function calls, and memory loads and stores.
@@ -67,9 +68,9 @@ Below is a quick overview of each of the terms.
 
 \begin{itemize}
     \item $t$ represents a primitive \wasm type.
-    We do not reason about floating points, so it is either a 32-bit integer ($i32$) or a 64-bit integer ($i64$).
+    We do not reason about floating point values, so it is either a 32-bit integer ($i32$) or a 64-bit integer ($i64$).
     \item $a$ is a type index variable, which is used to track constraints on program variables.
-    \item $x$ and $y$ are type indices, they can be an index type variable, a constant with an explicit type, or a \wasm operation on a type index.
+    \item $x$ and $y$ are type indices; they can be an index type variable, a constant with an explicit type, or a \wasm operation on a type index.
     \item $P$ is a proposition about type indices which can encode equality constraints on type indices, or combine propositions using common first-order logic operators.
     \item $\phi$ is the type index context which stores index type variable declarations and propositions.
     Essentially, it contains all of the knowledge we have about all of the index variables.
@@ -136,45 +137,43 @@ We also have four new instructions, for which we introduce new reduction rules.
         \arraycolsep=1.4pt
         \begin{array}{rcl}
             (t.\<const> c_1)\; (t.\<const> c_2)\; t.binop &\hookrightarrow& t.\<const> c \\
-            \text{if } c=binop(c_1,c_2) && \\ %% binop
+            && \text{if } c=binop(c_1,c_2) \\ %% binop
 
             (t.\<const> c_1)\; (t.\<const> c_2)\; t.binop &\hookrightarrow& \<trap> \\ %% binop to trap
-            otherwise && \\
+            && otherwise \\
 
             s;\<callindirect> j &\hookrightarrow_i& s_\text{tab}(i,j) \\
-            \text{if } s_\text{tab}(i,j)_\text{code}=(\<func> tf\; \<local>\; t^{*}\; e^{*}) && \\
+            && \text{if } s_\text{tab}(i,j)_\text{code}=(\<func> tf\; \<local>\; t^{*}\; e^{*}) \\
 
             s;\<callindirect> j &\hookrightarrow_i& \<trap> \\
-            \text{otherwise} && \\
+            && \text{otherwise} \\
 
             s;(\<ithreetwo>.\<const> k) &&\\
             (t.\<load> tp\_sx\; align\; o) &\hookrightarrow_i& s;(t.\<const> const_t(b^{*})) \\
-            \text{if } s_\text{mem}(i,k+o,|t|)=b^{*} && \\
-
-            &&\\
+            && \text{if } s_\text{mem}(i,k+o,|t|)=b^{*} \\
 
             s;(\<ithreetwo>.\<const> k) &&\\
             (t.\<load> tp\_sx\; align\; o) &\hookrightarrow_i& \<trap> \\
-            \text{otherwise} && \\
-
-            &&\\
+            && \text{otherwise} \\
 
             s;(\<ithreetwo>.\<const> k)\; (t.\<const> c) && \\
             (t.\<store> tp\_sx\; align\; o) &\hookrightarrow_i& s';\epsilon \\
-            \text{if } s'=s &\text{ with }& \text{mem}(i,k+o,|t|)=bits_t(c) \\
-
-            &&\\
+            && \text{if }
+            {\begin{stackTL}
+                s'=s \text{ with} 
+                \\ \text{mem}(i,k+o,|t|)=bits_t(c)
+            \end{stackTL}} \\
 
             s;(\<ithreetwo>.\<const> k)\; (t.\<const> c) && \\
             (t.\<store> tp\_sx\; align\; o) &\hookrightarrow_i& \<trap> \\
-            \text{otherwise} && \\
+            && \text{otherwise} \\
         \end{array}
     \end{math}
     \caption{\wasm instructions that have preconditions for reduction}
     \label{fig:checked}
 \end{figure}
 
-The formal reason certain \wasm instructions require run-time checks is because they have preconditions as part of their semantics, and if the preconditions are not met then those instructions trap to avoid undefined behavior (we've reproduced the reduction rules for those instructions in \autoref{fig:checked}).
+The formal reason why certain \wasm instructions require run-time checks is because they have preconditions as part of their semantics, and if the preconditions are not met then those instructions trap to avoid undefined behavior (we've reproduced the reduction rules for those instructions in \autoref{fig:checked}).
 The \wasm type system is not expressive enough to ensure these preconditions statically, so they instead must be checked at run-time.
 However, the \name type system is capable of statically checking these preconditions.
 
@@ -227,7 +226,7 @@ Recall the form of the \name typing judgement for instructions.
 \end{mathpar}
 
 Under $C$, the module type context, $e^{*}$ has the precondition $ti_1^{*};l_1;\phi_1$ and postcondition $ti_2^{*};l_2;\phi_2$.
-We sometimes use the abbreviation $tfi ::= ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ as shorthand for the precondition and postcondition of an instruction.
+We sometimes use the metavariable abbreviation $tfi ::= ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ as shorthand for the precondition and postcondition of an instruction.
 
 As in \wasm, \name generally has two kinds of typing rules.
 Most rules are for inferring or checking the types of instructions (in which case $e^{*}$ will be a single instruction).
@@ -255,10 +254,10 @@ In \refrule{Nop}, no changes are made from the precondition to the post conditio
 \end{mathpar}
 
 The constant instruction is a simple example of how indexed types work.
-It adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$, declares the new indexed type in the index type context, and constrains that indexed type to be equal to the constant $(= a\; \ti{t}{c})$.
-We require $a$ to be fresh, that is, we require that $a$ is a new index variable present no where else in any of the types for the program.
+It adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$, declares the new indexed type in the index type context $\phi$, and constrains that indexed type to be equal to the constant $(= a\; \ti{t}{c})$.
+We require $a$ to be fresh, that is, we require that $a$ is a new index variable present nowhere else in any of the types for the program.
 This is a common pattern to see in rules which introduce new index variables.
-The local index store is unchanged between the precondition and postcondition.
+The local index store $l$ is unchanged between the precondition and postcondition.
 \begin{mathpar}
     \inferrule*[right=\defrule{Const}]{ a \text{ is fresh} }{ %% const
         C \vdash t.\<const> c : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a},(= a \ti{t}{c})
@@ -299,7 +298,8 @@ Binary operators do not affect or use local variables, they simply propagate, so
 
 \refrule{Select} constrains indexed types in a rather complex way.
 Select consumes three values from the stack, it returns the second value if the third value is zero, and otherwise returns the first value (similar to C's ternary operator).
-For this rule we use the type-level ``if'' to allow the constraint on the result to depend on the third value consumed: $(\text{if}\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))$.
+We use the type-level ``if'' to allow the constraint on the result to depend on the third value consumed: $(\text{if}\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))$.
+
 \begin{mathpar}
     \inferrule*[right=\defrule{Select}]{a_3 \text{ is fresh}}{ %% select
         C \vdash \<select> : {\begin{stackTL}
@@ -315,7 +315,7 @@ For this rule we use the type-level ``if'' to allow the constraint on the result
 
 The rules for the three different kinds of blocks (\<block>, \<loop>, and \<if>) are similar to \wasm.
 They simply ensure that the interior instruction sequence has the expected type under the context with the expected postcondition (or precondition in the case of loop) appended to the local stack.
-If blocks are able to make extra assumptions about the consumed value in the subsequences (that it is non-zero in the first sequence and zero in the second), because those constraints must be true for that sequence to be executed.
+\<if> blocks are able to make extra assumptions about the consumed value in the subsequences (that it is non-zero in the first sequence and zero in the second), because those constraints must be true for that sequence to be executed.
 While \<if> and \<block> append their postcondition to the label stack for typechecking branching instructions within the block, \<loop> appends its precondition because branching to a loop means running the loop again.
 
 \begin{mathpar}
@@ -392,7 +392,7 @@ Recall that functions are declared within the module with a specific type $tfi$,
 These declared indexed function types are placed inside the module type context $C$.
 Direct function calls $\<call> i$ have the same type as the declared indexed function type of the function they are calling with two differences.
 First, the local index store is unchanged, since the called function will have been turned into a closure that operates on separate local variables in a local block.
-Second, the index type context in the postcondition is extended with the declarations and constraints from the precondition.
+Second, the index type context in the postcondition of the call is extended with the declarations and constraints from the precondition of the call.
 The precondition and postcondition of a function can only contain constraints about the arguments supplied to that function, so simply copying the postcondition of the function would result in the loss of information about all other index variables.
 
 Indirect function calls $\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ include the expected indexed function type $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ provided as part of their syntax (the same note about index variables being unification variables from above holds).
@@ -663,7 +663,7 @@ Further, we must show that the provided table index is within the table boundari
 \end{mathpar}
 
 \subsection{Module Types}
-The complete module typing rules are in Figure \ref{fig:modulerules} (not that $im$ is an import and $ex$ is an export).
+The complete module typing rules are in Figure \ref{fig:modulerules} (note that $im$ is an import and $ex$ is an export).
 Functions $f$, typecheck their body $e^{*}$ under the module type context $C$ with the expected postcondition $ti_2^{*};l_2;\phi_2$ in the label stack and return position, and with the local index store $\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*}$ constructed from the function's arguments $\ti{t_1}{a_1}^{*}$ and declared locals $\ti{t}{a_2}^{*}$.
 Global variables $glob$ must ensure that their initialization instructions $e^{*}$ produce a value of the proper type $t$.
 Exported global variables cannot be mutable, if there are any exports defined, the global cannot have the mutable tag $mut$: $ex^{*}=\epsilon \lor tg=t$.

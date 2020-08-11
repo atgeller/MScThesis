@@ -15,7 +15,7 @@ This will also require constructing an algorithm to build typing derivations as 
 
 \paragraph{More Optimizations}
 There is also the potential to find other optimizations we can perform with the additional type information.
-For example, remember from \autoref{sec:typesys} that an $\<if>$ may have a contradiction in the index type context one one of its branches.
+For example, remember from \autoref{sec:typesys} that an $\<if>$ may have a contradiction in the index type context in one of its branches.
 In this case, that branch will never be executed, and therefore the other branch must always be taken, so we can safely replace the $\<if>$ instruction with the other branch.
 We can do similar optimizations with $\<brif>$ and $\<select>$.
 
@@ -24,7 +24,7 @@ Recall that the embedding of \wasm into \name from \autoref{subsec:embedding} do
 Type annotations can be added by the developer, who will then get stronger guarantees of correctness along with the potential for more optimizations.
 However, we would prefer for the developer not to have to hand-annotate compiled \wasm.
 Instead, we could use static analysis to try to find the weakest preconditions that guarantee the safety of \prechk-tagging instructions.
-We could also attempt to have have a compiler from a higher-level language to \wasm add annotations as a form of type preserving compilation similar to Sytem F to Typed Assembly Language \cite{FtoTAL}.
+We could also attempt to have have a compiler from a higher-level language to \wasm add annotations as a form of type preserving compilation similar to System F to Typed Assembly Language \cite{FtoTAL}.
 
 \paragraph{Reasoning About Global Variables}
 Reasoning about global variables is made difficult because static typechecking is restricted to within the module we are checking.

@@ -11,28 +11,14 @@ While we have shown the \name typing rules for instructions within a static cont
 \emph{Administrative instructions} are introduced for reduction to keep track of information during reduction.
 For example, $\<local>$ is the result of reducing a closure call; it is used to reduce a function body within the closed environment of the closure.
 They are not part of the surface syntax of a language (\eg you cannot put a local block in a \name program), and can only appear as an intermediate term during reduction.
-\autoref{fig:programrules} shows the \name typing rules for module instances $inst$, the run time store $s$, and various data structures contained within $s$.
+\autoref{fig:storerules} shows the \name typing rules for module instances $inst$, the run time store $s$, and various data structures contained within $s$.
 There are many different judgments being introduced, so we explicitly state the form of the judgment before stating the rule for that judgment.
 
-During reduction, we use \refrule{Program} to ensure that a \name program (consisting of the store $s$, local variables $v^{*}$, and instruction sequence $e^{*}$) is well typed (notice that it has the same form as the reduction relation).
+During reduction, we use \refrule{Program} (\autoref{fig:programrules}) to ensure that a \name program (consisting of the store $s$, local variables $v^{*}$, and instruction sequence $e^{*}$) is well typed (notice that it has the same form as the reduction relation).
 It uses \refrule{Code} and \refrule{Store}, to ensure that a reducible \name program is well typed.
 \refrule{Code} checks that a sequence of instructions is well typed with an empty stack, the indexed types and constraints for the given local variables in the precondition, and an optional return postcondition (not used by \refrule{Program}).
 Since local variables are values, we know that each one of them is equal to some constant, so \refrule{Code} is really just checking that the sequence of instructions has some postcondition reachable from the given local variables.
 There is an optional return postcondition for \refrule{Code} because \refrule{Local} has as a premise a judgment of the exactly same form, except with a return postcondition.
-
-In addition to getting the type of the instructions being reduces, we also need to know the type of the store $s$ since it is part of the reduction relation.
-\refrule{Store} checks that a run-time store, $s$ is well typed by the store context $S$.
-The store context $S$ is to $s$ as $C$ is to $inst$.
-That is, it contains the type information for everything in $s$.
-\refrule{Store} ensures that every module instance $inst$ in $s$ has the type of the index module context $C$ in $S$ using \refrule{Instance}.
-Further, \refrule{Store} ensures that all of the closures in all of the tables in $s$ are well typed, and the the sizes of all the tables and memory chunks in $S$ do not exceed the actual size of their implementations.
-
-To get the type of the store, we in turn have to know the types of each of the various run-time data structures.
-\refrule{Instance} checks that a module instance is well-typed by the index module context under the store context $S$.
-It checks all of the closures $cl^{*}$ against their expected types $tfi^{*}$ in $C$, and similarly for all of the globals ($v^{*}$ and $()\text{mut}^{?} t)^{*}$).
-The table and memory indices ($i$ and $j$, respectively) are used to lookup the the relevant types ($(n,tfi^{*})$ and $m$, respectively) in the store context $S$.
-Closures are typechecked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to typecheck the function definition inside of the closure.
-\refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to typecheck local and global variables.
 
 \begin{figure}
     $$ S ::= \{ \text{inst } C^{*}, \text{ tab } n^{*}, \text{ mem } m^{*} \} $$
@@ -59,14 +45,32 @@ Closures are typechecked by \refrule{Closure}, which falls back on the module ty
         S;(ti^n;l;\phi)^{?} \vdash_i v^{*};e^{*} : ti^n;l;\phi
     }
     \end{mathpar}
+    \caption{\name Program Typing Rules}
+    \label{fig:programrules}
+\end{figure}
 
+In addition to getting the type of the instructions being reduced, we also need to know the type of the store $s$ since it is part of the reduction relation.
+\refrule{Store} checks that a run-time store, $s$ is well typed by the store context $S$.
+The store context $S$ is to $s$ as $C$ is to $inst$.
+That is, it contains the type information for everything in $s$.
+\refrule{Store} ensures that every module instance $inst$ in $s$ has the type of the index module context $C$ in $S$ using \refrule{Instance}.
+Further, \refrule{Store} ensures that all of the closures in all of the tables in $s$ are well typed, and the the sizes of all the tables and memory chunks in $S$ do not exceed the actual size of their implementations.
+
+To get the type of the store, we in turn have to know the types of each of the various run-time data structures.
+\refrule{Instance} checks that a module instance is well-typed by the index module context under the store context $S$.
+It checks all of the closures $cl^{*}$ against their expected types $tfi^{*}$ in $C$, and similarly for all of the globals ($v^{*}$ and $()\text{mut}^{?} t)^{*}$).
+The table and memory indices ($i$ and $j$, respectively) are used to lookup the the relevant types ($(n,tfi^{*})$ and $m$, respectively) in the store context $S$.
+Closures are typechecked by \refrule{Closure}, which falls back on the module typing rules from \autoref{fig:modulerules} to typecheck the function definition inside of the closure.
+\refrule{Admin-Const} gets the postcondition indexed types and constraints on values; it is used to typecheck local and global variables.
+
+\begin{figure}
     $ \boxed{\vdash s : S} $
 
     \begin{mathpar}
         \inferrule*[right=\defrule{Store}]{ %% store
             S = \{ \text{inst} \; C^{*}, \text{tab} \; n^{*}, \text{mem} \; m^{*} \}\\
             (S \vdash inst : C)^{*} \and
-            ((S \vdash cl : tfi)^{*})^{*} \and
+            ((S \vdash cl : tfi)^{*})^{*} \\
             (n \leq |cl^{*}|)^{*} \and
             (m \leq |b^{*}|)^{*}
         } {
@@ -109,8 +113,8 @@ Closures are typechecked by \refrule{Closure}, which falls back on the module ty
             S \vdash \{ \text{inst} \; i, \text{code} \; f \} : tfi
         }
     \end{mathpar}
-    \caption{\name Program and Store Typing Rules}
-    \label{fig:programrules}
+    \caption{\name Store Typing Rules}
+    \label{fig:storerules}
 \end{figure}
 
 \begin{figure}
@@ -155,7 +159,7 @@ Since local blocks are inline expansions of function calls, we use the optional 
 \refrule{Call-Cl} typechecks calling a closure by ensuring that the closure $cl$ being called has the same type as the call instruction $\<call> cl$ in $S$.
 \refrule{Trap} is always well typed under any precondition and postcondition.
 \refrule{Label} typechecks the body of the label block with the precondition of the saved instructions pushed onto the label stack.
-This was, if the label was generated by a loop, then the precondition of the saved values is the precondition of the loop, and we know the loop is well typed.
+If the label was generated by a loop, then the precondition of the saved values is the precondition of the loop, and we know the loop is well typed.
 Otherwise, the saved instructions will be an empty sequence and will be well typed from the precondition.
 
 Given these additional typing judgments and rules, we can now show the metatheoretic properties mentioned above.

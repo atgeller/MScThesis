@@ -94,7 +94,10 @@ We can also erase an imported function by erasing the declared type $tfi$.
         \begin{array}{rcl}
             erase_f(\<func>
             {\begin{stackTL}
-                ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+                {\begin{stackTL}
+                ti_1^{*};l_1;\phi_1
+                \\ \rightarrow ti_2^{*};l_2;\phi_2
+                \end{stackTL}}
                 \\ \<local>\; t^{*}\; e^{*})
             \end{stackTL}}
             &=&
@@ -103,31 +106,12 @@ We can also erase an imported function by erasing the declared type $tfi$.
                 \erase[tfi]{ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2}\\ \<wlocal>\; t^{*}\; \erase[e^{*}]{e^{*}}
             \end{stackTL}} \\
 
-            \erase[f]{\<func> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\; im}
-            &=&
-            \<wfunc> \erase[tfi]{ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2}\; im \\
-        \end{array}
-    \end{mathpar}
-\end{definition}
-
-To erase a function definition $f$, we erase both the type declaration $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ and the body $e^{*}$.
-We can also erase an imported function by erasing the declared type $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\;$.
-
-\begin{definition}{\fbox{$\erase[f]{f} = \mathredbold{f}$}}
-    \begin{mathpar}
-        \begin{array}{rcl}
             erase_f(\<func>
             {\begin{stackTL}
-                ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
-                \\ \<local>\; t^{*}\; e^{*})
+                ti_1^{*};l_1;\phi_1
+                \\ \rightarrow ti_2^{*};l_2;\phi_2
+                \\ im)
             \end{stackTL}}
-            &=&
-            \<wfunc>
-            {\begin{stackTL}
-                \erase[tfi]{ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2}\\ \<wlocal>\; t^{*}\; \erase[e^{*}]{e^{*}}
-            \end{stackTL}} \\
-
-            \erase[f]{\<func> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\; im}
             &=&
             \<wfunc> \erase[tfi]{ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2}\; im \\
         \end{array}
@@ -266,7 +250,7 @@ We must also remove the \prechk tag from \prechk-tagged instructions to turn the
 \end{definition}
 
 \paragraph{Erasing Typing Constructs}
-Here, we proof that erasing a \name static typing dervation is sound with respect to \wasm's type system.
+Here, we prove that erasing a \name static typing dervation is sound with respect to \wasm's type system.
 This means that erasure on the \name static typing judgment is sound with respect to \wasm's type system.
 Specifically, a \name instruction sequence $e^{*}$, that is well typed under a module type context $C$, produces a \wasm instruction sequence $e'^{*}=\erase[e^{*}]{e^{*}}$ that is well typed under the erased module type context $C'=\erase[C]{C}$.
 
@@ -323,7 +307,7 @@ Specifically, a \name instruction sequence $e^{*}$, that is well typed under a m
 
             By the definition of $erase_e$ and $erase_{tfi}$ (we also perform the step of erasing indexed function types here to avoid an extra step), we want to show that $\erase[C]{C} \vdash \<wblock>\; t_1^{*} \rightarrow t_2^{*} e^{*} \<wend> : t_1^{*} \rightarrow t_2^{*}$ is a valid \wasm judgment.
 
-            This proof is slightly more involved, since the derivation for this rule includes a premise that $C,\text{label}(\ti{t_2}{a_2}^{*};l_2;\phi_2) \vdash e^{*} : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$.
+            This proof is slightly more involved, since the derivation for this rule includes a premise that $$C,\text{label}(\ti{t_2}{a_2}^{*};l_2;\phi_2) \vdash e^{*} : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$$
 
             By the inductive hypothesis for the well-typedness of $e^{*}$, we have that $$\erase[C]{C,\text{label}(\ti{t_2}{a_2}^{*};l_2;\phi_2)}\;
             {\begin{stackTL}
@@ -337,7 +321,7 @@ Specifically, a \name instruction sequence $e^{*}$, that is well typed under a m
 
             Then we have $\erase[C]{C},\text{label}(t_2^{*}) \vdash \erase[e^{*}]{e^{*}} : t_1^{*}\rightarrow t_2^{*}$ by definition of $erase_C$ and $erase_{tfi}$.
 
-            Now that we have satisfied the premise, $\erase[C]{C} \vdash \<wblock>\; t_1^{*} \rightarrow t_2^{*} e^{*} \<wend> : t_1^{*} \rightarrow t_2^{*}$ by \refrule{Wasm-Block}.
+            Now that we have satisfied the premise, $$\erase[C]{C} \vdash \<wblock>\; t_1^{*} \rightarrow t_2^{*} e^{*} \<wend> : t_1^{*} \rightarrow t_2^{*}$$ by \refrule{Wasm-Block}.
 
         \item Case: $C \vdash \<br>\; i : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$
 
@@ -351,7 +335,7 @@ Specifically, a \name instruction sequence $e^{*}$, that is well typed under a m
 
             From $C \vdash \<br>\; i : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$, we have that $C_\text{label}(i)=\ti{t_1}{a_1}^{*};l_1;\phi_1$, since it is a premise.
 
-            Then, by the definition of $erase_C$, we have that ${\erase[C]{C}}_\text{label}(i) = t_1^{*}$.
+            Then ${\erase[C]{C}}_\text{label}(i) = t_1^{*}$, by the definition of $erase_C$.
 
             $$\erase[C]{C}\;
             {\begin{stackTL}
@@ -377,7 +361,7 @@ Specifically, a \name instruction sequence $e^{*}$, that is well typed under a m
 
             From $C \vdash \<call>\; i : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$, we have that $C_\text{func}(i)=\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$, since it is a premise.
 
-            Then, by the definition of $erase_C$, we have that ${\erase[C]{C}}_\text{func}(i) = \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2} = t_1^{*} \rightarrow t_2^{*}$
+            Then, ${\erase[C]{C}}_\text{func}(i) = \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2} = t_1^{*} \rightarrow t_2^{*}$, by the definition of $erase_C$.
 
             $$\erase[C]{C}\;
             {\begin{stackTL}
@@ -405,7 +389,7 @@ Specifically, a \name instruction sequence $e^{*}$, that is well typed under a m
 
             From $C \vdash \<setlocal>\; i : \ti{t}{a};l_1;\phi_1 \rightarrow \epsilon;l_1[i := a];\phi_1$, we have that $C_\text{local}(i)=t$, since it is a premise.
 
-            Then, by the definition of $erase_C$, we have that ${\erase[C]{C}}_\text{local}(i) = t$.
+            Then, we have that ${\erase[C]{C}}_\text{local}(i) = t$, by the definition of $erase_C$.
 
             $$\erase[C]{C}\;
             {\begin{stackTL}
@@ -563,7 +547,7 @@ Note that while we add $S$ to the judgment used in \reflemma{Sound Static Typing
 \begin{proof}
 
     We proceed by induction over typing rules.
-    In addition to the prior cases from \reflemma{Sound Static Typing Erasure}, which trivially still hold since the value of $S$ does not matter to those rules, we add proofs for a few administrative typing rules, which may refer to $S$.
+    In addition to the prior cases from \reflemma{Sound Static Typing Erasure}, which trivially still hold since the value of $S$ does not matter to those rules, we add proves for a few administrative typing rules, which may refer to $S$.
     Again, several proof cases are omitted as they are simple.
 
     \begin{itemize}
@@ -655,6 +639,7 @@ Note that in the definition we have expanded the definition of a table instance 
 \reflemma{Sound Store Erasure} proves that erasing a well-typed \name store results in a well-typed \wasm store.
 
 \begin{lemma}{\deflemma{Sound Store Erasure}}
+
     If $\vdash s : S$, then $\vdash \erase[s]{s} : \erase[S]{S}$
 \end{lemma}
 \begin{proof}
@@ -668,7 +653,7 @@ Note that in the definition we have expanded the definition of a table instance 
         \end{array}
     \end{math}
 
-    Then, $\erase[S]{S}=\{\text{func } \erase[tfi]{tfi}^{*}, \text{ global } tg^{*}, \text{ table } n, \text{ memory } n^{?}, ...\}$ by the definition of $erase_C$.
+    Then, $$\erase[S]{S}=\{\text{func } \erase[tfi]{tfi}^{*}, \text{ global } tg^{*}, \text{ table } n, \text{ memory } n^{?}, ...\}$$ by the definition of $erase_C$.
 
     Then, we must prove the following properties, as they are the premises of $\vdash \erase[s]{s} : \erase[S]{S}$:
     \begin{enumerate}
@@ -682,9 +667,7 @@ Note that in the definition we have expanded the definition of a table instance 
 
         We have $((S \vdash cl :  tfi)^{*})^{*})$, because it is a premise of \refrule{Store} that we have assumed to hold.
 
-        $((\erase[S]{S} \vdash \{\text{inst } i, \text{ func } \erase[f]{f}\} : \erase[tfi]{tfi})^{*})^{*}$ by \reflemma{Sound Closure Typing Erasure}
-
-        Then, we have $\erase[S]{S} \vdash \erase[inst]{inst} : \erase[C]{C})^{*}$ by \reflemma{Sound Instance Typing Erasure}.
+        Then, $((\erase[S]{S} \vdash \{\text{inst } i, \text{ func } \erase[f]{f}\} : \erase[tfi]{tfi})^{*})^{*}$ by \reflemma{Sound Closure Typing Erasure}
 
         \item $(n \leq |\{\text{inst } i, \text{ func } \erase[f]{f}\}|)^{*}$
 
@@ -733,13 +716,13 @@ To do this, we rely on the above lemmas to safely erase index type information a
 
     \begin{math}
         \begin{array}{rcl}
-            S &=& \{\text{inst } C^{*}, \text{ tab } (n,tfi^{*})^{*}, \text{ mem } m^{*}\} \text{,} \\
-            inst &=& \{\text{func } \{\text{inst } i, \text{ func } f\}^{*}, \text{global } v^{*}, \text{ table } i^{?}, \text{memory } j^{?}\} \text{, and} \\
+            S &=& \{\text{inst } C^{*}, \text{ tab } (n,tfi^{*})^{*}, \text{ mem } m^{*}\}\\
+            inst &=& \{\text{func } \{\text{inst } i, \text{ func } f\}^{*}, \text{global } v^{*}, \text{ table } i^{?}, \text{memory } j^{?}\}\\
             C &=& \{\text{func } tfi^{*}, \text{ global } tg^{*}, \text{ table } (n,tfi_2)^{?}, \text{ memory } n^{?}, \dots\} \\
         \end{array}
     \end{math}
 
-    $\erase[C]{C}=\{\text{func } \erase[tfi]{tfi}^{*}, \text{ global } tg^{*}, \text{ table } n, \text{ memory } n^{?}, ...\}$ by the definition of $erase_C$.
+    Then, $$\erase[C]{C}=\{\text{func } \erase[tfi]{tfi}^{*}, \text{ global } tg^{*}, \text{ table } n, \text{ memory } n^{?}, ...\}$$ by the definition of $erase_C$.
 
     Then, we must prove the following properties, as they are the premises of $\erase[S]{S} \vdash \erase[inst]{inst} : \erase[C]{C}$:
     \begin{enumerate}
@@ -750,14 +733,17 @@ To do this, we rely on the above lemmas to safely erase index type information a
         Then, we have $\erase[S]{S} \vdash \{\text{inst } i, \text{ func } f\} : \erase[tfi]{tfi})^{*}$ by \reflemma{Sound Closure Typing Erasure}.
 
         \item $(\vdash v : tg)^{*}$
+
         Trivially, this is a premise of $S \vdash inst : C$ and is not affected by erasure, so therefore it holds.
 
-        \item $\erase[S]{S}_tab(i)=n$
-        $\erase[S]{S}_tab(i)=n$ by definition of $erase_S$.
+        \item $\erase[S]{S}_{tab}(i)=n$
+
+        $\erase[S]{S}_{tab}(i)=n$ by definition of $erase_S$.
 
         Therefore, $\erase[S]{S}_tab(i)=n$.
 
         \item $\erase[S]{S}_mem(i)=n^{?}$
+
         Trivially, this is a premise of $S \vdash inst : C$ and is not affected by erasure, so therefore it holds.
     \end{enumerate}
 \end{proof}

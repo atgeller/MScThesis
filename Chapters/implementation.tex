@@ -54,8 +54,8 @@ Finally, we assert all of the translated constraints from the index type context
 \subsection{Impact of Using Z3}
 Our choice of using Z3 has impacted \name in several ways.
 
-\paragraph{Floating Point Values and Operations}
-We currently do not supporting floating point values because Z3 is unable to reason about them.
+\paragraph{Floating Point Values and Integer Bit Operations}
+We currently do not support floating point values because Z3 is unable to reason about them.
 In addition, the \wasm unary operators ($ctz$, $clz$, and $popcnt$, which provide bit-level information) and certain binary operators ($rotr$ and $rotl$) would be difficult and inefficient to reason about using Z3 due to their non-linearity, so we do not currently support them in \name.
 However, we treat these operators (and floating point values), like memory operations and simply assume nothing about them.
 

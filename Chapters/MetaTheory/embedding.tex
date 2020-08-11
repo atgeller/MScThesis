@@ -18,7 +18,7 @@ Embedding works purely over the surface syntax of the languages.
 As such, we define embedding over modules: the pinnacle syntactic objects of both the \wasm and \name surface syntax hierarchies.
 Embedding a module $module$ means embedding all of the functions $f^{*}$ in the module, and embedding the table $tab$ parameterized with all of the function definitions $f^{*}$.
 We do not have to embed globals $glob^{*}$ or the memory $mem^{?}$ as they have the same syntax in both \wasm and \name.
-We explain how to embed tables $tab$ in \autoref{def:embed-tab}, and functions $f$ in \autoref{def:embed-f}.
+We explain how to embed tables $tab$ in \autoref{def:embed-t}, and functions $f$ in \autoref{def:embed-f}.
 
 \begin{definition}{\fbox{$\embed[module]{module}^{C}=\mathbluesf{module}$}}
     \label{def:embed-m}

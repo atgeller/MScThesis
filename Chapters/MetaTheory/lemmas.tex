@@ -7,8 +7,8 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
     \begin{enumerate}
         %% const
-        \item If $S;C \vdash v : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $t.\<const> c = v$, $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$, $l_1 = l_2$,
+        \item If $S;C \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+        then $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$, $l_1 = l_2$,
         and $\phi_1,\ti{t}{a},(= a \; \ti{t}{c}) \implies \phi_2$.
 
         %% binop
@@ -36,18 +36,18 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
         %% select
         \item If $S;C \vdash \<select> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_0^{*}\;\ti{t}{a_1}\;\ti{t}{a_2}\;\ti{\<ithreetwo>}{a_3}$, $ti_2^{*} = ti_0^{*};\ti{t}{a}$, $l_1=l_2$, and $\phi_1,\ti{t}{a},(\text{if} (= a_3\; \ti{\<ithreetwo>}{0})\; (= a_1\; a)\; (= a_2\; a)) \implies \phi_2$.
+        \\ then $ti_1^{*} = ti_0^{*}\;\ti{t}{a_1}\;\ti{t}{a_2}\;\ti{\<ithreetwo>}{a_3}$, $ti_2^{*} = ti_0^{*};\ti{t}{a}$, $l_1=l_2$, and $\phi_1,\ti{t}{a},(\text{if} (= a_3\; \ti{\<ithreetwo>}{0})\; (= a_1\; a)\; (= a_2\; a)) \implies \phi_2$.
 
         %% block
-        \item If $S;C \vdash \<block> (ti_3^{*};l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_0^{*}\; ti_3^{*}$, $ti_2^{*}=ti_0^{*}\; ti_4^m$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, and $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4$.
+        \item If $S;C \vdash \<block>\; {\begin{stackTL}(ti_3^{*};l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\\ e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\end{stackTL}}$
+        \\ then $ti_1^{*} = ti_0^{*}\; ti_3^{*}$, $ti_2^{*}=ti_0^{*}\; ti_4^m$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, and $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4$.
 
         %% loop
-        \item If $S;C \vdash \<loop> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+        \item If $S;C \vdash \<loop>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
         then $ti_1^{*} = ti_0^{*}\; ti_3^n$, $ti_2^{*}=ti_0^{*}\; ti_4^m$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, and $S;C,\text{label}(ti_3^n;l_3;\phi_3) \vdash e^{*} : ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4$.
 
         %% if
-        \item If $S;C \vdash \<if> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+        \item If $S;C \vdash \<if>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
         then $ti_1^{*} = ti_0^{*}\; ti_3^n\; \ti{\<ithreetwo>}{a}$, $ti_2^{*}=ti_0^{*}\; ti_4^m$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e_1^{*} : ti_3^n;l_3;\phi_3,\neg(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4$, and $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e_2^{*} : ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4$.
 
         %% label
@@ -86,7 +86,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
         then $ti_2^{*}=ti_1^{*}\;ti_4^m$, $l_2=l_1$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, and $S\vdash cl : \epsilon;ti_3^{n}\;\ti{t}{a}^{n};\phi_3,\ti{t}{a}^k,(= a \;\ti{t}{0})^k \rightarrow ti_4^{m};l_4;\phi_4$
 
         %% local
-        \item If $S;C \vdash \<local> \{ i;v_l^{*} \} \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
+        \item If $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
         then $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
         $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};e^{*} : ti^n;l_3;\phi_3$,
         and $\phi_1,\phi_3 \implies \phi_2$.
@@ -133,7 +133,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
         %% current-memory
         \item If $S;C \vdash \<currentmemory> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_2^{*} = ti_1^{*} \; \ti{\<ithreetwo>}{a}$, $l_1 = l_2$, $C_\text{memory} = n$,
+        \\ then $ti_2^{*} = ti_1^{*} \; \ti{\<ithreetwo>}{a}$, $l_1 = l_2$, $C_\text{memory} = n$,
         and $\phi_1,\ti{\<ithreetwo>}{a} \implies \phi_2$.
 
         %% grow-memory
@@ -183,7 +183,7 @@ Thus, we can pull $v^n$ outside of the nested context and know that we can still
 
             We know $\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \implies \phi_3$.
 
-            Recall that $S;C \vdash v^n : \epsilon;l_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_4$, then $S;C \vdash v^n : \ti{t}{a}^{*};l_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*},\ti{t}{a}^{*}\;ti^n;l_3;\phi_4$, by \refrule{Subtyping}.
+            Recall that $S;C \vdash v^n : \epsilon;l_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_4$, then $$S;C \vdash v^n : \ti{t}{a}^{*};l_3;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow \ti{t}{a}^{*},\ti{t}{a}^{*}\;ti^n;l_3;\phi_4$$ by \refrule{Subtyping}.
 
             If $v_0^{*}$ are not executed (\ie they are not part of the reduced expression), then $a^{*}$ are fresh, so $\phi_0 \implies \phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$, and therefore $S;C \vdash v^n : \epsilon;l_1;\phi_0 \rightarrow ti^n;l_1;\phi_4$ by \refrule{Subtyping} and since $l_1=l_3$.
 
@@ -203,9 +203,9 @@ Thus, we can pull $v^n$ outside of the nested context and know that we can still
 
             We know $S;C \vdash v^n : \epsilon;l_1;\phi_0,\ti{t}{a}^{*},(\<eq> a \; \ti{t}{c}) \rightarrow ti^n;l_1;\phi_4$ by the inductive hypothesis.
 
-            If $v_0^{*}$ are not executed (\ie after one reduction step), $a^{*}$ are fresh, so $\phi_0 \implies \ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$, and therefore $S;C \vdash v^n : \epsilon;l_1;\phi_0 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_5$ by \reflemma{Subtyping} and since $l_1=l_3$.
+            If $v_0^{*}$ are not executed (\ie after one reduction step), $a^{*}$ are fresh, so $\phi_0 \implies \ti{t}{a}^{*},(\<eq> a \; \ti{t}{c})$, and therefore $S;C \vdash v^n : \epsilon;l_1;\phi_0 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_5$ by \refrule{Subtyping} and since $l_1=l_3$.
 
-            Then, $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_3$ by \reflemma{Subtyping}.
+            Then, $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^{*}\;ti^n;l_3;\phi_3$ by \refrule{Subtyping}.
 
     \end{itemize}
 \end{proof}

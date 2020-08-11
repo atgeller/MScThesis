@@ -49,7 +49,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
                 \\ \ti{t}{a_2},(= a_2\; \ti{t}{c_2})
             \end{stackTL}}
         \end{stackTL}}$$
-        where $\\phi_v^{*},\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; \ti{t}{c_2}) \implies \neg(= a_2\; \ti{t}{0})$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Div-Prechk}.
+        where $\phi_v^{*},\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; \ti{t}{c_2}) \implies \neg(= a_2\; \ti{t}{0})$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Div-Prechk}.
 
         Therefore, it must be the case that $c_2\neq 0$, and therefore there must exist some $c_3$ such that $c_3=div(c_1,c_2)$ since $div(c_1,c_2)$ is well-defined when $c_2$ is non-zero.
         Then, $s;(t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc> \hookrightarrow_i (t.\<const> c_3)$.
@@ -58,7 +58,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
 
         We must show that $s;(\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o) \hookrightarrow e'^{*}$ for some $e'^{*}$.
 
-        We have $S;() \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o) : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
+        We have $S;\epsilon \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o) : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
 
         We also have that $\vdash s : S$, and therefore $(n \leq |b^{*}|)^{*}$ where $S_\text{tab}=n^{*}$ and $s_\text{mem}=(b^{*})^{*}$.
 
@@ -117,7 +117,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
 
         We must show that $s;(\<ithreetwo>.\<const> k)\;(t.\<storepc> tp\; align\;o) \hookrightarrow e'^{*}$ for some $e'^{*}$.
 
-        We have $S;() \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<storepc> (tp\_sx)\; align\;o) : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
+        We have $$S;() \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<storepc> (tp\_sx)\; align\;o) : ti^{*};l;\phi$$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
 
         We also have that $\vdash s : S$, and therefore $(n \leq |b^{*}|)^{*}$ where $S_\text{tab}=n^{*}$ and $s_\text{mem}=(b^{*})^{*}$.
 
@@ -225,5 +225,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
 
         Thus, ${\begin{stackTL}s;(\<ithreetwo>.\<const> c)\;\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
             \\ \hookrightarrow \<call> \{\text{inst } j, \text{ func } f\}\end{stackTL}}$.
+
+    \item Otherwise, we reuse the \wasm proof, which we can do thanks to \autoref{thm:programerasure}.
     \end{itemize}
 \end{proof}

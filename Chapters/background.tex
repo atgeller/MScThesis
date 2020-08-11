@@ -1,7 +1,7 @@
 \chapter{Background}
 \label{sec:wasm}
-Here we present an overview of \wasm so reader's have some familiarity with it for when we present \name.
-We do not cover the entirety of the \wasm language as presented in the 2017 paper, but rather selected important points about the syntax, semantics, and type system.
+Here we present an overview of \wasm so readers have some familiarity with it for when we present \name.
+We do not cover the entirety of the \wasm language as presented in the 2017 paper, but rather present selected important points about the syntax, semantics, and type system.
 It is recommended that the reader first skim this section to understand the basics and then refer back while reading \autoref{chp:prechk} and \autoref{chp:metatheory}.
 
 \section{\wasm Syntax}
@@ -24,27 +24,27 @@ Function types, $tf$, map from one sequence of types to another, but they are ju
 \end{figure}
 
 The \wasm syntax uses the Kleene star within its BNF to refer to possibly empty sequences.
-Kleene stars ($\empty^{*}$) are commonly used in regular expressions to denote any number of a certain pattern: $t^{*}$ matches both $\<ithreetwo>\; \<ithreetwo>$ and $\<ithreetwo>\; \<isixfour>\; \<ithreetwo>$.
-Instructions, represented by the metavariable $e$, are usually grouped into sequences $e^{*}$, which are possibly empty $\epsilon$.
-$e_1$ and $e_2$ refer to different instructions (although the actual instruction they represent may be the same).
-Similarly, $e_1^{*}$ and $e_2^{*}$ refer to different sequences of instructions (again, the sequences may be the same).
-
-There is no requirement that a sequence of non-terminals, $e_1^{*}$, be made up of entirely the same pattern, unless it is explicitly written out as in $(t.const c)^{*}$.
-For example, $e_1^{*}$ matches $(t.\<const> c_1)\; (t.\<const> c_2)\; (t.binop)$.
-Further, we may separate out subsequences: from $(t.\<const> c)^{*}$ we may separate out $t^{*}$ and $c^{*}$ to refer to the sequences of types and constant values respectively.
+Kleene stars ($\empty^{*}$) are commonly used in regular expressions to denote any number of a certain pattern: $t^{*}$ matches $\epsilon$ (the empty sequence), $\<ithreetwo>\; \<ithreetwo>$, and $\<ithreetwo>\; \<isixfour>\; \<ithreetwo>$.
+Instructions, represented by the metavariable $e$, are usually grouped into sequences $e^{*}$ which are possibly empty $\epsilon$.
+$e_1$ and $e_2$ are different metavariables: they may happen to be the same instruction, or not, we do not know.
+Similarly, $e_1^{*}$ and $e_2^{*}$ refer to different metavariable sequences that may or may not be the same; we can make no assumptions about them.
 
 We can use different annotations in place of the Kleene star to add additional information.
 The Kleene star may be replaced with an exact value $n$ when we know that the sequence has length $n$ (\eg a sequence of 3 types be phrased as $t^{3}$).
-We can also use a question mark to represent either an empty sequence ($\epsilon$), or a sequence with exactly one item (\eg, $v^{?}=v' \lor v^{?}=\epsilon$).
+We can also use a question mark to represent either an empty sequence ($\epsilon$), or a sequence with exactly one item (\eg $v^{?}=v' \lor v^{?}=\epsilon$).
+
+There is no requirement that a sequence of non-terminals, $e_1^{*}$, be made up of entirely the same pattern, unless it is explicitly written out as in $(t.\<const> c)^{*}$.
+For example, $e_1^{*}$ matches $(t.\<const> c_1)\; (t.\<const> c_2)\; (t.binop)$.
+Further, we may separate out subsequences: from $(t.\<const> c)^{*}$ we may separate out $t^{*}$ and $c^{*}$ to refer to the sequences of types and constant values respectively.
 
 With this notation in mind, we can now look over the \wasm instructions in \autoref{fig:wasminstructions}.
-As a convention, syntax written in a \tbsf{blue sans serif font} denotes a keyword, while text written in $italics$ represents a metavariable.
+We follow the convention that syntax written in a \tbsf{blue sans serif font} denotes a keyword, while text written in $italics$ represents a metavariable.
 Throughout the \wasm syntax there are many metavariables used to represent natural numbers: $n$ and $m$ are usually used for the table and memory sizes, $i$ and $j$ are often used as indexes (\eg to reference a local variable), $o$ and $align$ are used within memory operations (we replace $a$ with $align$ for clarity and since we use $a$ elsewhere), and lastly $c$ is used as a constant variable (which could also be a float).
-Confusingly enough, $iN$ is used to annotate operations that support integers, and $fN$ is used to annotate operations that support floats.
+$iN$ is used to annotate operations that support integers, and $fN$ is used to annotate operations that support floats.
 
 Some instructions, such as $\<loop>\; tf\; e^{*} \<end>$ include a sequence of instructions $e^{*}$.
 We refer to such instructions as block instructions, since they define control flow blocks for the instructions inside (not to be confused with the $\<block>$ instruction, which is a block instruction).
-Similarly, we refer to $e^{*}$ as the body.
+In a block instruction, you will see one or more instruction sequences $e^{*}$ as part of the syntax before $\<nsend>$, we refer to this as the body.
 
 \begin{figure}
     \begin{math}
@@ -79,9 +79,9 @@ Similarly, they can also be exported under any number of names using $\<export> 
 Functions include a list of local variable declarations to use within the body (a sequence of instructions).
 Additionally, function arguments are accessible as local variables within the body of functions.
 Global variables may be mutable (although, exported global variables cannot be mutable, as we will see later), and are initialized via a sequence of instructions.
-Function tables store references to functions that can be called using indirect function calls, they are used to more safely represent function pointers.
+Function tables store references to functions that can be called using indirect function calls; they are used to more safely represent function pointers.
 Indirect function calls must supply a function type that gets checked against the table function that ends up being called at run-time.
-Linear memory, $mem$, is simply a very large continuous chunk of memory.
+Linear memory, $mem$, is a continuous chunk of memory.
 Memory load and store operations require run-time bounds checks to ensure that they operate within the chunk of memory.
 
 \begin{figure}
@@ -102,7 +102,7 @@ Memory load and store operations require run-time bounds checks to ensure that t
 
 \section{\wasm Dynamic Semantics}
 \label{sec:wasmsemantics}
-\wasm is a stack-based assembly language that uses reduction semantics \footnote{For those unfamiliar with reduction semantics, I highly recommended these notes by Ron Garica: \hyperlink{https://www.cs.ubc.ca/~rxg/cpsc509/05-reduction.pdf}{https://www.cs.ubc.ca/~rxg/cpsc509/05-reduction.pdf}}.
+\wasm is a stack-based assembly language that uses reduction semantics \footnote{For those unfamiliar with reduction semantics, I highly recommended these notes by Ron Garcia: \hyperlink{https://www.cs.ubc.ca/~rxg/cpsc509/05-reduction.pdf}{https://www.cs.ubc.ca/~rxg/cpsc509/05-reduction.pdf}}.
 Before we introduce the \wasm semantics, we first must introduce some administrative instructions that are used in the reduction relation.
 \autoref{fig:wasmadmin} shows the new administrative instructions.
 
@@ -126,15 +126,15 @@ Before we introduce the \wasm semantics, we first must introduce some administra
     \label{fig:wasmadmin}
 \end{figure}
 
-$cl$ represents a \wasm closures.
+$cl$ represents a \wasm closure.
 Closures include the module instance that the function is defined in, as well as the function definition (which cannot be an import) with any exports erased.
 Intuitively, a closure represents a function closed under linking.
 A table instance $tabinst$ contains a list of closures that can be called.
 $b$ represents a byte.
 A memory instance $meminst$ is a sequence of bytes.
+Module instances, $inst$, refer to their table/memory (if they have one), by indexing into the list of runtime instances of tables/memory chunks.
 The runtime store, $s$, includes runtime instances for every module ($inst^{*}$), as well as all of the tables ($tabinst^{*}$), and memory chunks ($meminst^{*}$).
 In other words, $s$ includes full definitions for every module.
-Module runtime instances, $inst$, refer to their table/memory (if they have one), by indexing into the list of runtime instances of tables/memory chunks.
 
 A representation of values, $v$, is added as a metavariable to refer to constant instructions $t.\<const> c$.
 A \emph{trap} ($\<trap>$) is the \wasm term for a run time error.
@@ -145,26 +145,26 @@ We also have two types of block instructions introduced.
 The first, label blocks, are used in handling control flow.
 Specifically, they are used to hand branching.
 All block instructions (\<block>, \<loop>, and \<if>) reduce to label blocks.
-Local blocks can store instructions (inside the curly braces), and the annotation $n$ is equal to the expected number of inputs to those instructions.
+Label blocks can store instructions (inside the curly braces), and the annotation $n$ is equal to the expected number of inputs to those instructions.
 This is explained more when we explain how branching works.
 
 The second new block instruction is the local block.
 Locals blocks are how closure calls get expanded.
-They introduce an environment consisting of the module instance and local variables inside which their body is reduced \todo{Executed? Reduced? Can we use them interchangeably? I think this comes up in other places as well, something to watch out for}.
+They introduce an environment consisting of the module instance and local variables inside which their body is reduced.
 
 Finally, we introduce reduction contexts, $L^{k}$, where $k$ is the nesting depth.
 Reduction contexts are based on label blocks, so $L^{k}$ contains $k$ nested label blocks.
 
 There are a few final notational digressions we must make before describing the reduction relation.
-First, objects such as $s=\{\text{inst } inst^{*}, \dots \}$ can be derefenced using their keywords (\eg ``inst'').
+Firstly, objects such as $s=\{\text{inst } inst^{*}, \dots \}$ can be derefenced using their keywords (\eg ``inst'').
 For example, $s_\text{inst}=inst^{*}$ given the above definition of $s$.
-Second, we can index into a sequence to get a specific element (\eg $inst^{*}(i)$ returns the $i$th $inst$ in $inst^{*}$).
+Secondly, we can index into a sequence to get a specific element (\eg $inst^{*}(i)$ returns the $i$th $inst$ in $inst^{*}$).
 Lastly, \wasm uses several shorthands to get information out of module instances in $s$: $s_\text{func}(i)(j)=s_\text{inst}(i)_\text{func}(j)$.
 Essentially, this allows us to implicity derefence the $i$th module instance to get the $j$th function inside of the instance.
 This shorthand is used similarly for glob, tab, and mem.
 
 \subsection{The \wasm Reduction Relation}
-The \wasm Reduction Relation works on \emph{configurations}, that include the store $s$, local variables (represented as a sequence of values $v^{*}$), and the instruction sequence $e^{*}$.
+The \wasm Reduction Relation works on \emph{configurations} that include the store $s$, local variables (represented as a sequence of values $v^{*}$), and the instruction sequence $e^{*}$.
 The store, local variables, and module index are omitted when not used.
 We present all the reduction rules below.
 
@@ -174,12 +174,12 @@ We present all the reduction rules below.
 
 Some rules also include the current module index $i$, which is used when dereferencing the store to know which module instance to look at.
 Instructions are reduced in place by decomposing the program using reduction contexts.
-Intuitively, we pull out the next instruction to execute, reduce it, and plug the result back in.
+Intuitively, we pull out the next instruction to execute, reduce it, and push the result on top of the stack
 The ``stack'' is just the sequence of values preceding the first reducible instruction.
-When an instruction reduces to a value, that value becomes part of the stack and the next instruction is reduced.
-This way of decomposing ensures that all of the instructions preceding an instruction getting reduced are values.
+When an instruction reduces to a value, that value becomes the new top of the stack and the next instruction is reduced.
+This method of decomposing ensures that all of the instructions preceding the instruction currently being reduced have already been reduced to values.
 
-Binary and relation operations consume two values and either return the specified operation applied to those values, or trap if it is not defined (in the case of dividing by zero).
+Binary and relation operations consume two values from the stack and either push back onto the stack the specified operation applied to those values, or trap if the operation on the values is not defined (in the case of dividing by zero).
 Test operators only consume one value, and do not trap, but are otherwise similar.
 
 \<unreachable> causes a trap, \<nop> reduces to the empty sequence, and \<drop> consumes one value and reduces to the empty sequence (\ie it discards the value on top of the stack).
@@ -210,9 +210,9 @@ The true/non-zero case of select returns the first value consumed ($k+1$ is a co
 
 Blocks and loops reduce to labels.
 Stored instructions are only added when reducing a \<loop>, in which case it stores the loop code so it can run the loop again.
-We show the true case of an $\<if>$ block, which reduces to the first body inside of a block, the false case does the same but with the second body.
+The true case of an $\<if>$ block, which reduces to the first body inside of a block; the false case does the same but with the second body.
 If the body of a label block is a \<trap> or a sequence of values then the \<trap>/values replace the block.
-Since decomposition happens on label blocks, we have included the inductive reduction rule, which intuitively pulls instructions out of the context, reduces them outside the context, and then plugs them right back in.
+Since decomposition happens on label blocks, we have included the inductive reduction rule, which intuitively pulls instructions out of the context, reduces them outside the context, and then plugs them back in.
 
 \begin{mathpar}
     \inferrule[]{
@@ -238,9 +238,9 @@ Since decomposition happens on label blocks, we have included the inductive redu
             \<end>
         \end{stackTL}} \\
 
-        (\<ithreetwo>.\<const> 0)\; \<if>\; tf\; e_1^{*} \<else> e_2^{*} \<end> &\hookrightarrow& \<block>\; tf\; e_1 \<end> \\
+        (\<ithreetwo>.\<const> 0)\; \<if>\; tf\; e_1^{*} \<else> e_2^{*} \<end> &\hookrightarrow& \<block>\; tf\; e_2^{*} \<end> \\
 
-        (\<ithreetwo>.\<const> k+1)\; \<if>\; tf\; e_1^{*} \<else> e_2^{*} \<end> &\hookrightarrow& \<block>\; tf\; e_1 \<end> \\
+        (\<ithreetwo>.\<const> k+1)\; \<if>\; tf\; e_1^{*} \<else> e_2^{*} \<end> &\hookrightarrow& \<block>\; tf\; e_1^{*} \<end> \\
 
         \<label>_n\; \{ e_0^{*} \}\; v^{*} \<end> &\hookrightarrow& v^{*} \\
 
@@ -309,10 +309,10 @@ Then, the closure body is placed into a local block with the arguments from the 
         s;\<call> j &\hookrightarrow_i& s_\text{func}(i,j) \\
 
         s;\<callindirect> j &\hookrightarrow_i& s_\text{tab}(i,j) \\
-        \text{if } s_\text{tab}(i,j)_\text{code}=(\<func> tf\; \<local>\; t^{*}\; e^{*}) && \\
+        && \text{if } s_\text{tab}(i,j)_\text{code}=(\<func> tf\; \<local>\; t^{*}\; e^{*}) \\
 
         s;\<callindirect> j &\hookrightarrow_i& \<trap> \\
-        \text{otherwise} && \\
+        && \text{otherwise} \\
 
         v^{n}\;(\<call> cl) &\hookrightarrow_i&
         {\begin{stackTL}
@@ -331,9 +331,10 @@ Then, the closure body is placed into a local block with the arguments from the 
     \end{array}
 \end{mathpar}
 
-The local block has the same module index, $i$, as the closure, so the body of the local block is reduced within the module that the closure is defined it, so it uses the global variables, table, and memory of the module instance referenced by $i$.
+The local block has the same module index, $i$, as the closure, so the body of the local block is reduced within the module that the closure is deﬁned in and thus uses the global variables, table, and memory of that module instance.
 This is handled by the inductive reduction rule (which has much more of a small-step flavor).
-Inside the local block is a label block, so at the top level of a function $\<br> 0$ is essentially equivalent to $\<return>$, except with an additional reduction step (in general, $\<return>$ can be thought of as $\<br> k$, where $k$ is the context depth).
+In general, $\<return>$ can be thought of as $\<br> k$, where $k$ is the context depth.
+For example, inside the local block is a label block, so at the top level of a function $\<br> 0$ is essentially equivalent to $\<return>$, except with an additional reduction step.
 \todo{Was that note confusing? Was that sentence confusing?}
 Returning, somewhat similarly to branching, simply replaces the local block with the arguments to the return instruction, except that it skips over any label blocks.
 If the body of a local block is a \<trap> or sequence of values, then that is what the local block reduces to, similar to branching.
@@ -352,8 +353,8 @@ If the body of a local block is a \<trap> or sequence of values, then that is wh
     \end{array}
 \end{mathpar}
 
-Local variables are just a list of values at run time!
-They are get/set by indexing into them, similar to, well, everything else in \wasm.
+Local variables are just a list of values at run time.
+They are get/set by indexing into them, like everything else in \wasm.
 The same is true of global variables, except there is an extra step since they are stored in the current module instance inside the store $s$.
 
 \begin{mathpar}
@@ -366,15 +367,15 @@ The same is true of global variables, except there is an extra step since they a
 
         s;\<getglobal> j &\hookrightarrow_i& s_\text{glob}(i,j) \\
 
-        s\; (\<setglobal> j) &\hookrightarrow_i& s';\epsilon \\
+        s; v;\;(\<setglobal> j) &\hookrightarrow_i& s';\epsilon \\
 
-        \text{where} s' = s \text{ with } glob(i,j)=v' \\
+        && \text{where } s' = s \text{ with } glob(i,j)=v' \\
     \end{array}
 \end{mathpar}
 
 Finally, there are the memory instructions.
 One can load or store a value from or to memory, get the current memory size, or try to grow the memory.
-$|t|$ is used to represent the size of the type (\eg $|t| = 8$ bytes).
+$|t|$ is used to represent the size of the type (\eg $|\<isixfour>| = 8$ bytes).
 We omit two rules, one each for store and load, that include the ability to use packed types to load/store smaller values and to load signed/unsigned.
 There is a lot of minutia detail, but none of it is particularly important.
 For example, $tp$ is an optional packed type which allows storing values smaller than the normal size of the type of the value (\eg storing eight bits $\<ieight>$ of a thirtytwo bit integer $\<ithreetwo>$).
@@ -385,25 +386,22 @@ The key high level takeaway is that load and store will trap if the supplied ind
     \begin{array}{rcl}
         s;(\<ithreetwo>.\<const> k) &&\\
         (t.\<load> tp\_sx\; align\; o) &\hookrightarrow_i& s;(t.\<const> const_t(b^{*})) \\
-        \text{if } s_\text{mem}(i,k+o,|t|)=b^{*} && \\
+        && \text{if } s_\text{mem}(i,k+o,|t|)=b^{*} \\
 
-        &&\\
 
         s;(\<ithreetwo>.\<const> k) &&\\
         (t.\<load> tp\_sx\; align\; o) &\hookrightarrow_i& \<trap> \\
-        \text{otherwise} && \\
+        && \text{otherwise} \\
 
-        &&\\
 
         s;(\<ithreetwo>.\<const> k)\; (t.\<const> c) && \\
         (t.\<store> tp\_sx\; align\; o) &\hookrightarrow_i& s';\epsilon \\
-        \text{if } s'=s &\text{ with }& \text{mem}(i,k+o,|t|)=bits_t(c) \\
+        && \text{if } s'=s \text{ with } \text{mem}(i,k+o,|t|)=bits_t(c) \\
 
-        &&\\
 
         s;(\<ithreetwo>.\<const> k)\; (t.\<const> c) && \\
         (t.\<store> tp\_sx\; align\; o) &\hookrightarrow_i& \<trap> \\
-        \text{otherwise} && \\
+        && \text{otherwise} \\
 
     \end{array}
 \end{mathpar}
@@ -412,13 +410,9 @@ The key high level takeaway is that load and store will trap if the supplied ind
     \begin{array}{rcl}
         s;\<currentmemory> &\hookrightarrow_i& \<ithreetwo>.\<const> |s_\text{mem}(i,*) | / 64\text{Ki} \\
 
-        &&\\
-
         s;(\<ithreetwo>.\<const> k)&&\\
         \<growmemory> &\hookrightarrow_i& s';\<ithreetwo>.\<const> | s'_\text{mem}(i,*) | / 64\text{Ki} \\
         \text{if } s'=s &\text{ with }& \text{mem}(i,*)=s_\text{mem}(i,*)(0)^{k*64\text{Ki}} \\
-
-        &&\\
 
         s;(\<ithreetwo>.\<const> k)&&\\
         \<growmemory> &\hookrightarrow_i& \<ithreetwo>.\<const> (-1) \\
@@ -446,12 +440,16 @@ For example, a binary operation of some type $t$ consumes two values of the give
 
 The above example shows what a typical \wasm typing rule looks like.
 The type associated with the instruction $t.binop$ is a \wasm function type, which is just the precondition (on the left of the $\rightarrow$) and postcondition (on the right of the $\rightarrow$) on the stack.
+In the precondition, the top of the stack is the rightmost type, since that represents the value closest to the instruction getting reduced.
 Most typing rules are for a single instruction and there are a few rules which can combine rules.
-Thus, the main \wasm typing judgement is as follows:
+Thus, the static \wasm typing judgement is as follows:
 
 $$\boxed{C \vdash e^{*} : tf}$$
 
-We reproduce and explain a few selected typing rules from \wasm.
+In addition to this typing judgment, \wasm also includes typing judgments for administrative instructions and a typing judgment in the form of the reduction relation for the \wasm type safety proof.
+\wasm also has typing judgments for modules and module-level declarations.
+
+We reproduce and explain a few selected typing rules from \wasm using the static typing judgement.
 The rule for typing a block, \refrule{Wasm-Block} typechecks the body $e^{*}$ under the module type context with the postcondition $t_2^{m}$ appended to the label stack.
 This is yet another common notational shorthand where $x,y$ means $x$ extended with $y$.
 The branch rule, \refrule{Wasm-Br}, accepts any precondition, extended with the $i$th postcondition on the label stack (counting backwards), and returns to any postcondition.
@@ -497,7 +495,7 @@ Then, the precondition of the full sequence $e_1^{*}\;e_2$ is the precondition o
     \inferrule*[right=\defrule{Wasm-Empty}]{ }{C \vdash \epsilon : \epsilon \rightarrow \epsilon}
 
     \inferrule*[right=\defrule{Wasm-Composition}]{
-        C \vdash e_1^{*} : t_1^{*} \rightarrow t_2^{*}
+        C \vdash e_1^{*} : t_1^{*} \rightarrow t_2^{*} \and
         C \vdash e_2 : t_2^{m} \rightarrow t_3^{*}
     }{
         C \vdash e_1^{*}\;e_2 : t_1^{*} \rightarrow t_3^{*}

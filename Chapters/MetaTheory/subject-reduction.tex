@@ -13,7 +13,7 @@ Before we present the subject reduction proof, we first introduce a number of us
 
     We have $\vdash s : S$ and $S;\epsilon \vdash_i v^{*};e^{*} : ti^{*};l;\phi$ because they are premises of \refrule{Program}.
 
-    Then, by \reflemma{Subject Reduction on Code}, we have that $\vdash s' : S$ and $S;\epsilon \vdash_i v'^{*};e'^{*} : ti^{*};l;\phi$.
+    Then, by \reflemma{Subject Reduction for Code}, we have that $\vdash s' : S$ and $S;\epsilon \vdash_i v'^{*};e'^{*} : ti^{*};l;\phi$.
 
     Thus, $\vdash s';v'^{*};e'^{*}: ti^{*};l;\phi$ by \refrule{Program}.
 \end{proof}
@@ -31,7 +31,7 @@ This would reduce to $\epsilon$, and then we lose the information about $a$ in t
 However, this can be solved using implication, as we know $a$ is fresh from the \refrule{Const}, and therefore we allow saying $\phi \implies \phi,\ti{t}{a},(= a\; \ti{t}{c})$ after reduction.
 This pattern will appear in any case of the proof that consumes values.
 
-\begin{lemma}{Subject Reduction for Code}
+\begin{lemma}{\deflemma{Subject Reduction for Code}}
 
     If $S;(ti;l;\phi)^{?} \vdash v^{*}; e^{*} : ti;l;\phi$,
     $\vdash s : S$, (we omit this on rules that do not use the store)
@@ -64,10 +64,14 @@ This pattern will appear in any case of the proof that consumes values.
 
             Therefore, $S;(ti^{*};l;\phi)^{?} \vdash_i v_1^j\;(t.\<const> c)\;v_2^k; (t.\<const> c) : ti^{*};l;\phi$ by \refrule{Code}.
 
-        \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v_1^j \; (t.\<const> c) \; v_2^k; (t.\<const> c') \; (\<setlocal> j) : ti^{*};l;\phi$
+        \item Case: $S;(ti^{*};l;\phi)^{?}
+        \begin{stackTL}
+            \vdash_i v_1^j \; (t.\<const> c) \; v_2^k; (t.\<const> c') \; (\<setlocal> j)
+            \\ : ti^{*};l;\phi
+        \end{stackTL}$
         \\ $\land$ $v_1^j \; (t.\<const> c) \; v_2^k; (t.\<const> c') \; \<setlocal> j \hookrightarrow v_1^j \; (t.\<const> c') \; v_2^k;\epsilon$
 
-            We want to show that $S;(ti^{*};l;\phi)^{?} \vdash_i v_1^j \; (t.\<const> c') \; v_2^k; (t.\<const> c') \; (\<setlocal> j) : ti^{*};l;\phi$
+            We want to show that $$S;(ti^{*};l;\phi)^{?} \vdash_i v_1^j \; (t.\<const> c') \; v_2^k; (t.\<const> c') \; (\<setlocal> j) : ti^{*};l;\phi$$
 
             We know $\vdash (t.\<const> c) : \ti{t}{a};(\circ,\ti{t}{a},(= a\;\ti{t}{c}))$,
             $S;S_\text{inst}(i) \vdash (t.\<const> c') \; (\<setlocal> j) : \epsilon:l_1;\phi_1^j,(\circ,\ti{t}{a},(= a\;\ti{t}{c})),\phi_2^k \rightarrow ti^{*};l;\phi$,
@@ -169,7 +173,11 @@ This pattern will appear in any case of the proof that consumes values.
             We know $\vdash (t.\<const> c) : (t.\<const> c) : \ti{t}{a_{g2}};\circ,\ti{t}{a_{g2}},(= a_{g2}\; \ti{t}{c})$, and therefore $\vdash s' : S$ by \refrule{Store}.
 
         \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) : ti^{*};l;\phi$
-        \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) \hookrightarrow_i t.\<const> \text{const}_t(b^{*})$, where $s_\text{mem}(i,k+o,|t|) = b^{*}$
+        \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<load> align\;o) \hookrightarrow_i
+        {\begin{stackTL}
+            t.\<const> \text{const}_t(b^{*}),
+            \\ \text{where }s_\text{mem}(i,k+o,|t|) = b^{*}
+        \end{stackTL}}$
 
             We want to show that $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*}; (t.\<const> \text{const}_t(b^{*})) : ti^{*};l;\phi$
 
@@ -178,7 +186,11 @@ This pattern will appear in any case of the proof that consumes values.
             Then, by \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, \refrule{Mem-Load}, we know
             $ti^{*} = \ti{t}{a}$, $ti_v^{*} = l$, and $\phi_v^{*},\ti{t}{a} \implies \phi$.
 
-            We have $S;S_\text{inst}(i) \vdash t.\<const> \text{const}_t(b^{*}) : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow \ti{t}{a};l;\phi_v^{*},\ti{t}{a},(= a\;\ti{t}{c})$ by \refrule{Const}.
+            We have $$S;S_\text{inst}(i)
+            \begin{stackTL}
+                \vdash t.\<const> \text{const}_t(b^{*})
+                \\ : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow \ti{t}{a};l;\phi_v^{*},\ti{t}{a},(= a\;\ti{t}{c})
+            \end{stackTL}$$ by \refrule{Const}.
 
             Then, $S;S_\text{inst}(i) \vdash (t.\<const> \text{const}_t(b^{*})) : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow \ti{t}{a};l;\phi$ by \refrule{Subtyping}.
 
@@ -190,19 +202,29 @@ This pattern will appear in any case of the proof that consumes values.
 
             Similar to above case, except with $|tp|$ replacing $|t|$ and $\text{const}^{sx}_t(b^{*})$ instead of $\text{const}_t(b^{*})$.
 
-        \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<load> tp\_sx^{?}\;align\;o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \item Case: $S;(ti^{*};l;\phi)^{?}
+        {\begin{stackTL}
+            \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<load> tp\_sx^{?}\;align\;o)
+            \\ : ti^{*};l;\phi
+        \end{stackTL}}$
         \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<load> tp\_sx^{?}\;align\;o) \hookrightarrow_i \<trap>$
 
             We know $(\vdash v : ti_v;\phi_v)^{*}$ because it is a premise of \refrule{Code} which we have assumed to hold.
 
-            We have $S;S_\text{inst}(i) \vdash \<trap> : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Trap}.
+            We have $S;S_\text{inst}(i) \vdash \<trap> : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ by \refrule{Trap}.
 
             Then, $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};\<trap>$ by \refrule{Code}.
 
         \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) : ti^{*};l;\phi$
         \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) \hookrightarrow_i s';\epsilon$, where $s' = s \text{ with } \text{mem}(i,k+o,|t|) = \text{bits}_t^{|t|}(c)$
 
-            We know $(\vdash v : ti_v;\phi_v)^{*}$ and $S;S_\text{inst}(i) \vdash (\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o) : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ because they are premises of \refrule{Code} which we have assumed to hold.
+            We know $(\vdash v : ti_v;\phi_v)^{*}$ and
+            $$S;S_\text{inst}(i)
+            {\begin{stackTL}
+                \vdash (\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> align\;o)
+                \\: \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi
+            \end{stackTL}}$$
+            because they are premises of \refrule{Code} which we have assumed to hold.
 
             Then, by \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Mem-Store}, we have
             $ti^{*} = \epsilon$, $ti_v = l$, and $\phi_v^{*},\ti{\<ithreetwo>}{a_1},(= a_1\;\ti{\<ithreetwo>}{k}),\ti{t}{a_2},(= a_2\;\ti{t}{c}) \implies \phi$.
@@ -228,12 +250,12 @@ This pattern will appear in any case of the proof that consumes values.
 
             Similar to above case, except with $|tp|$ replacing $|t|$ and $\text{const}^{sx}_t(b^{*})$ instead of $\text{const}_t(b^{*})$.
 
-        \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp^{?}\;align\;o) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp^{?}\;align\;o) : ti^{*};l;\phi$
         \\ $\land$ $s;(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<store> tp^{?}\;align\;o) \hookrightarrow_i \<trap>$
 
             We know $(\vdash v : ti_v;\phi_v)^{*}$ because it is a premise of \refrule{Code} which we have assumed to hold.
 
-            We have $S;S_\text{inst}(i) \vdash \<trap> : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Trap}.
+            We have $S;S_\text{inst}(i) \vdash \<trap> : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ by \refrule{Trap}.
 
             Then, $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};\<trap>$ by \refrule{Code}.
 
@@ -255,7 +277,8 @@ This pattern will appear in any case of the proof that consumes values.
             Thus, $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};\<ithreetwo>.\<const> c : ti^{*};l;\phi$ by \refrule{Code}.
 
         \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};(\<ithreetwo>.\<const> k) \; \<growmemory> : ti^{*};l;\phi$
-        \\ $\land$ $s;(\<ithreetwo>.\<const> k) \; \<growmemory> \hookrightarrow_i s';\<ithreetwo>.\<const> |s_\text{mem}(i,*)|/64\text{Ki}$, where $s' = s \text{ with } \text{mem}(i,*) = s_\text{mem}(i,*)(0)^{k \cdot 64\text{Ki}}$
+        \\ $\land$ $s;(\<ithreetwo>.\<const> k) \; \<growmemory> \hookrightarrow_i s';\<ithreetwo>.\<const> |s_\text{mem}(i,*)|/64\text{Ki}$,
+        \\ where $s' = s \text{ with } \text{mem}(i,*) = s_\text{mem}(i,*)(0)^{k \cdot 64\text{Ki}}$
 
             We have $(\vdash v : ti_v;\phi_v)^{*}$ and $S;S_\text{inst}(i) \vdash (\<ithreetwo>.\<const> k) \; \<growmemory>  : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ because they are premises of \refrule{Code} which we have assumed to hold.
 
@@ -267,7 +290,11 @@ This pattern will appear in any case of the proof that consumes values.
             Let $c = \<ithreetwo>.\<const> |s_\text{mem}(i,*)|/64\text{Ki}$.
             Although note that the actual value of $c$ is irrelevant to the rest of the proof case.
 
-            $S;S_\text{inst}(i) \vdash \<ithreetwo>.\<const> c : \epsilon;l;\phi_v^{*} \rightarrow \ti{\<ithreetwo>}{a_1};l;\phi_v^{*},\ti{\<ithreetwo>}{a_1},(= a_1\;\ti{\<ithreetwo>}{c})$ by \refrule{Const}.
+            $$S;S_\text{inst}(i) \vdash \<ithreetwo>.\<const> c :
+            {\begin{stackTL}
+                \epsilon;l;\phi_v^{*}
+                \\ \rightarrow \ti{\<ithreetwo>}{a_1};l;\phi_v^{*},\ti{\<ithreetwo>}{a_1},(= a_1\;\ti{\<ithreetwo>}{c})
+            \end{stackTL}}$$ by \refrule{Const}.
 
             Since $a_2$ is fresh, $\phi_v^{*},\ti{\<ithreetwo>}{a_1} \implies \phi$.
 
@@ -279,7 +306,7 @@ This pattern will appear in any case of the proof that consumes values.
 
             Recall $\vdash s : S$, then $S_\text{mem}(i)=n$ and $s_\text{mem}(i)=b^{*}$ where $n \leq |b^{*}|$ because it's a premise of \refrule{Store}.
 
-            Since $s' = s \text{ with } \text{mem}(i,*) = s_\text{mem}(i,*)(0)^{k \cdot 64\text{Ki}}$, then $|s'_text{mem}(i)|>|s_text{mem}(i)|$, and therefore $n \leq |s'_text{mem}(i)|$, so $s' : S$ by \refrule{Store}.
+            Since $s' = s \text{ with } \text{mem}(i,*) = s_\text{mem}(i,*)(0)^{k \cdot 64\text{Ki}}$, then $|s'_\text{mem}(i)|>|s_\text{mem}(i)|$, and therefore $n \leq |s'_\text{mem}(i)|$, so $s' : S$ by \refrule{Store}.
 
         \item Case: $S;(ti^{*};l;\phi)^{?} \vdash_i v^{*};(\<ithreetwo>.\<const> k) \; \<growmemory> : ti^{*};l;\phi$
         \\ $\land$ $s;(\<ithreetwo>.\<const> k) \; \<growmemory> \hookrightarrow_i \<ithreetwo>.\<const> (-1)$
@@ -300,7 +327,7 @@ This pattern will appear in any case of the proof that consumes values.
 
             Now, we invoke the inductive hypothesis and use it to rebuild the original type.
 
-            Since $S;(ti^{*};l;\phi) \vdash_i v^{*};e^{*} : ti^{*};l;\phi_0$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$, then by the inductive hypothesis we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};e'^{*} : ti^{*};l;\phi_0$.
+            Since $S;(ti^{*};l;\phi) \vdash_i v^{*};e^{*} : ti^{*};l;\phi_0$, $s \vdash S$ and $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$, then by the inductive hypothesis we know that $\vdash s' : S$ and $$S;(ti^{*};l;\phi) \vdash_i v'^{*};e'^{*} : ti^{*};l;\phi_0$$
 
             Thus, $S;S_\text{inst}(j) \vdash \<local>\{i;v'^{*}\}\; e'^{*} : \epsilon;ti_v^{*};\phi_{v0}^{*} \rightarrow ti^{*};l;\phi$ by \refrule{Local}.
 
@@ -314,10 +341,10 @@ This pattern will appear in any case of the proof that consumes values.
 
             First, we will derive the type of the body of the local context.
 
-            We have $S;C \vdash L^k[e^{*}] : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$, where
-            $C = S_\text{inst}(i),\text{local } t_v^{*},\text{return } (ti^{*};l;\phi)^{?}$ because it is a premise of \refrule{Code}.
+            We have $S;C \vdash L^k[e^{*}] : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$, \\
+            where $C = S_\text{inst}(i),\text{local } t_v^{*},\text{return } (ti^{*};l;\phi)^{?}$ because it is a premise of \refrule{Code}.
 
-            The intuition for the proof is that there is no requirement on what the label stack is of the module type context $C$ under which $L^k[e^{*}] is typed$.
+            The intuition for the proof is that there is no requirement on what the label stack is of the module type context $C$ under which $L^k[e^{*}]$ is typed.
             Thus, we can reduce $e^{*}$ outside of $L^k$, but with the module type context $C$ as if it were inside of $L^k$.
 
             The proof continues via induction on $k$.
@@ -328,7 +355,7 @@ This pattern will appear in any case of the proof that consumes values.
 
                     By \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}
                     $S;C \vdash e^{*} : ti_1^{*};ti_v^{*};\phi_v^{*},\phi_{v0}^{*} \rightarrow ti_2^{*};l_2;\phi_2$ and
-                    $S;C \vdash e_0^{*} : ti_2^{*};l_2;\phi_2 \rightarrow ti^{*};l;\phi$.
+                    \\$S;C \vdash e_0^{*} : ti_2^{*};l_2;\phi_2 \rightarrow ti^{*};l;\phi$.
 
                     Since $s;v^{*};e^{*}$ reduces, $e^{*}$ can be typed with an empty stack precondition.
                     Therefore $ti_2^{*} = ti_1^{*}\;ti_3^{*}$ and $S;C \vdash e^{*} : \epsilon;ti_v^{*};\phi_v^{*},\phi_{v0}^{*} \rightarrow ti_3^{*};l_2;\phi_2$.
@@ -378,7 +405,10 @@ This pattern will appear in any case of the proof that consumes values.
 
                     Now, we invoke the inductive hypothesis on $L^{k-1}[e^{*}]$ and rebuild the type using the reduced expression.
 
-                    Since $S;(ti^{*};l;\phi)^{*} \vdash_i v^{*};L^{k-1}[e^{*}] : ti_3^{*};l_2;\phi_2$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v';e'^{*}$, then by the inductive hypothesis on $L^{k-1}[e^{*}]$ we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};L^{k-1}[e'^{*}] : ti_3^{*};l_2;\phi_2$.
+                    Since $S;(ti^{*};l;\phi)^{*} \vdash_i v^{*};L^{k-1}[e^{*}] : ti_3^{*};l_2;\phi_2$, $s \vdash S$, and
+                    \\ $s;v^{*};e^{*} \hookrightarrow_i s';v';e'^{*}$, then by the inductive hypothesis on
+                    \\ $L^{k-1}[e^{*}]$ we know that $\vdash s' : S$ and
+                    \\ $S;(ti^{*};l;\phi) \vdash_i v'^{*};L^{k-1}[e'^{*}] : ti_3^{*};l_2;\phi_2$
 
                     $S;C,\text{label } \vdash L^{k-1}[e'^{*}] : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti_3^{*};l_2;\phi_2$ because it is a premise of \refrule{Code}.
 
@@ -396,7 +426,8 @@ This pattern will appear in any case of the proof that consumes values.
 
         \item Otherwise: we have $(\vdash (t.\<const> c) : \ti{t}{a};(\circ,\ti{t}{a},(= a\; \ti{t}{c})))^{*}$, and $S,S_\text{inst}(i) \vdash e^{*} : \epsilon;\ti{t}{a}^{*};(\circ,\ti{t}{a},(= a\; \ti{t}{c}))^{*} \rightarrow ti;l;\phi$
 
-            By \reflemma{Subject Reduction Without Effects}, we have $S,S_\text{inst}(i) \vdash e'^{*} : \epsilon;\ti{t}{a}^{*};(\circ,\ti{t}{a},(= a\; \ti{t}{c}))^{*} \rightarrow ti;l;\phi$.
+            By \reflemma{Subject Reduction Without Effects}, we have
+            \\$S,S_\text{inst}(i) \vdash e'^{*} : \epsilon;\ti{t}{a}^{*};(\circ,\ti{t}{a},(= a\; \ti{t}{c}))^{*} \rightarrow ti;l;\phi$.
 
             Then, $S;(ti^{*};l;\phi)^{?} \vdash v^{*};e'^{*} : ti;l;\phi$
     \end{itemize}
@@ -409,7 +440,7 @@ We do not include any instructions here that modify state, such as $\<setlocal>$
 That is on purpose because we are using to handle simple cases, and more complex cases are handled separately.
 We show that if a sequence of instructions $e^{*}$ reduces to another sequence of instructions $e'^{*}$, and the reduction does not modify the program state (the store $s$ or the locals $v^{*}$), then $e'^{*}$ has the same precondition $ti_1^{*};l_1;\phi_1$ and postcondition $ti_2^{*};l_2;\phi_2$ as $e^{*}$.
 
-\begin{lemma}{\deflemma{Subject reduction on instructions that do not modify state}}
+\begin{lemma}{\deflemma{Subject Reduction Without Effects}}
 
     If $S;C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
     \\ $\vdash s : S$ (note: we omit this for cases which do not use s),
@@ -557,7 +588,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
             First, we reason about what the original type must look like.
 
             By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Select}, we know that $ti_2^{*} = ti_1^{*}\;\ti{a_3}$, $l_2 = l_1$, and
-            $
+            $$
             {\begin{stackTL}
                 \phi_1, {\begin{stackTL}
                     \ti{t}{a_1}, (= a_1\;\ti{t}{c_1}), \\
@@ -567,7 +598,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
                 \end{stackTL}} \\
                 \implies \phi_2
             \end{stackTL}}
-            $
+            $$
 
             Now we show that $(t.\<const> c_2)$ has the appropriate type.
 
@@ -580,13 +611,18 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Then, $S;C \vdash (t.\<const> c_2) : ti_1^{*};l_1;\phi_1 \rightarrow ti_1^{*}\;\ti{t}{a_3};l_1;\phi_1,\ti{t}{a_3},(= a_3 \; \ti{t}{c_2})$ by \refrule{Stack-Poly}.
 
-            By $\implies$, we have \\
-            $\phi_1,\ti{t}{a_3},(= a_3\; \ti{t}{c_2}) \implies \phi_1, {\begin{stackTL}
+            By $\implies$, we have
+            $$\phi_1,\ti{t}{a_3},(= a_3\; \ti{t}{c_2}) \implies \phi_1, {\begin{stackTL}
                 \ti{t}{a_1}, (= a_1\; \ti{t}{c_1}), \\
                 \ti{t}{a_2}, (= a_2\; \ti{t}{c_2}), \\
                 \ti{\<ithreetwo>}{a}, (= a\;\ti{\<ithreetwo>}{0}), \\
-                \ti{t}{a_3},(if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\; a_2)\; (= a_3\; a_1))
-            \end{stackTL}} \\ $
+                \ti{t}{a_3},(\text{if }
+                {\begin{stackTL}
+                    (= a\; \ti{\<ithreetwo>}{0})
+                    \\ (= a_3\; a_2)
+                    \\ (= a_3\; a_1))
+                \end{stackTL}}
+            \end{stackTL}} \\ $$
 
             Therefore,
             $S;C \vdash (t.\<const> c_2) :
@@ -594,14 +630,21 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
                 \rightarrow ti_2^{*}\;\ti{t}{a_3};l_1;\phi_2$ by $sub-typing$
 
         %% Block
-        \item Case: $S;C \vdash (t.\<const> c)^n \; \<block>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-        \\ $\land$ $(t.\<const> c)^n \; \<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \hookrightarrow \<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end>$
+        \item Case: $S;C \vdash (t.\<const> c)^n \; \<block>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \\ $\land$ ${\begin{stackTL}
+            (t.\<const> c)^n \; \<block>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e^{*} \<end>
+            \\ \hookrightarrow \<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end>
+        \end{stackTL}}$
 
             We want to show that $\<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
             First, we reason about $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-            We know $S;C \vdash \<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> : ti_1^{*}\; \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \rightarrow ti_2^{*};l_2;\phi_2$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
+            We know $S;C
+            {\begin{stackTL}
+                \vdash \<block>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e^{*} \<end>
+                \\ : ti_1^{*}\; \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \rightarrow ti_2^{*};l_2;\phi_2
+            \end{stackTL}}$\\ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
 
             By \reflemma{Inversion} on \refrule{Block}, $l_1=l_3$ and $l_2=l_4$.
             We will use $l_1,l_2$ in place of $l_3,l_4$, respectively, for the remainder of the case.
@@ -610,9 +653,10 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Also, $\ti{t}{a}^n=ti_3^n$, $ti_2^{*}=ti_1^{*}\; ti_4^m$, $\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \implies \phi_3$, and $\phi_4 \implies \phi_2$ by \reflemma{Inversion} on \refrule{Block}.
 
-            Now we have all the information we need to show that $\<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+            Now we have all the information we need to show that
+            \\$\<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-            Remember that \refrule{Label} uses the types of both the body $(t.\<const> c)^n \; e^{*}$ and the stored instructions $\epsilon$.
+            Remember that \refrule{Label} uses the types of both the body \\$(t.\<const> c)^n \; e^{*}$ and the stored instructions $\epsilon$.
 
             First, we show the type of the body.
 
@@ -634,7 +678,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
             Finally, since $\phi_4 \implies \phi_2$, $S;C \vdash \<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_1^{*}\; ti_4^m;l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
         %% loop
-        \item Case: $S;C \vdash (t.\<const> c)^n \; \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \item Case: $S;C \vdash (t.\<const> c)^n \; \<loop> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
         \\ $\land$ $(t.\<const> c)^n \; \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \hookrightarrow \<label>_n \{ \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \} \; (t.\<const> c)^n \; e^{*} \<end>$
 
             We want to show that $\<label>_n \{ \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
@@ -670,7 +714,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Finally, since $\phi_4 \implies \phi_2$, $S;C \vdash \<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
-        \item Case: $S;C \vdash (\<ithreetwo>.\<const> 0) \; \<if> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \item Case: $S;C \vdash (\<ithreetwo>.\<const> 0) \; \<if> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
         \\ $\land$ $(\<ithreetwo>.\<const> 0) \; \<if> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_2^{*} \<end>$
 
             We want to show that $\<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
@@ -691,7 +735,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Therefore, $S;C \vdash \<block> ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4\; e_2^{*} \<end> : \\ ti_0^{*}\; ti_3^n;l_1;\phi_1,\ti{t}{a},(= a\; \ti{\<ithreetwo>}{0}) \rightarrow s\; ti_0^{*}\;ti_4^m;l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
-        \item Case: $S;C \vdash (\<ithreetwo>.\<const> k+1) \; \<if> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \item Case: $S;C \vdash (\<ithreetwo>.\<const> k+1) \; \<if> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
         \\ $\land$ $(\<ithreetwo>.\<const> k+1) \; \<if> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end>$
 
             This case is the same as above, except with $e_2$ instead of $e_1$ and $k+1$ instead of $0$.
@@ -732,7 +776,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Then, $S;C,\text{label}(ti_1^n;l_3;\phi_5)^j \vdash (t.\<const> c)^n : \epsilon;l_3;\phi_3 \rightarrow ti_1^n;l_3;\phi_5$ since it is a premise of $composition$ which we have assumed to hold.
 
-            Further, $S;C \vdash e^{*} : ti_1^n;l_3;\phi_5 \rightarrow ti_2^{*};l_2;\phi_4$ since it is a premise of \refrule{Label} which we have assumed to hold, and $\phi_4 \implies \phi_2$ by \refrule{Inversion} on \refrule{Label}.
+            Further, $S;C \vdash e^{*} : ti_1^n;l_3;\phi_5 \rightarrow ti_2^{*};l_2;\phi_4$ since it is a premise of \refrule{Label} which we have assumed to hold, and $\phi_4 \implies \phi_2$ by \reflemma{Inversion} on \refrule{Label}.
 
             Then, $S;C \vdash (t.\<const> c)^n \; e^{*} : \epsilon;l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_4$ by \reflemma{Lift-Consts} and \refrule{Composition}.
 
@@ -751,7 +795,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             We know $S;C \vdash \<brtable> j : ti_1^{*}\;\ti{\<ithreetwo>}{a};l_1;\phi_1,\ti{t}{a},(= a\; \ti{\<ithreetwo>}{k}) \rightarrow ti_2^{*};l_2;\phi_2$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
 
-            Then we know $C_label(j)=(ti_3^{*};l_1;\phi_3)$, where $ti_1^{*}=ti_0^{*}\; ti_3^{*}$, $ti_2^{*} =ti_0^{*}\; ti_3^{*}$, and $\phi_1,\ti{t}{a},\neg(= a\; \ti{\<ithreetwo>}{0}) \implies \phi_3$ by \reflemma{Inversion} on \refrule{Br-Table}.
+            Then we know $C_{label}(j)=(ti_3^{*};l_1;\phi_3)$, where $ti_1^{*}=ti_0^{*}\; ti_3^{*}$, $ti_2^{*} =ti_0^{*}\; ti_3^{*}$, and $\phi_1,\ti{t}{a},\neg(= a\; \ti{\<ithreetwo>}{0}) \implies \phi_3$ by \reflemma{Inversion} on \refrule{Br-Table}.
 
             Now we can show that $S;C \vdash \<br> j : ti_0^{*}\;ti_3^{*};l_1;\phi_1 \rightarrow ti_0^{*}\;ti_3^{*};l_2;\phi_2$.
 
