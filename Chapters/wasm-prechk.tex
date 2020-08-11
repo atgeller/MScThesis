@@ -316,7 +316,7 @@ For this rule we use the type-level ``if'' to allow the constraint on the result
 The rules for the three different kinds of blocks (\<block>, \<loop>, and \<if>) are similar to \wasm.
 They simply ensure that the interior instruction sequence has the expected type under the context with the expected postcondition (or precondition in the case of loop) appended to the local stack.
 If blocks are able to make extra assumptions about the consumed value in the subsequences (that it is non-zero in the first sequence and zero in the second), because those constraints must be true for that sequence to be executed.
-While \<if> and \<block> append their postcondition to the label stack for type checking branching instructions within the block, \<loop> appends its precondition because branching to a loop means running the loop again.
+While \<if> and \<block> append their postcondition to the label stack for typechecking branching instructions within the block, \<loop> appends its precondition because branching to a loop means running the loop again.
 
 \begin{mathpar}
     \inferrule*[right=\defrule{Block}]{ %% block
@@ -396,7 +396,7 @@ Second, the index type context in the postcondition is extended with the declara
 The precondition and postcondition of a function can only contain constraints about the arguments supplied to that function, so simply copying the postcondition of the function would result in the loss of information about all other index variables.
 
 Indirect function calls $\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ include the expected indexed function type $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ provided as part of their syntax (the same note about index variables being unification variables from above holds).
-Remember that indirect function calls perform a run time type check against the closure that they end up calling, so we assume statically that the check will proceed because if it does not the program will trap and not be able to do any harm.
+Remember that indirect function calls perform a run time typecheck against the closure that they end up calling, so we assume statically that the check will proceed because if it does not the program will trap and not be able to do any harm.
 The same two differences described above between the expected indexed function type $tfi$ and the type of the $\<callindirect> tfi$ instruction also hold.
 
 \begin{mathpar}
@@ -670,9 +670,9 @@ Exported global variables cannot be mutable, if there are any exports defined, t
 Tables $tab$ ensure that the indices $i^{n}$ refer to well-typed functions and there are exactly as many indices as the expected size $n$.
 Memory $mem$ simply has its declared initial size $n$ from which it can only grow bigger.
 All imported functions, globals, tables, and memories are expected to have their declared type.
-They are type checked during linking.
+They are typechecked during linking.
 
-Type checking a module involves typechecking every component of the module.
+Typechecking a module involves typechecking every component of the module.
 Functions, $f$, are typechecked under the module type context, $C$, containing the entirety of the module.
 This means that functions can refer to themselves, other functions, all globals, the table, and memory.
 This may seem to be a circular definition, but the type of the module is declared statically (as the combined declared types of all the module components), so it is just checking against the expected module index type context.

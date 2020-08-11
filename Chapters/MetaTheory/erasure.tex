@@ -165,7 +165,7 @@ The case of imported functions is trivial because an imported function is well t
         \\\vdash \erase[e^{*}]{e^{*}}
         \\: \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2};l_2;\phi_2}
     \end{stackTL}}$$
-    since it is the only premise of type checking a function definition in \wasm.
+    since it is the only premise of typechecking a function definition in \wasm.
 
     We know the following because it is a premise of \refrule{Func} which we have assumed to hold.
     $$C
@@ -552,7 +552,7 @@ Thus, we only prove the case when the optional return stack $(\ti{t_2}{a_2}^{*};
 \end{proof}
 
 \reflemma{Sound Admin Typing Erasure} builds on \reflemma{Sound Static Typing Erasure} by adding the store context $S$ and typing rules for administrative instructions.
-It is necessary to add these rules and extra information because they are used for type checking programs.
+It is necessary to add these rules and extra information because they are used for typechecking programs.
 Note that while we add $S$ to the judgment used in \reflemma{Sound Static Typing Erasure} to get $S;C \vdash e^{*}; tfi$, none of the rules previously proven reference $S$ in any way, they simply match any store context.
 
 \begin{lemma}{\deflemma{Sound Admin Typing Erasure}}
@@ -580,7 +580,7 @@ Note that while we add $S$ to the judgment used in \reflemma{Sound Static Typing
             \\ \vdash \erase[e^{*}]{e^{*}}
             \\ : \erase[tfi]{\epsilon;l_1;\phi_1 \rightarrow \ti{t_3}{a_3}^{*};l_3;\phi_3}
         \end{stackTL}}$$
-        as they are the premises of type checking a label block in \wasm.
+        as they are the premises of typechecking a label block in \wasm.
 
         We have that $S;C \vdash e_0^{*} : \ti{t_3}{a_3}^{*};l_3;\phi_3 \rightarrow \ti{t_2}{a_2}^{n};l_2;\phi_2$ since it is a premise of \refrule{Label} which we have assumed to hold.
 

@@ -27,7 +27,7 @@ Instead, we could use static analysis to try to find the weakest preconditions t
 We could also attempt to have have a compiler from a higher-level language to \wasm add annotations as a form of type preserving compilation similar to Sytem F to Typed Assembly Language \cite{FtoTAL}.
 
 \paragraph{Reasoning About Global Variables}
-Reasoning about global variables is made difficult because static type checking is restricted to within the module we are checking.
+Reasoning about global variables is made difficult because static typechecking is restricted to within the module we are checking.
 Thus, it is difficult to reason about global variables imported from another module.
 Concretely, imagine, in the $j$th module calling a function $f$ that was imported from the $i$th module.
 The call instruction will be reduced to $\<call> \{\text{inst } i, \text{ func } f\}$ where $i$ is the module index for the module instance where $f$ is defined.
@@ -44,9 +44,9 @@ This would require more dependency in the type system then we currently have wit
 
 \paragraph{Support Streaming Compilation}
 The format of \wasm code allows compilation and execution to begin with only part of the program downloaded.
-Similar streaming compilation is theoretically possible with \name, but there are unanswered questions about how to work in type checking in such a compilation pipeline.
+Similar streaming compilation is theoretically possible with \name, but there are unanswered questions about how to work in typechecking in such a compilation pipeline.
 Here are two examples of problems that we expect to face implementing such a system.
-First of all, we must make sure such a system is safe, which is complicated by the fact that we may begin executing code before we have finished type checking.
-This should not be too much of an issue as long as we ensure code is type checked before we can execute it, so we only execute well-typed code and if we come across code that is not well typed we halt execution and throw a type error.
-Second of all, this will require highly efficient type checking, preferably performed in parallel to type check many functions at one.
-We could also try to be clever and prioritize type checking on functions that we expect to be executed sooner.
+First of all, we must make sure such a system is safe, which is complicated by the fact that we may begin executing code before we have finished typechecking.
+This should not be too much of an issue as long as we ensure code is typechecked before we can execute it, so we only execute well-typed code and if we come across code that is not well typed we halt execution and throw a type error.
+Second of all, this will require highly efficient typechecking, preferably performed in parallel to typecheck many functions at one.
+We could also try to be clever and prioritize typechecking on functions that we expect to be executed sooner.

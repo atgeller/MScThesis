@@ -31,8 +31,8 @@ To get the type of the store, we in turn have to know the types of each of the v
 \refrule{Instance} checks that a module instance is well-typed by the index module context under the store context $S$.
 It checks all of the closures $cl^{*}$ against their expected types $tfi^{*}$ in $C$, and similarly for all of the globals ($v^{*}$ and $()\text{mut}^{?} t)^{*}$).
 The table and memory indices ($i$ and $j$, respectively) are used to lookup the the relevant types ($(n,tfi^{*})$ and $m$, respectively) in the store context $S$.
-Closures are type checked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to type check the function definition inside of the closure.
-\refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to type check local and global variables.
+Closures are typechecked by \refrule{Closure}, which falls back on the module typing rules \autoref{fig:modulerules} to typecheck the function definition inside of the closure.
+\refrule{Admin-Const} gets the postcondition indexed types and constraints on values, it is used to typecheck local and global variables.
 
 \begin{figure}
     $$ S ::= \{ \text{inst } C^{*}, \text{ tab } n^{*}, \text{ mem } m^{*} \} $$

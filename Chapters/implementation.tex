@@ -67,4 +67,4 @@ Without these type annotations, we would not know whether a constant $c$ should 
 There are performance concerns when using an SMT solver.
 While our small examples programs have been near instantaneous to typecheck, we may see slowdown due to significantly larger constraint sets when typechecking large \wasm programs.
 This would require a clever approach to reducing the size of the constraint set (perhaps using a form of type-level garbage collection on constraints on index variables that cannot be referred to).
-Also, we would want to make sure when writing a type checker/synthesizer that we invoke Z3 as little as possible, by minimizing the amount of reasoning we do about the constraints.
+Also, we would want to make sure when writing a typechecker/synthesizer that we invoke Z3 as little as possible, by minimizing the amount of reasoning we do about the constraints.
