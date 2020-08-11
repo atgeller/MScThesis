@@ -248,7 +248,7 @@ Since decomposition happens on label blocks, we have included the inductive redu
     \end{array}
 \end{mathpar}
 
-Branching from inside a label block essentially peels back the specified number of label blocks, and continues executing with the stored instructions $e_0^{*}$ of the containing label block.
+Branching from inside a label block jumps to the surrounding label block with nesting depth $i+1$, and continues executing with the stored instructions $e_0^{*}$ of that label block.
 \autoref{fig:branching} has several examples of branching in action.
 $\<brif> j$ consumes a value and reduces to $\<br> j$ if the value is non-zero, otherwise it reduces to the empty sequence.
 $\<brtable>$ has a list of one or more numbers, $i^{+}$ that may be used for a branch.

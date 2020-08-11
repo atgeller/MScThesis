@@ -662,6 +662,61 @@ Further, we must show that the provided table index is within the table boundari
     } \and
 \end{mathpar}
 
+\paragraph{An Example of Using Types for Check Elimination}
+Here we present a short contrived example of using types for check elimination.
+We are typechecking a $\<divpc>$.
+First, we give the module type context $C_1$, which contains one local variable, which is an $\<ithreetwo>$, and the instruction sequence we are typing, which is a safe division happening inside of a block (\autoref{fig:exampleprechk}).
+The block takes two integers, and, using the local as temporary storage, either divides the first by the second, or the first by 1 if the second is 0.
+The type of the block has an empty index type context $\circ$ because it requires no information to typecheck.
+In the example we write the postcondition type of every instruction
+in the line below the instruction (for space reasons), offset to the right.
+Note that we omit type declarations in the index type context here for brevity.
+
+Typingchecking the example relies on $\<select>$, where the second argument $(\<ithreetwo>.\<const> 1)$ is chosen if the first argument (and the conditional) $\<getlocal> 0$ is equal to zero.
+Once we reach $\<select>$, the precondition index type context will be $(\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5}\;{\<ithreetwo>}{a_6};\ti{\<ithreetwo>}{a_2});\circ,(= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1})$.
+Then, after select, we have $(\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_7};\ti{\<ithreetwo>}{a_2});\circ,(= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1}), (\text{if }(= a_6\; \ti{\<ithreetwo>}{0})\;(= a_7 a_5) (= a_7 a_4))$.
+We know $(= a_4 a_6)$ since $(= a_4 a_2)$ and $(= a_6 a_2)$.
+Since $(= a_4\; a_6)$, if $(= a_6\; \ti{\<ithreetwo>}{0})$ we choose $a_5$ which is 1, else we choose $a_4$, which must not be 0.
+Thus, $\circ,(= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1}), (\text{if }(= a_6\; \ti{\<ithreetwo>}{0})\;(= a_7\; a_5) (= a_7\;a_4)) \implies \neg(= a_7\; \ti{\<ithreetwo>}{0})$.
+
+\begin{figure}
+    $C_1 = \{ {\begin{stackTL}
+        \text{func } \epsilon, \text{ global } \epsilon, \text{ table } \epsilon, \text{ memory } \epsilon,
+        \\ \text{local } \<ithreetwo>, \text{ label } \epsilon, \text{ return } \epsilon
+        \end{stackTL}} \}$
+
+    $e^{*} = \<block>\;
+    {\begin{stackTL}
+        (\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\circ \rightarrow \ti{\<ithreetwo>}{a_0};\ti{\<ithreetwo>}{a_2};\circ)
+        \\ (\<teelocal> 0)
+        \\ \hfill {\begin{stackTL}
+            \ti{\<ithreetwo>}{a_0}\;\ti{\<ithreetwo>}{a_4};
+            \\\ti{\<ithreetwo>}{a_2};
+            \\(= a_4\;a_2)
+        \end{stackTL}}
+        \\ (\<ithreetwo>.\<const> 1)
+        \\ \hfill \ti{\<ithreetwo>}{a_0}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5};\ti{\<ithreetwo>}{a_2};(= a_4\;a_2),(= a_5\;\ti{\<ithreetwo>}{1})
+        \\ (\<getlocal> 0)
+        \\ \hfill {\begin{stackTL}
+            \ti{\<ithreetwo>}{a_0}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5}\;\ti{\<ithreetwo>}{a_6};
+            \\ \ti{\<ithreetwo>}{a_2};
+            \\ (= a_4\;a_2),(= a_5\;\ti{\<ithreetwo>}{1}),(= a_6\; a_2)
+            \end{stackTL}}
+        \\ (\<select>)
+        \\ \hfill {\begin{stackTL}
+            (\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_7};
+            \\\ti{\<ithreetwo>}{a_2});
+            \\ (= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1}),
+            \\ (\text{if }(= a_6\; \ti{\<ithreetwo>}{0})\;(= a_7\;a_5) (= a_7\;a_4))
+        \end{stackTL}}
+        \\ (\<ithreetwo>.\<divpc>)
+    \end{stackTL}} \\
+    \<nsend>$
+
+    \caption{\name Example of Typechecking a Prechk Instruction}
+    \label{fig:exampleprechk}
+\end{figure}
+
 \subsection{Module Types}
 The complete module typing rules are in Figure \ref{fig:modulerules} (note that $im$ is an import and $ex$ is an export).
 Functions $f$, typecheck their body $e^{*}$ under the module type context $C$ with the expected postcondition $ti_2^{*};l_2;\phi_2$ in the label stack and return position, and with the local index store $\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*}$ constructed from the function's arguments $\ti{t_1}{a_1}^{*}$ and declared locals $\ti{t}{a_2}^{*}$.
