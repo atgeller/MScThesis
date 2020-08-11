@@ -1,6 +1,6 @@
 \subsection{Progress}
 \label{subsec:progress}
-\emph{Progress} ensures that if a program is well-typed then it either: entirely consists of values, traps, or is reducible (\ie there exists another program that it reduces to).
+\emph{Progress} ensures that if a program is well typed then it either: entirely consists of values, traps, or is reducible (\ie there exists another program that it reduces to).
 Proving progress for \name is the key metatheoretic property that ensures that our claim that \name is as safe as \wasm is valid.
 This is because it connects the static guarantees of the type system to the dynamic assumptions of \prechk-tagged instructions.
 By proving that well-typed \prechk-tagged instructions will always be reducible, we prove that the static guarantees are sufficient to ensure that they will not trap and therefore the dynamic checks are unnecessary.
@@ -15,9 +15,9 @@ However, for \name instructions that do not have the same semantics as in \wasm,
 \begin{proof}
     We proceed by induction on $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$.
 
-    Because $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$, we know that $\vdash s : S$ for some $S$, and that $S; \epsilon \vdash_i v^{*};e^{*}:ti^{*};l;\phi$ because they are premises of $admin-program$ which we have assumed to hold.
+    Because $\vdash_i s;v^{*};e^{*} : ti^{*};l;\phi$, we know that $\vdash s : S$ for some $S$, and that $S; \epsilon \vdash_i v^{*};e^{*}:ti^{*};l;\phi$ because they are premises of \refrule{Program} which we have assumed to hold.
 
-    Then we know that $(\vdash v: \ti{t_v}{a_v};\phi_v)^{*}$ and $S;S_\text{inst}(i),\text{local } t_v^{*} \vdash e^{*} : \epsilon;\ti{t_v}{a_v}^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ because they are premises of $admin-code$ which we have assumed to hold.
+    Then we know that $(\vdash v: \ti{t_v}{a_v};\phi_v)^{*}$ and $S;S_\text{inst}(i),\text{local } t_v^{*} \vdash e^{*} : \epsilon;\ti{t_v}{a_v}^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$ because they are premises of \refrule{Code} which we have assumed to hold.
 
     \begin{itemize}
         \item Case: $\vdash_i s;v^{*};(t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc>$
@@ -51,18 +51,14 @@ However, for \name instructions that do not have the same semantics as in \wasm,
         \end{stackTL}}$$
         where $\\phi_v^{*},\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; \ti{t}{c_2}) \implies \neg(= a_2\; \ti{t}{0})$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Div-Prechk}.
 
-        If $c_2=0$, then
-        $$\phi_v^{*},\ti{t}{a_1},(= a_1\; \ti{t}{c_1}),\ti{t}{a_2},(= a_2\; 0) \implies \neg(= a_2\; \ti{t}{0})$$
-        which is a contradiction since $a_2$ is fresh and therefore cannot be otherwise be constrained in $\phi_v^{*}$
-
         Therefore, it must be the case that $c_2\neq 0$, and therefore there must exist some $c_3$ such that $c_3=div(c_1,c_2)$ since $div(c_1,c_2)$ is well-defined when $c_2$ is non-zero.
         Then, $s;(t.\<const> c_1)\;(t.\<const> c_2)\;t.\<divpc> \hookrightarrow_i (t.\<const> c_3)$.
 
-        \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;t.\<loadpc> (tp\_sx)\; align\;o$
+        \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o)$
 
-        We must show that $s;(\<ithreetwo>.\<const> k)\;t.\<loadpc> (tp\_sx)\; align\;o \hookrightarrow e'^{*}$ for some $e'^{*}$.
+        We must show that $s;(\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o) \hookrightarrow e'^{*}$ for some $e'^{*}$.
 
-        We have $S;() \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;t.\<loadpc> (tp\_sx)\; align\;o : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
+        We have $S;() \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o) : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
 
         We also have that $\vdash s : S$, and therefore $(n \leq |b^{*}|)^{*}$ where $S_\text{tab}=n^{*}$ and $s_\text{mem}=(b^{*})^{*}$.
 
@@ -73,7 +69,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
         Further, we have that
         $$S;S_\text{inst}(i),\text{local } t_v^{*}\;
         {\begin{stackTL}
-            \vdash (\<ithreetwo>.\<const> k)\;\<loadpc> (tp\_sx)\; align\;o
+            \vdash (\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o)
             \\ : \epsilon;\ti{t_v}{a_v}^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi
         \end{stackTL}}$$
         because it too is a premise of \refrule{Code}.
@@ -96,7 +92,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
         \end{stackTL}}$$ and $n_2*64 \text{Ki} = S_\text{mem}(i,j)$
         by \reflemma{Inversion} on \refrule{Composition} and \refrule{Store-Prechk}.
 
-        If $k+o<0$, then
+        Because we have
         $$\phi_v^{*},\ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{k}) \implies
         {\begin{stackTL}
             (\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}),
@@ -105,35 +101,23 @@ However, for \name instructions that do not have the same semantics as in \wasm,
                 (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))
                 \\ \ti{\<ithreetwo>}{n_2*64 \text{Ki}})
             \end{stackTL}}
-        \end{stackTL}}$$
-        is a contradiction since $k+o<0$ and therefore $(\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0})$ is contradictory.
+        \end{stackTL}}$$, then we must have $k + o \geq 0$ and $k+o+|tp| \leq n_2*64 \text{Ki}$.
 
-        If $k+o+|tp|>=n_2*64 \text{Ki}$, then
-        $$\phi_v^{*},\ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{k}) \implies
-        {\begin{stackTL}
-            (\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}),
-            \\ (\<le>
-            {\begin{stackTL}
-                (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))
-                \\ \ti{\<ithreetwo>}{n_2*64 \text{Ki}})
-            \end{stackTL}}
-        \end{stackTL}}$$
-        is a contradiction since $k+o+|tp|>n_2*64 \text{Ki}$, and therefore the proposition $(\<le> (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))\; \ti{\<ithreetwo>}{n_2*64 \text{Ki}})$ is contradictory.
-
-        Recall $\vdash s : S$, then, since $n_2*64 \text{Ki} = S_\text{mem}(i,j)$, we have $s_\text{mem}(i,j)=b_2^{*}$ where $n_2*64 \text{Ki} \leq |b_2^{*}|$.
+        Recall $\vdash s : S$.
+        Then, since $n_2*64 \text{Ki} = S_\text{mem}(i,j)$, we have $s_\text{mem}(i,j)=b_2^{*}$ where $n_2*64 \text{Ki} \leq |b_2^{*}|$.
 
         Therefore, it must be the case that $k+o \geq 0$ and $k+o+|tp|<|b_2^{*}|$, and therefore $s_\text{mem}(i,k+o,|tp|)=b_3^{*}$ for some $b_3^{*}$ that is a subsequence of $b_2^{*}$.
-        Then, $s;(\<ithreetwo>.\<const> k)\;t.\<loadpc> (tp\_sx)\; align\;o \hookrightarrow_i t.\<const> \text{const}_t^{sx}(b_3^{*})$.
+        Then, $s;(\<ithreetwo>.\<const> k)\;(t.\<loadpc> (tp\_sx)\; align\;o) \hookrightarrow_i t.\<const> \text{const}_t^{sx}(b_3^{*})$.
 
         \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;t.\<loadpc> align\;o$
 
         Same as above, except with $|t|$ replacing $|tp|$ and $\text{const}_t(b_3^{*})$ instead of $\text{const}_t^{sx}(b_3^{*})$.
 
-        \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;t.\<storepc> tp\; align\; o$
+        \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> k)\;(t.\<const> c)\;(t.\<storepc> tp\; align\; o)$
 
-        We must show that $s;(\<ithreetwo>.\<const> k)\;t.\<storepc> tp\; align\;o \hookrightarrow e'^{*}$ for some $e'^{*}$.
+        We must show that $s;(\<ithreetwo>.\<const> k)\;(t.\<storepc> tp\; align\;o) \hookrightarrow e'^{*}$ for some $e'^{*}$.
 
-        We have $S;() \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;t.\<storepc> (tp\_sx)\; align\;o : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
+        We have $S;() \vdash_i v^{*};(\<ithreetwo>.\<const> k)\;(t.\<storepc> (tp\_sx)\; align\;o) : ti^{*};l;\phi$ for some $ti^{*}$, $l$, and $\phi$ because it is a premise of \refrule{Program} which we have assumed to hold.
 
         We also have that $\vdash s : S$, and therefore $(n \leq |b^{*}|)^{*}$ where $S_\text{tab}=n^{*}$ and $s_\text{mem}=(b^{*})^{*}$.
 
@@ -144,7 +128,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
         Further, we have that
         $$S;S_\text{inst}(i),\text{local } t_v^{*}\;
         {\begin{stackTL}
-            \vdash (\<ithreetwo>.\<const> k)\;t.\<storepc> tp\; align\;o
+            \vdash (\<ithreetwo>.\<const> k)\;(t.\<storepc> tp\; align\;o)
             \\ : \epsilon;\ti{t_v}{a_v}^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi
         \end{stackTL}}$$
         because it too is a premise of \refrule{Code}.
@@ -177,7 +161,7 @@ However, for \name instructions that do not have the same semantics as in \wasm,
         \end{stackTL}}$$ and $n_2*64 \text{Ki} = S_\text{mem}(i,j)$
         by \reflemma{Inversion} on \refrule{Composition} and \refrule{Load-Prechk}.
 
-        If $k+o<0$, then
+        Because we have
         $${\begin{stackTL}
             \ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{k}),
             \\ \ti{t}{a_2},(= a_2\;\ti{t}{c})
@@ -189,31 +173,16 @@ However, for \name instructions that do not have the same semantics as in \wasm,
                 (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))
                 \\ \ti{\<ithreetwo>}{n_2*64 \text{Ki}})
             \end{stackTL}}
-        \end{stackTL}}$$
-        is a contradiction since $k+o<0$ and therefore $(\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0})$ is contradictory.
+        \end{stackTL}}$$, then we must have $k + o \geq 0$ and $k+o+|tp| \leq n_2*64 \text{Ki}$.
 
-        If $k+o+|tp|>=n_2*64 \text{Ki}$, then
-        $${\begin{stackTL}
-            \ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{k}),
-            \\ \ti{t}{a_2},(= a_2\;\ti{t}{c})
-        \end{stackTL}} \implies
-        {\begin{stackTL}
-            (\<ge> (\<add> a\; \ti{\<ithreetwo>}{o}) \ti{\<ithreetwo>}{0}),
-            \\ (\<le>
-            {\begin{stackTL}
-                (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))
-                \\ \ti{\<ithreetwo>}{n_2*64 \text{Ki}})
-            \end{stackTL}}
-        \end{stackTL}}$$
-        is a contradiction since $k+o+|tp|>n_2*64 \text{Ki}$, and therefore the proposition $(\<le> (\<add> a\; (\<add> \ti{\<ithreetwo>}{o+width}))\; \ti{\<ithreetwo>}{n_2*64 \text{Ki}})$ is contradictory.
-
-        Recall $\vdash s : S$, then, since $n_2*64 \text{Ki} = S_\text{mem}(i,j)$, we have $s_\text{mem}(i,j)=b_2^{*}$ where $n_2*64 \text{Ki} \leq |b_2^{*}|$.
+        Recall $\vdash s : S$.
+        Then, since $n_2*64 \text{Ki} = S_\text{mem}(i,j)$, we have $s_\text{mem}(i,j)=b_2^{*}$ where $n_2*64 \text{Ki} \leq |b_2^{*}|$.
 
         It must be the case that $k+o \geq 0$ and $k+o+|tp|<|b_2^{*}|$, and therefore $s_\text{mem}(i,k+0,|tp|)=b_3^{*}$ for some $b_3^{*}$ that is a subsequence of $b_2^{*}$
         Then, we can construct $s'= s$ with $s'_\text{mem}(i,k+o,|tp|)=bits_t^{|tp|}(c)$ because $|bits_t^{|tp|}(c)|=|b_3^{*}|$.
-        Then, $$s;(\<ithreetwo>.\<const> k)\;(\<ithreetwo>.\<const> c)\;t.\<storepc> tp\; align\;o \hookrightarrow_i s';\epsilon$$
+        Then, $$s;(\<ithreetwo>.\<const> k)\;(\<ithreetwo>.\<const> c)\;(t.\<storepc> tp\; align\;o) \hookrightarrow_i s';\epsilon$$
 
-        \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> c)\;t.\<loadpc> align\;o$
+        \item Case: $\vdash_i s;v^{*};(\<ithreetwo>.\<const> c)\;(t.\<storepc> align\;o)$
 
         Same as above, except with $|t|$ replacing $|tp|$.
 
