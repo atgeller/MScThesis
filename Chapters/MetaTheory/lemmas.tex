@@ -52,8 +52,9 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
 
         %% label
         \item If $S;C \vdash \<label>_n \{ e_0^{*} \} e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_2^{*}=ti_1^{*}\; ti_5^{*}$,
-        $S;C,\text{label}(ti_4^n;l_4;\phi_4) \vdash e^{*} : \epsilon;l_1;\phi_3 \rightarrow ti_5^{*};l_2;\phi_2$, $S;C \vdash e_0^{*} : ti_4^n;l_4;\phi_4 \rightarrow ti_5^{*};l_2;\phi_2$
+        then $ti_2^{*} = ti_1^{*} \; ti^{*}$,
+        $S;C \vdash e_0^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti^{*};l_2;\phi_2$,
+        and $S;C,\text{label } (ti_3^{*};l_3;\phi_3) \vdash e^{*} : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l_2;\phi_2$
 
         %% br
         \item If $S;C \vdash \<br> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
