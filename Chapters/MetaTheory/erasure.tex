@@ -89,7 +89,7 @@ This proof relies on the definition of $\erase[C]{C}$: \autoref{def:erase-C}.
 To erase a function definition $f$, we erase both the type declaration $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ and the body $e^{*}$.
 We can also erase an imported function by erasing the declared type $tfi$.
 
-\begin{definition}{$\erase[f]{f} = \mathredbold{f}$}
+\begin{definition}{\fbox{$\erase[f]{f} = \mathredbold{f}$}}
     \begin{mathpar}
         \begin{array}{rcl}
             erase_f(\<func>
@@ -113,7 +113,7 @@ We can also erase an imported function by erasing the declared type $tfi$.
 To erase a function definition $f$, we erase both the type declaration $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ and the body $e^{*}$.
 We can also erase an imported function by erasing the declared type $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\;$.
 
-\begin{definition}{$\erase[f]{f} = \mathredbold{f}$}
+\begin{definition}{\fbox{$\erase[f]{f} = \mathredbold{f}$}}
     \begin{mathpar}
         \begin{array}{rcl}
             erase_f(\<func>
@@ -187,7 +187,7 @@ The case of imported functions is trivial because an imported function is well t
 
 Erasing an indexed type function keeps only the primitive \wasm types ($t_1^{*}$ and $t_2^{*}$) from the indexed types representing the stack ($\ti{t_1}{a_1}^{*}$ and $\ti{t_2}{a_2}^{*}$), and discards everything else.
 
-\begin{definition}{$\erase[tfi]{tfi} = \mathredbold{tf}$}
+\begin{definition}{\fbox{$\erase[tfi]{tfi} = \mathredbold{tf}$}}
 
     $\erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2} = t_1^{*} \rightarrow t_2^{*}$
 \end{definition}
@@ -195,7 +195,7 @@ Erasing an indexed type function keeps only the primitive \wasm types ($t_1^{*}$
 Erasing instructions involves erasing the indexed function types for every instruction that includes it as part of their syntax (blocks and indirect function calls).
 We must also remove the \prechk tag from \prechk-tagged instructions to turn them into instructions that exist in \wasm.
 
-\begin{definition}{$\erase[e^{*}]{e} = \mathredbold{e}$}
+\begin{definition}{\fbox{$\erase[e^{*}]{e} = \mathredbold{e}$}}
     \begin{mathpar}
         \begin{array}{rcl}
             \erase[e^{*}]{\<block>\; tfi\; e^{*} \<end>} &=&
@@ -468,7 +468,7 @@ To erase a module type context, we must erase all of the function types $tfi^{*}
 We erasing postconditions the same way we erase the postconditions of indexed function types: by keeping only the primitive \wasm types ($t_1^{*}$ in the case of a label postcondition).
 Recall that erasing a table type means discarding the type information about the functions in the table.
 
-\begin{definition}{$\erase[C]{C} = \mathredbold{C}$}
+\begin{definition}{\fbox{$\erase[C]{C} = \mathredbold{C}$}}
     \label{def:erase-C}
     \begin{mathpar}
         \begin{array}{rcl}
@@ -635,7 +635,7 @@ First though, we must define erasure for $s$.
 Erasing the store erases all of the modules instances and closures in the tables inside the store.
 Note that in the definition we have expanded the definition of a table instance to $(\{\text{inst } i, \text{ func } f\}^{*})^{*}$ for extra clarity.
 
-\begin{definition}{$\erase[s]{s} = \mathredbold{s}$}
+\begin{definition}{\fbox{$\erase[s]{s} = \mathredbold{s}$}}
     \begin{mathpar}
         \begin{array}{rcl}
             erase_s(\{ {\begin{stackTL}
@@ -700,7 +700,7 @@ Note that in the definition we have expanded the definition of a table instance 
 
 Erasing a module instance erases all of the functions $f$ in the closures (which we have expanded inline to $\{\text{inst } i, \text{ func } f\}$) within the module instance.
 
-\begin{definition}{$\erase[inst]{inst} = \mathredbold{inst}$}
+\begin{definition}{\fbox{$\erase[inst]{inst} = \mathredbold{inst}$}}
     \begin{mathpar}
         \begin{array}{rcl}
             {\begin{stackTL} erase_{inst}(\{
@@ -764,7 +764,7 @@ To do this, we rely on the above lemmas to safely erase index type information a
 
 We erase store contexts by erasing all of the module type instances $C^{*}$ and table types $(n,tfi^{*})^{*}$ within.
 
-\begin{definition}{$\erase[S]{S} = \mathredbold{S}$}
+\begin{definition}{\fbox{$\erase[S]{S} = \mathredbold{S}$}}
     \begin{mathpar}
         \begin{array}{rcl}
             erase_S(\{ {\begin{stackTL}

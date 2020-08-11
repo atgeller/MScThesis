@@ -28,7 +28,7 @@ After reduction, the intermediate state is no longer present, so we lose those i
 
 For example, $(t.\<const> c)\; \<drop>$ could be typed as $\epsilon;l;\phi \rightarrow \epsilon;l;\phi,\ti{t}{a},(= a\; \ti{t}{c})$ where $a$ represent the value on the stack $t.\<const> c$.
 This would reduce to $\epsilon$, and then we lose the information about $a$ in the postcondition index type system.
-However, this can be solved using implication, as we know $a$ is fresh from the const rule, and therefore we allow saying $\phi \implies \phi,\ti{t}{a},(= a\; \ti{t}{c})$ after reduction.
+However, this can be solved using implication, as we know $a$ is fresh from the \refrule{Const}, and therefore we allow saying $\phi \implies \phi,\ti{t}{a},(= a\; \ti{t}{c})$ after reduction.
 This pattern will appear in any case of the proof that consumes values.
 
 \begin{lemma}{Subject Reduction for Code}
@@ -621,8 +621,6 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             We first figure out what $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ looks like.
 
-            $S;C \vdash \<label>_n \{ e^{*} \} \; v^n \<end> : \epsilon;l_1;\phi_1 \rightarrow ti_4^{n};l_2;\phi_2$ by $inversion$ on $label$.
-
             By \reflemma{Inversion} on \refrule{Label}, we know $ti_2^{*}=ti_1^{*}\;ti_4^{n}$.
 
             $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti_4^{n};l_2;\phi_2$ because it is a premise of \refrule{Label} which we have assumed to hold.
@@ -714,7 +712,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             We want to show that $\<call> s_\text{func}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-            By \reflemma{Inversion} on \refrule{Call}, we know that $l_2 = l_1$, $ti_1^{*} = ti^{*} \; ti_3^{*}$, $ti_1^{*} = ti^{*} \; ti_4^{*}$, $\phi_1 \implies \phi_3$, and $\phi_3,\phi_4 \implies \phi_2$, where $ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 = C_\text{func}(j)$.
+            By \reflemma{Inversion} on \refrule{Call}, we know that $l_2 = l_1$, $ti_1^{*} = ti_0^{*} \; ti_3^{*}$, $ti_2^{*} = ti_0^{*} \; ti_4^{*}$, $\phi_1 \implies \phi_3$, and $\phi_3,\phi_4 \implies \phi_2$, where $ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 = C_\text{func}(j)$.
 
             We also know $S \vdash s_\text{inst}(i) : C$ since it is a premise of $\vdash s : S$ which we have assumed to hold.
 
@@ -722,20 +720,20 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Therefore, $S;C\vdash \<call> s_\text{func}(i,j) : ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$ by \refrule{Call-Cl}.
 
-            Thus, $S;C\vdash \<call> s_\text{func}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
+            Thus, $S;C\vdash \<call> s_\text{func}(i,j) : ti_0^{*}\;ti_3^{*};l_1;\phi_1 \rightarrow ti_0^{*}\;ti_4^{*};l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
         \item Case: $S;C \vdash (\<ithreetwo>.\<const> j)\; \<callindirect> ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
         \\ $\land$ $s;(\<ithreetwo>.\<const> j)\; \<callindirect> ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 \hookrightarrow_i \<call> s_\text{tab}(i,j)$ where $s_\text{tab}(i,j)_\text{code}=(\<func> tfi_0\; \<local>\; t^{*}\; e^{*})$ and $tfi_0 <: ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$
 
             We want to show that $\<call> s_\text{tab}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-            By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Call-Indirect}, we know that $ti_1^{*}=ti_0^{*}\; ti_3^{*}$ and $ti_2^{*}=ti_0^{*}\; ti_4^{*}$ for some $ti_0^{*}$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, and $\phi_4 \implies \phi_2$.
+            By \reflemma{Inversion} on \refrule{Composition}, \refrule{Const}, and \refrule{Call-Indirect}, we know that $ti_1^{*}=ti_0^{*}\; ti_3^{*}$ and $ti_2^{*}=ti_0^{*}\; ti_4^{*}$ for some $ti_0^{*}$, $l_1=l)2$, $\phi_1 \implies \phi_3$, and $\phi_4 \implies \phi_2$.
 
             We know $S \vdash s_\text{tab}(i,j) : tfi_0$ since it is a premise of $\vdash s : S$ which we have assumed to hold.
 
             Then, $S;C \vdash \<call> s_\text{tab}(i,j) : tfi_0$ by \refrule{Call-Cl}.
 
-            $S;C \vdash \<call> s_\text{tab}(i,j) : ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$ by \refrule{Subtyping}.
+            $S;C \vdash \<call> s_\text{tab}(i,j) : ti_3^{*};l_1;\phi_3 \rightarrow ti_4^{*};l_2;\phi_4$ by \refrule{Subtyping}.
 
             Therefore, $S;C \vdash \<call> s_\text{tab}(i,j) : ti_0^{*}\;ti_1^{*};l_1;\phi_1 \rightarrow ti_0^{*}\;ti_1^{*};l_2;\phi_2$ by \refrule{Stack-Poly}.
 
