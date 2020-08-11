@@ -310,13 +310,17 @@ This pattern will appear in any case of the proof that consumes values.
         \\ $\land$ $s;v^{*};L^{k}[e^{*}] \hookrightarrow_i s';v'^{*};L^{k}[e'^{*}]$
         \\ where $s;v^{*};e^{*} \hookrightarrow_i s';v'^{*};e'^{*}$
 
-            We want to show that $\vdash_i s';v'^{*};L^k[e'^{*}] : ti^{*};l;\phi$.
+            We want to show that $S;(ti^{*};l;\phi)^{*} \vdash_i L^k[e'^{*}] : ti^{*};l;\phi$.
 
             First, we will derive the type of the body of the local context.
 
             We have $S;C \vdash L^k[e^{*}] : \epsilon;ti_v^{*};\phi_v^{*} \rightarrow ti^{*};l;\phi$, where
             $C = S_\text{inst}(i),\text{local } t_v^{*},\text{return } (ti^{*};l;\phi)^{?}$ because it is a premise of \refrule{Code}.
 
+            The intuition for the proof is that there is no requirement on what the label stack is of the module type context $C$ under which $L^k[e^{*}] is typed$.
+            Thus, we can reduce $e^{*}$ outside of $L^k$, but with the module type context $C$ as if it were inside of $L^k$.
+
+            The proof continues via induction on $k$.
             \begin{itemize}
                 \item Case: $k = 0$
 
@@ -372,9 +376,9 @@ This pattern will appear in any case of the proof that consumes values.
 
                     \thought{It might seem like we can't do this, but the store typing never specifies what the labels of it's contexts are, so we can just do whatever?}
 
-                    Now, we invoke the \thought{I'm not sure I'm even doing induction right} inductive hypothesis and rebuild the type using the reduced expression.
+                    Now, we invoke the inductive hypothesis on $L^{k-1}[e^{*}]$ and rebuild the type using the reduced expression.
 
-                    Since $S;(ti^{*};l;\phi)^{*} \vdash_i v^{*};L^{k-1}[e^{*}] : ti_3^{*};l_2;\phi_2$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v';e'^{*}$, then by the inductive hypothesis we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};L^{k-1}[e'^{*}] : ti_3^{*};l_2;\phi_2$.
+                    Since $S;(ti^{*};l;\phi)^{*} \vdash_i v^{*};L^{k-1}[e^{*}] : ti_3^{*};l_2;\phi_2$, $s \vdash S$, and $s;v^{*};e^{*} \hookrightarrow_i s';v';e'^{*}$, then by the inductive hypothesis on $L^{k-1}[e^{*}]$ we know that $\vdash s' : S$ and $S;(ti^{*};l;\phi) \vdash_i v'^{*};L^{k-1}[e'^{*}] : ti_3^{*};l_2;\phi_2$.
 
                     $S;C,\text{label } \vdash L^{k-1}[e'^{*}] : \epsilon;ti_{v'}^{*};\phi_{v'}^{*} \rightarrow ti_3^{*};l_2;\phi_2$ because it is a premise of \refrule{Code}.
 
