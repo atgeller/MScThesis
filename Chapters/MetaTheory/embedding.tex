@@ -14,13 +14,26 @@ We typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruc
     \\then $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{?}}$
 \end{conjecture}
 
+In order to support embedding of both local and imported functions we need a syntactic way of extracting the type annotation from the function.
+
+\begin{definition}{\fbox{$annotation(f)=tfi$}}
+    \begin{mathpar}
+        \begin{array}{rcl}
+            annotation(ex^{*}\; \<func> tfi\; \<local>\; t^{*}\; e^{*})
+            &=& tfi\\
+            annotation(ex^{*}\; \<func> tfi\; im)
+            &=& tfi\\
+        \end{array}
+    \end{mathpar}
+\end{definition}
+
 Embedding works purely over the surface syntax of the languages.
 As such, we define embedding over modules: the pinnacle syntactic objects of both the \wasm and \name surface syntax hierarchies.
 Embedding a module $module$ means embedding all of the functions $f^{*}$ in the module, and embedding the table $tab$ parameterized with all of the function definitions $f^{*}$.
 We do not have to embed globals $glob^{*}$ or the memory $mem^{?}$ as they have the same syntax in both \wasm and \name.
 We explain how to embed tables $tab$ in \autoref{def:embed-t}, and functions $f$ in \autoref{def:embed-f}.
 
-\begin{definition}{\fbox{$\embed[module]{module}^{C}=\mathbluesf{module}$}}
+\begin{definition}{\fbox{$\embed[module]{module}=\mathbluesf{module}$}}
     \label{def:embed-m}
     \begin{mathpar}
         \begin{array}{rcl}
@@ -29,7 +42,7 @@ We explain how to embed tables $tab$ in \autoref{def:embed-t}, and functions $f$
             \begin{stackTL}
                 \embed[f]{f}^{*}
                 \\ glob^{*}
-                \\ \embed[tab]{tab^{?}}^{f^{*}}
+                \\ \embed[tab]{tab^{?}}^{annotation(f)^{*}}
                 \\ mem^{?}
             \end{stackTL} \\
         \end{array}
@@ -37,21 +50,17 @@ We explain how to embed tables $tab$ in \autoref{def:embed-t}, and functions $f$
 \end{definition}
 
 Tables in \name must also provide the indexed function types of all the functions they contain, so to embed them we must include those types.
-We do this by parameterizing the embedding of the table $tab$ with all of the declared functions $f^{*}$.
-Then, we retrieve the indexed function type $ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2$ of the function pointed to by the function index $i$ in $f^{*}$ for every function index $i$ in the table.
+We do this by parameterizing the embedding of the table $tab$ with all of the function types $tfi^{*}$.
+Then, we retrieve the indexed function type $ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2$ of the function pointed to by the function index $i$ in $tfi^{*}$ for every function index $i$ in the table.
 We cannot embed imported tables because we have no way of accessing the types of the functions included in the table.
 
-\begin{definition}{\fbox{$\embed[tab]{tab}^{f^{*}}=\mathbluesf{tab}$}}
+\begin{definition}{\fbox{$\embed[tab]{tab}^{tfi^{*}}=\mathbluesf{tab}$}}
     \label{def:embed-t}
     \begin{mathpar}
         \begin{array}{rcl}
-            embed_{tab}(\<wtab> n\; i^{n})
-            &=& \<tab> n\; (ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2)^{n} \\
-            && \text{where } \forall i. f^{*}(i) = \<func> 
-            \begin{stackTL}
-                ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2\;
-                \\ \<local>\; t^{*}\; e^{*}
-            \end{stackTL}  \\
+            embed_{tab}(ex^{*}\; \<wtable> n\; i^{n})
+            &=& ex^{*}\; \<table> n\; (ti_1;\epsilon;\phi_1 \rightarrow ti_2;\epsilon;\phi_2)^{n} \\
+            && \text{where } \forall i. tfi^{*}(i) = ti_1;\epsilon;\phi_1 \rightarrow ti_2;\epsilon;\phi_2
         \end{array}
     \end{mathpar}
 \end{definition}
@@ -60,27 +69,31 @@ The embedding of functions, \autoref{def:embed-f}, both must construct an indexe
 Function bodies have their local variables defined by the function that they are enclosed in.
 Thus, when the function body is embedded we pass the local types ($t_1^{*}\;t^{*}$) so the body knows how to constrain local variables.
 We construct an indexed function type that has the precondition of the expected values on the stack turned into indexed types using fresh index variables and the types $t_1^{*}$ from the \wasm type, and do the same with the postcondition and $t_2^{*}$.
-We cannot embed imported functions because we have no way of accessing the types of the local variables of the function.
 
 \begin{definition}{\fbox{$\embed[f]{f}=\mathbluesf{f}$}}
     \label{def:embed-f}
     \begin{mathpar}
         \begin{array}{rcl}
-            embed_f(\<wfunc> {\begin{stackTL}
-                (t_1^{*}\rightarrow t_2^{*})
-                \\\<wlocal>\; t^{*}\; e^{*})
-            \end{stackTL}}
-            &=& \<func>\;
-                {\begin{stackTL}
+            embed_f(ex^{*}\; \<wfunc>
+            \begin{stackTL}
+                (t_1^{*} \rightarrow t_2^{*})
+                \\ \<wlocal>\; t^{*}\; e^{*})
+            \end{stackTL}
+            &=& ex^{*}\; \<func>\;
+                \begin{stackTL}
                     (\ti{t_1}{a_1}^{*};\epsilon;(\circ,\ti{t_1}{a_1}^{*})
                     \\ \rightarrow
-                    \begin{stackTL}
-                        \ti{t_2}{a_2}^{*};\ti{t_1}{a_3}^{*}\;\ti{t}{a_4}^{*};
-                        \\ \quad (\circ,\ti{t_2}{a_2}^{*},\ti{t_1}{a_3}^{*}\ti{t}{a_4}^{*}))
-                    \end{stackTL}
-                    \\ t^{*}\; ()\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}
-                \end{stackTL}} \\
-            && \<nsend>\\
+                    \ti{t_2}{a_2}^{*};\epsilon;(\circ,\ti{t_2}{a_2}^{*}))
+                    \\ \<local>\; t^{*}\; \embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}
+                \end{stackTL}\\
+            embed_f(ex^{*}\; \<wfunc> (t_1^{*} \rightarrow t_2^{*})\; im)
+            &=& ex^{*}\; \<func>\;
+                \begin{stackTL}
+                    (\ti{t_1}{a_1}^{*};\epsilon;(\circ,\ti{t_1}{a_1}^{*})
+                    \\ \rightarrow
+                    \ti{t_2}{a_2}^{*};\epsilon;(\circ,\ti{t_2}{a_2}^{*}))
+                    \\ im
+                \end{stackTL}\\
         \end{array}
     \end{mathpar}
 \end{definition}
@@ -99,7 +112,7 @@ To know what the local variables are, we parameterize the embedding over the typ
             embed_{e^{*}}({\begin{stackTL}
                 \<wblock>
                 {\begin{stackTL}
-                    (t_1^{*}\rightarrow t_2^{*})\;
+                    (t_1^{*} \rightarrow t_2^{*})\;
                     \\e^{*}
                 \end{stackTL}}\\
             \<wend>)^{t^{*}}
@@ -165,3 +178,33 @@ These are not the only differences in the surface syntax between \wasm and \name
 The definition of embedding we have introduced has been entirely syntactic, but that will not work for replacing non-\prechk-tagged instructions with \prechk-tagged versions during embedding since we must be able to ensure that stronger guarantees are met.
 Instead, one could, for example, check at every $\<div>$, $\<callindirect>$, $\<load>$, and $\<store>$ whether the \prechk-tagged version of the instruction is welltyped, and only if it is well typed replace the instruction with the \prechk-tagged version.
 However, a more sophisticated static analysis could be able to provide more precise type annotations and therefore potentially allow even check eliminations.
+
+Want to prove that the embedding produces well-typed \name, embedding works on a module level, so the proof should be done on a module level.
+
+
+\begin{theorem}{Sound Module Typing Embedding}
+    \label{thm:moduleembedding}
+
+    If $\vdash \<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{?}$ and
+    $tab = (ex_t^{*}\; \<wtable> n\; i^{*})$,
+    \\ then $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{?}}$
+\end{theorem}
+\begin{proof}
+
+    Note that the globals $glob^{*}$ and memory $mem^{?}$ are not affected by embedding, and have the same module typing rules in \wasm as in \name.
+    Thus, we only need to reason about the functions $f^{*}$ and table $tab^{?}$.
+
+    $C_w = \{ \text{func } tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$ since it is a premise of WASM module.
+
+    If $(C_w \vdash f : ex_f^{*}\; tf)^{*}$,
+    $(annotation(\embed[f]{f}) = tfi)^{*}$, and
+    $C_p = \{ \text{func } tfi^{*}, \text{global } tg^{*}, \text{table } n^{?},\; \text{memory } n^{?} \}$,
+    then $(C_p \vdash \embed[f]{f}^{*} : ex^{*}_f\; tfi)^{*}$ by \todo{TODO}.
+
+    $\embed[tab]{tab^{?}}^{tfi^{*}} = (ex_t^{*}\; \<table> n\; tfi_t^n)^{?}$,
+    where $\forall i. tfi^{*}(i) = tfi_t$ by \autoref{def:embed-t}.
+
+    Then, $(C_p \vdash ex_t^{*}\; \<table> n\; i^n : ex_t^{*}\; (n,tfi_t^n))^{?}$, by \refrule{Table}.
+
+    Therefore, $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{*}}$.
+\end{proof}

@@ -923,9 +923,9 @@ Globals, $glob$, are typechecked under the module index context containing only 
 \begin{figure}
     \begin{mathpar}
         \inferrule*[right=\defrule{Func}]{ %% local function
-            \tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            \tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};\epsilon;\phi_2 \\
             C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*};l_2;\phi_2),\text{return } (ti_2^{*},l_2,\phi_2) \\
-            C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+            C_2 \vdash e^{*} : \epsilon;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } {
             C \vdash ex^{*}\; \<func> \tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; \tfi
         } \and
