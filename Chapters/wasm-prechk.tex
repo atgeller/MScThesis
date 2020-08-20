@@ -1,20 +1,56 @@
 \chapter{\name}
 \label{chp:prechk}
-The goal of \name is to be used to eliminate unnecessary dynamic checks.
+The goal of \name is to eliminate unnecessary dynamic checks.
 To accomplish this, it must (1) have instructions that do not require dynamic checks and (2) statically prove that the assumptions of those instructions are met.
-In \name, we extend \wasm with new instructions that explicitly do not require dynamic checks, and design an indexed type system to reason about the safety of removing checks.
+\name extends \wasm with new instructions that explicitly do not require dynamic checks, and an indexed type system to reason about the safety of omitting checks.
+Intuitively, we are replacing dynamic checks with static checks whenever possible.
+
+\begin{figure}[b]
+    $${\begin{stackTL}
+        \<block>
+        {\begin{stackTL}
+            \;(\<ithreetwo>\;\<ithreetwo> \rightarrow \<ithreetwo>)
+            \\ (\<teelocal> 0)
+            \\ (\<ithreetwo>.\<const> 1)
+            \\ (\<getlocal> 0)
+            \\ (\<select>)
+            \\ (\<ithreetwo>.\<div>)
+        \end{stackTL}}
+        \\ \<nsend>
+    \end{stackTL}}$$
+
+    \caption{An Example of an Unnecessary \wasm check}
+    \label{fig:unnecessarycheck}
+\end{figure}
+
+Consider the example of a \wasm program with an unnecessary dynamic check in \autoref{fig:unnecessarycheck}.
+The program consists of a $\<block>$ instruction that consumes two arguments from the stack and produces onto the stack their quotient if the second argument is non-zero, and the first argument otherwise.
+In \wasm, this program would have a dynamic check for division-by-zero inserted for the division instruction ($\<ithreetwo>.\<div>$).
+However, this check would be unnecessary since the instructions preceding the division instruction ensures that the second argument is non-zero.
+This is guaranteed because the $\<select>$ instruction selects the first value (the local) if the local is non-zero, and otherwise selects the second value ($\<ithreetwo>.\<const> 1$).
+
+In the above example, it is possible to check the necessary precondition of the division instruction (that the second argument is non-zero) statically, rather than dynamically.
+\name performs such static checks using an indexed type system.
+An indexed type language uses an index language in the type system to encode information within types.
+\name's index language must be capable of capturing enough information about a \name program to statically verify the preconditions of \prechk-tagged instructions.
+
+The \name index language is designed to encode linear constraints on program values (the details of they are encoded is discussed in \autoref{subsec:indexlang}).
+To do this, we ``shadow'' \name program values using what we call \emph{index variables} to track constraints on and relationships between program values.
+Many of these constraints/relationships are written using \wasm operators (\eg $binop$), since they are the predominant way that \wasm values end up being related to each other.
+Index variables are associated with program values using \emph{indexed types}, which combine the type information from \wasm: the primitive type $t$ of the value, with the indexed type variable that represents the value in the index language.
+Finally, we also use index variables to track local variables (specifically the current value of local variables, since they are mutable and may change) via an \emph{index local store}.
 
 \section{\name Syntax}
-The syntax of \name has the same structure as \wasm, but different instructions and representations of types.
+The syntax of \name has the same structure as \wasm, but different instructions and richer types.
 First, \name introduces four additional instructions, which are referred to as ``\prechk-tagged'' instructions.
 Second, \name does not support floating point values or unary operators on integers since they are difficult to reason about (this is explained in more detail in \autoref{chp:implementation}).
-While it would be possible to support them, we would have no more type information about them then \wasm, and the focus of this work is on the type information.
-\name uses a different representation of types within instructions and functions, as we will see in \autoref{subsec:indexlang}.
+While it would be possible to support them, we would have no more type information about them than \wasm, and the focus of this work is on the type information.
+\name uses a different representation of types within instructions and functions, as we see in \autoref{subsec:indexlang}.
 
-Recall from \autoref{sec:wasmsemantics} that there are four \wasm instructions that require run-time checks: integer division, indirect function calls, and memory loads and stores.
-``\prechk-tagged'' instructions refer to a set of four \name instructions, listed in \autoref{fig:newinstructions}, that are counterparts to these four \wasm instructions.
-Intuitively, we are simply adding a tag to the instruction to show that it doesn't require run-time checks.
-Formally, however, these are different instructions with different semantics and different typing rules, as explained below.
+Recall from \autoref{sec:wasmsemantics} that four \wasm instructions require run-time checks: integer division, indirect function calls, and memory loads and stores.
+``\prechk-tagged'' instructions refer to four \name instructions, listed in \autoref{fig:newinstructions}, that are counterparts to these four \wasm instructions.
+Intuitively, we add a tag to the instruction to show that it doesn't require run-time checks.
+Formally, however, different instructions have different semantics and typing rules, as explained below.
 
 \begin{figure}
     \begin{math}
@@ -28,15 +64,15 @@ Formally, however, these are different instructions with different semantics and
     \begin{math}
     \begin{array}{rcl}
         e & ::= & \<unreachable> \mid \<nop> \mid \<drop> \mid \<select> \mid \\
-        && \<block>\; tfi\; e^{*} \<end> \mid \<loop>\; tfi\; e^{*} \<end> \mid \<if>\; tfi\; e^{*} \<else> e^{*} \<end> \mid \\
-        && \<br> i \mid \<brif> i \mid \<brtable> i^{+} \mid \<return> \mid \<call> i \mid \<callindirect> tfi \mid \\
+        && \<block>\; \hl{\tfi}\; e^{*} \<end> \mid \<loop>\; \hl{\tfi}\; e^{*} \<end> \mid \<if>\; \hl{\tfi}\; e^{*} \<else> e^{*} \<end> \mid \\
+        && \<br> i \mid \<brif> i \mid \<brtable> i^{+} \mid \<return> \mid \<call> i \mid \<callindirect> \hl{\tfi} \mid \\
         && \<getlocal> i \mid \<setlocal> i \mid \<teelocal> i \mid \<getglobal> i \mid \\
         && \<setglobal> i \mid t.\<load> (tp\_sx)^{?}\; align\; o \mid t.\<store> tp^{?}\; align\; o \mid \\
         && \<currentmemory> \mid \<growmemory> \mid t.\<const> c \mid \\
         && t.binop_t \mid t.testop_t \mid t.relop_t \mid \\
         \hline
-        && t.\<divpc> \mid t.\<callindirectpc> \mid \\
-        && t.\<loadpc> (tp\_sx)^{?}\; align\;o \mid t.\<storepc> tp^{?\;} align\;o \\
+        && \hl{t.\<divpc>} \mid \hl{t.\<callindirectpc>} \mid \\
+        && \hl{t.\<loadpc> (tp\_sx)^{?}\; align\;o} \mid \hl{t.\<storepc> tp^{?\;} align\;o} \\
     \end{array}
     \end{math}
     \caption{\name syntax including the four \prechk-tagged instructions}
@@ -46,16 +82,15 @@ Formally, however, these are different instructions with different semantics and
 \subsection{The \name Index Language}
 \label{subsec:indexlang}
 \name uses an indexed type system.
-An indexed type language uses an index language in the type system to encode information within types.
-We use the index language to encode linear constraints on program variables within types.
+We use the \name index language to encode constraints on program values within types.
 \autoref{fig:itsyntax} shows the syntax for the index type language.
 Remember, syntax written in a \tbsf{blue sans serif font} denotes a \wasm keyword.
-Below is a quick overview of each of the terms.
+Below is a quick overview of each metavariable.
 
 \begin{figure}
     \begin{math}
         \begin{array}{rcl}
-            t &:: & \<ithreetwo> \mid \<isixfour> \\
+            t &::= & \<ithreetwo> \mid \<isixfour> \\
             a &::= & IndexVariable \\
             x\;y &::=& a \mid \ti{t}{c} \mid (\<binop>\;x\;y) \mid (\<testop>\;x) \mid (\<relop>\;x\;y) \\
             P &::=& (=\; x \; y) \mid (\text{if}\; P\; P\; P) \mid \neg P \mid P \land P \mid P \lor P \\
@@ -68,8 +103,8 @@ Below is a quick overview of each of the terms.
 
 \begin{itemize}
     \item $t$ represents a primitive \wasm type.
-    We do not reason about floating point values, so it is either a 32-bit integer ($i32$) or a 64-bit integer ($i64$).
-    \item $a$ is a type index variable, which is used to track constraints on program variables.
+    We do not reason about floating point values, so it is either a 32-bit integer (\<ithreetwo>) or a 64-bit integer (\<isixfour>).
+    \item $a$ is a type index variable, which is used to track constraints on program values.
     \item $x$ and $y$ are type indices; they can be an index type variable, a constant with an explicit type, or a \wasm operation on a type index.
     \item $P$ is a proposition about type indices which can encode equality constraints on type indices, or combine propositions using common first-order logic operators.
     \item $\phi$ is the type index context which stores index type variable declarations and propositions.
@@ -81,10 +116,10 @@ Below is a quick overview of each of the terms.
         \begin{array}{rcl}
             ti &::=& \ti{t}{a} \\
             l &::=& ti^{*} \\
-            tfi &::=& ti^{*};l;\phi \rightarrow ti^{*};l;\phi \\
+            \tfi &::=& ti^{*};l;\phi \rightarrow ti^{*};l;\phi \\
             C &::=& \{
                 {\begin{stackTL}
-                    \text{func } \; tfi^{*}, \text{ global } \; (\text{mut}^{?} \; t)^{*}, \text{ table} \; n^{?}, \text{ memory }  m^{?}, \\
+                    \text{func } \; \tfi^{*}, \text{ global } \; (\text{mut}^{?} \; t)^{*}, \text{ table} \; n^{?}, \text{ memory }  m^{?}, \\
                     \text{ local } \; t^{*}, \text{ label}(ti^{*};l;\phi)^{*}, \text{ return}\;(ti^{*};l;\phi)^{? }\}
                 \end{stackTL}}
         \end{array}
@@ -99,14 +134,14 @@ In \name, we represent the shape of the stack as a sequence of indexed types $ti
 
 The index local store associates index variables with local variables.
 It has an identical form to the stack: a sequence of indexed types to associate index variables with local variables.
-We use the shorthand $l$ to refer to the index local store since we rarely reason about it but rather thread it through typing rules.
-The index type context $\phi$ is the mechanism that is used to reason about the possible values of computations.
-It stores constraints on and between program variables tracked by indexed types representing the stack and index local store.
+We use the shorthand $l$ to refer to the index local store.
+The index type context $\phi$ is used to reason about the possible values of computations.
+It stores constraints on and between program values tracked by indexed types representing the stack and index local store.
 
-\name uses indexed function types $tfi$, which, similar to \wasm's function types, are just a precondition and postcondition.
+\name uses indexed ``function'' types $\tfi$, which, similar to \wasm's function types, are just a precondition and postcondition.
 However, indexed function types include much more information in their precondition and postcondition!
 They represent the stack using a sequence of indexed types and track local variables using the index local store, and include $\phi$ which contains constraints about those values.
-We will see how this information is used in \autoref{subsec:checkelim}.
+We see how this information is used in \autoref{subsec:checkelim}.
 
 We retain $C$ to refer to the module type context in \name, although the representation of module types is slightly different.
 \wasm function types are replaced with \name indexed function types.
@@ -116,7 +151,7 @@ We can now introduce the \name typing judgement for instructions.
 It is similar to the \wasm typing judgment, but uses indexed function types which include much more information by tracking constraints about program values.
 
 \begin{mathpar}
-    \boxed{C \vdash e^{*} : tfi}
+    \boxed{C \vdash e^{*} : \tfi}
 \end{mathpar}
 
 Recall that certain \wasm instructions (such as $\<block>$ and $\<callindirect>$) include \wasm function types to declare the expected types of their bodies.
@@ -124,7 +159,7 @@ In \name, we replace those function types with indexed function types.
 
 \section{\name Dynamic Semantics}
 \name uses the same reduction relation with the same structure as \wasm (explained in detail in \autoref{sec:wasmsemantics}).
-All the reduction rules for all of the \name instructions are the same as they are for \wasm, except that indexed function types are used instead of \wasm function types.
+All the reduction rules for all of the \name instructions are the same as they are for \wasm, as presented in \autoref{sec:wasmsemantics}, except that indexed function types are used instead of \wasm function types.
 We also have four new instructions, for which we introduce new reduction rules.
 
 \label{sec:newinstructions}
@@ -160,7 +195,7 @@ We also have four new instructions, for which we introduce new reduction rules.
             (t.\<store> tp\_sx\; align\; o) &\hookrightarrow_i& s';\epsilon \\
             && \text{if }
             {\begin{stackTL}
-                s'=s \text{ with} 
+                s'=s \text{ with}
                 \\ \text{mem}(i,k+o,|t|)=bits_t(c)
             \end{stackTL}} \\
 
@@ -173,14 +208,15 @@ We also have four new instructions, for which we introduce new reduction rules.
     \label{fig:checked}
 \end{figure}
 
-The formal reason why certain \wasm instructions require run-time checks is because they have preconditions as part of their semantics, and if the preconditions are not met then those instructions trap to avoid undefined behavior (we've reproduced the reduction rules for those instructions in \autoref{fig:checked}).
+\emph{The formal reason why certain \wasm instructions require run-time checks is because they have preconditions as part of their semantics.}
+If the preconditions are not met then those instructions trap to avoid undefined behavior (we've reproduced the reduction rules for those instructions in \autoref{fig:checked}).
 The \wasm type system is not expressive enough to ensure these preconditions statically, so they instead must be checked at run-time.
 However, the \name type system is capable of statically checking these preconditions.
 
 In \name, ``\prechk-tagged'' instructions can assume that the preconditions on their behavior hold because it is enforced by the \name type system.
 This can be seen in the reduction rules for the ``\prechk-tagged'' instructions in Figure \autoref{fig:prechkredux}, where they do not have rules to trap when their preconditions do not hold.
 For example, in the $\<divpc>$ rule, the second argument $c_2$ is guaranteed to be non-zero, so there will be no trap on division-by-zero.
-\<callindirectpc> can assume that the function that gets pulled from the table $tfi_2$ has a subtype of the expected type $tfi$, so it is a valid type for the indirect call (we will go over subtyping in more detail in \autoref{subsec:subtyping}).
+\<callindirectpc> can assume that the function that gets pulled from the table $\tfi_2$ has a subtype of the expected type $\tfi$, so it is a valid type for the indirect call (we will go over subtyping in more detail in \autoref{subsec:subtyping}).
 The \prechk-tagged memory operations $\<loadpc>$ and $\<storepc>$ can assume that the memory operation takes place inside the memory bounds.
 
 \begin{figure}[t]
@@ -195,10 +231,10 @@ The \prechk-tagged memory operations $\<loadpc>$ and $\<storepc>$ can assume tha
             t.\<divpc> & \hookrightarrow & c \\
             && \text{where } c_2 \neq 0 \land c=c_1/c_2 \\
             s;(t.\<const> j) && \\
-            t.\<callindirectpc> tfi & \hookrightarrow_i & \<call> s_{tab}(i,j) \\
+            t.\<callindirectpc> \tfi & \hookrightarrow_i & \<call> s_{tab}(i,j) \\
             &&\text{where } s_{tab}(i,j) = \\
-            && \<func> tfi_2\; \<local>\; t^{*}\;e^{*} \\
-            && \text{and } tfi_2<:tfi \\
+            && \<func> \tfi_2\; \<local>\; t^{*}\;e^{*} \\
+            && \text{and } \tfi_2<:\tfi \\
             s;(\<ithreetwo>.\<const> k) && \\
             (t.\<loadpc> (tp\_sx)^{?}\; a\;o) & \hookrightarrow_i & t.\<const> const_t(b^{*}) \\
             && \text{where } s_{mem}(i,k+o,|t|)=b^{*} \\
@@ -212,12 +248,33 @@ The \prechk-tagged memory operations $\<loadpc>$ and $\<storepc>$ can assume tha
     \label{fig:prechkredux}
 \end{figure}
 
-All other \name instructions have equivalent semantics to their \wasm versions as presented in \autoref{sec:wasmsemantics}.
+Now, we can rewrite the example from \autoref{fig:unnecessarycheck} to use the \prechk-tagged division instruction, as seen in \autoref{fig:prechkexample}.
+Remember that we know the second argument to $\<divpc>$ is guaranteed to be non-zero, so we know the assumption of the $\<divpc>$ instruction ($c_2 \neq 0$) holds.
+Since $\<divpc>$ does not require a dynamic check, this program will presumably be faster than the version with the dynamic check.
+We still have not shown how we statically ensure that this assumption holds, which we will do in \autoref{subsec:checkelim}.
+
+\begin{figure}[b]
+    $${\begin{stackTL}
+        \<block>
+        {\begin{stackTL}
+            \;(\<ithreetwo>\;\<ithreetwo> \rightarrow \<ithreetwo>)
+            \\ (\<teelocal> 0)
+            \\ (\<ithreetwo>.\<const> 1)
+            \\ (\<getlocal> 0)
+            \\ (\<select>)
+            \\ (\<ithreetwo>.\<divpc>)
+        \end{stackTL}}
+        \\ \<nsend>
+    \end{stackTL}}$$
+
+    \caption{An Example of Using a \name \prechk-tagged Instruction}
+    \label{fig:prechkexample}
+\end{figure}
 
 \section{The \name Indexed Type System}
 \label{sec:typesys}
 The \name type system is designed to provide sufficient information to safely eliminate dynamic checks (\ie to ensure that the required preconditions are met to \prechk-tag an instruction).
-As explained in ~\ref{subsec:indexlang}, the \name type system can encode linear constraints on program variables in the preconditions and postconditions of instructions.
+As explained in ~\ref{subsec:indexlang}, the \name type system can encode constraints on program values in the preconditions and postconditions of instructions.
 We will now show how these constraints are added and used.
 
 Recall the form of the \name typing judgement for instructions.
@@ -226,16 +283,16 @@ Recall the form of the \name typing judgement for instructions.
 \end{mathpar}
 
 Under $C$, the module type context, $e^{*}$ has the precondition $ti_1^{*};l_1;\phi_1$ and postcondition $ti_2^{*};l_2;\phi_2$.
-We sometimes use the metavariable abbreviation $tfi ::= ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ as shorthand for the precondition and postcondition of an instruction.
+We sometimes use the metavariable abbreviation $\tfi ::= ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ as shorthand for the precondition and postcondition of an instruction.
 
 As in \wasm, \name generally has two kinds of typing rules.
 Most rules are for inferring or checking the types of instructions (in which case $e^{*}$ will be a single instruction).
 There are also a few rules to compose together instruction sequences.
 We present the typing rules mixed with discussion of those rules.
-The typing judgment in its entirety is reproduced in the appendix.
+The typing judgment definition in its entirety is reproduced in the appendix.
 
 Here are some of the simpler rules.
-These are rules don't use or modify index type information.
+These rules don't use or modify index type information.
 \refrule{Unreachable} accepts any precondition and guarantees any postcondition since it just causes a trap.
 In \refrule{Nop}, no changes are made from the precondition to the post condition because the instruction does nothing.
 \refrule{Drop} consumes the top value from the stack (without caring about its type) and does not change the local index store or index type context.
@@ -254,24 +311,24 @@ In \refrule{Nop}, no changes are made from the precondition to the post conditio
 \end{mathpar}
 
 The constant instruction is a simple example of how indexed types work.
-It adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$, declares the new indexed type in the index type context $\phi$, and constrains that indexed type to be equal to the constant $(= a\; \ti{t}{c})$.
-We require $a$ to be fresh, that is, we require that $a$ is a new index variable present nowhere else in any of the types for the program.
+\refrule{Const} adds a new indexed type onto the stack to track the new program variable $\ti{t}{a}$, declares the new indexed type in the index type context $\phi$ (the $\ti{t}{a}$ part of $\phi,\ti{t}{a},(= a\; \ti{t}{c})$), and constrains that indexed type to be equal to the constant in $\phi$ (the $(= a\; \ti{t}{c})$ part of $\phi,\ti{t}{a},(= a\; \ti{t}{c})$).
+We require $a$ to be fresh using the premise $a_3 \not\in \phi$, so that we know $a$ is not constrained/referenced anywhere in the precondition.
 This is a common pattern to see in rules which introduce new index variables.
-The local index store $l$ is unchanged between the precondition and postcondition.
+Since \<const> does not change or reference the local variables, the local index store $l$ is unchanged between the precondition and postcondition.
 \begin{mathpar}
-    \inferrule*[right=\defrule{Const}]{ a \text{ is fresh} }{ %% const
+    \inferrule*[right=\defrule{Const}]{ a \not\in \phi }{ %% const
         C \vdash t.\<const> c : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a},(= a \ti{t}{c})
     }
 \end{mathpar}
 
 There are several different kinds of operations, but they all work similarly.
-The binary operator instruction adds constraints between new and old program values, since the result of the instruction is a new program values, while the consumed values may already be constrained.
-A binary operation consumes two values from the stack, whiuch have associated indexed types $\ti{t}{a_1}$ and $\ti{t}{a_2}$, and produces a value which is associated with the fresh indexed type $\ti{t}{a_3}$.
+The binary operator instruction adds constraints between new and old program values, since the result of the instruction is a new program value, while the consumed values may already be constrained.
+A binary operation consumes two values from the stack, which have associated indexed types $\ti{t}{a_1}$ and $\ti{t}{a_2}$, and produces a value which is associated with the fresh indexed type $\ti{t}{a_3}$.
 The index type declaration $\ti{t}{a_3}$ is added to the index type context $\phi$ and $a_3$ is constrained to be equal to the binary operator applied to the index variables that correspond to the input $(= a_3\;(\|binop\|\;a_1\;a_2)$.
-As a side note, we use $\|binop\|$ to indicate that we are using the $binop$ (or relop or testop) from the index language.
-Binary operators do not affect or use local variables, they simply propagate, so the local index store. $l$, is the same in the precondition and postcondition.
+As a side note, we use $\|binop\|$ to indicate that we are moving the $binop$ (or relop or testop) from \name to the index language, where it will be interpreted by the semantics of the index language.
+Binary operators do not affect or use local variables, so the local index store. $l$, is the same in the precondition and postcondition.
 \begin{mathpar}
-    \inferrule*[right=\defrule{Binop}]{a_3 \text{ is fresh}}{ %% binop
+    \inferrule*[right=\defrule{Binop}]{ a_3 \not\in \phi }{ %% binop
         C \vdash t.binop :
         {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
@@ -279,7 +336,7 @@ Binary operators do not affect or use local variables, they simply propagate, so
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Testop}]{a_2 \text{ is fresh}}{ %% testop
+    \inferrule*[right=\defrule{Testop}]{ a_3 \not\in \phi }{ %% testop
         C \vdash t.testop :
         {\begin{stackTL}
             \ti{t}{a_1}\;l;\phi
@@ -287,7 +344,7 @@ Binary operators do not affect or use local variables, they simply propagate, so
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Relop}]{a_3 \text{ is fresh}}{ %% relop
+    \inferrule*[right=\defrule{Relop}]{ a_3 \not\in \phi }{ %% relop
         C \vdash t.relop :
         {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
@@ -301,21 +358,21 @@ Select consumes three values from the stack, it returns the second value if the 
 We use the type-level ``if'' to allow the constraint on the result to depend on the third value consumed: $(\text{if}\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))$.
 
 \begin{mathpar}
-    \inferrule*[right=\defrule{Select}]{a_3 \text{ is fresh}}{ %% select
+    \inferrule*[right=\defrule{Select}]{a_3 \not\in \phi}{ %% select
         C \vdash \<select> : {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;\phi
             \\ \rightarrow \ti{t}{a_3};l;\phi,
             {\begin{stackTL}
                 \ti{t}{a_3},
-                \\ (if\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))
+                \\ (\text{if}\; (= a\; \ti{\<ithreetwo>}{0})\; (= a_3\;a_2)\; (= a_3\;a_1))
             \end{stackTL}}
         \end{stackTL}}
     }
 \end{mathpar}
 
 The rules for the three different kinds of blocks (\<block>, \<loop>, and \<if>) are similar to \wasm.
-They simply ensure that the interior instruction sequence has the expected type under the context with the expected postcondition (or precondition in the case of loop) appended to the local stack.
-\<if> blocks are able to make extra assumptions about the consumed value in the subsequences (that it is non-zero in the first sequence and zero in the second), because those constraints must be true for that sequence to be executed.
+They simply ensure that the interior instruction sequence has the expected type under the context with the expected postcondition (or precondition in the case of \<loop>) appended to the local stack.
+In \name, \<if> blocks make extra assumptions about the consumed value in the subsequences (that it is non-zero in the first sequence and zero in the second), because those constraints must be true for that sequence to be executed.
 While \<if> and \<block> append their postcondition to the label stack for typechecking branching instructions within the block, \<loop> appends its precondition because branching to a loop means running the loop again.
 
 \begin{mathpar}
@@ -343,7 +400,7 @@ While \<if> and \<block> append their postcondition to the label stack for typec
 \end{mathpar}
 
 One thing to note is that all three of these rules include their expected preconditions and postconditions as part of their syntax.
-We consider the index variables in these indexed function types to be unification variables rather then literals, allowing them to match any literal as long as the types unify.
+We consider the index variables in these indexed function types to be unification variables rather than literals, allowing them to match any literal as long as the types unify.
 Intuitively, this is very similar to alpha equivalence, where the precondition matches any preceding postcondition with the same structure as long as the variable can be renamed to match.
 The postcondition appended to the label stack also has unification variables instead of the supplied literals.
 
@@ -355,7 +412,7 @@ However, that is fine since this means that no instructions following the $\<bri
 Also remember the above note that the postconditions on the label stack contain unification variables, not literals.
 
 Recall from \autoref{sec:wasmsemantics} that $\<brtable>$ branches to one of many different labels.
-Thus, we must ensure that every possible branching postcondition it might branch to is implied by the precondition.
+Thus, we must ensure that every possible branching postcondition to which it might branch is implied by the precondition.
 
 \begin{mathpar}
     \inferrule*[right=\defrule{Br}]{ %% br
@@ -388,7 +445,7 @@ Thus, we must ensure that every possible branching postcondition it might branch
     }
 \end{mathpar}
 
-Recall that functions are declared within the module with a specific type $tfi$, that is a precondition and postcondition.
+Recall that functions are declared within the module with a specific indexed function type $\tfi$, that is a precondition and postcondition.
 These declared indexed function types are placed inside the module type context $C$.
 Direct function calls $\<call> i$ have the same type as the declared indexed function type of the function they are calling with two differences.
 First, the local index store is unchanged, since the called function will have been turned into a closure that operates on separate local variables in a local block.
@@ -396,8 +453,8 @@ Second, the index type context in the postcondition of the call is extended with
 The precondition and postcondition of a function can only contain constraints about the arguments supplied to that function, so simply copying the postcondition of the function would result in the loss of information about all other index variables.
 
 Indirect function calls $\<callindirect> ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ include the expected indexed function type $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ provided as part of their syntax (the same note about index variables being unification variables from above holds).
-Remember that indirect function calls perform a run time typecheck against the closure that they end up calling, so we assume statically that the check will proceed because if it does not the program will trap and not be able to do any harm.
-The same two differences described above between the expected indexed function type $tfi$ and the type of the $\<callindirect> tfi$ instruction also hold.
+Remember that indirect function calls perform a run time typecheck against the closure that they end up calling, so we assume statically that the check will proceed because if it does not the program will trap (\<trap> satisfies any $\tfi$, including the one for the indirect call) and not be able to do any harm.
+The same two differences described above between the expected indexed function type $\tfi$ and the type of the $\<callindirect> \tfi$ instruction also hold.
 
 \begin{mathpar}
     \inferrule*[right=\defrule{Call}]{ %% call
@@ -407,7 +464,7 @@ The same two differences described above between the expected indexed function t
         C \vdash \<call> i : ti_1^{*};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
     } \and
     \inferrule*[right=\defrule{Call-Indirect}]{ %% call_indirect
-        C_\text{table}(i) = (j, tfi_2^{*}) \and
+        C_\text{table}(i) = (j, \tfi_2^{*}) \and
     }
     {
         C\;
@@ -428,7 +485,7 @@ Thus, the typing rule is similarly a combination of the $\<setlocal>$ and $\<get
     \inferrule*[right=\defrule{Get-Local}]{ %% get_local
         C_{\text{local}}(i) = t \and
         l(i) = \ti{t}{a} \and
-        a_2 \text{is fresh}
+        a_2 \not\in \phi
     }
     {
         C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2},(= a_2 \; a)
@@ -445,7 +502,7 @@ Thus, the typing rule is similarly a combination of the $\<setlocal>$ and $\<get
     \inferrule*[right=\defrule{Tee-Local}]{ %% tee_local
         C_{\text{local}}(i) = t \and
         l_2 = l_1[i := \ti{t}{a}] \and
-        a_2 \text{is fresh}
+        a_2 \not\in \phi
     }
     {
         C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a_2};l_2;\phi,\ti{t}{a_2},(= a_2 \; a)
@@ -455,12 +512,12 @@ Thus, the typing rule is similarly a combination of the $\<setlocal>$ and $\<get
 Instructions for getting and setting globals produce and consume unconstrained values respectively.
 Global variables are difficult to reason about in the type system since they are different between modules.
 At compile-time, before linking, a module has no information about globals from another module which would be necessary for reasoning about the types of functions imported from the other module.
-Therefore, we do not track index variables for globals.
-We do still ensure that the value is of the correct type and in the case of setting a global variable that the global variable is mutable (has the ``mut'' flag in its type).
+Therefore, we do not track index variables for globals (we just treat them as unconstrained values when they are introduced onto the stack by \<getglobal>).
+We do still statically ensure the same properties as \wasm: that the value is of the correct \wasm type and in the case of setting a global variable that the global variable is mutable (has the $mut$ flag in its type).
 \begin{mathpar}
     \inferrule*[right=\defrule{Get-Global}]{ %% get_global
         C_\text{global}(i) = \text{mut}^{?}\; t \and
-        a \text{ is fresh}
+        a \not\in \phi
     }
     {
         C \vdash \<getglobal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a}
@@ -475,16 +532,15 @@ We do still ensure that the value is of the correct type and in the case of sett
 \end{mathpar}
 
 The typing rules for memory instructions are very similar to \wasm as we do not reason about the contents of memory or how its size can change throughout a program.
-As in \wasm, there are many small details related to how exactly values are loaded and store that are not particularly important to the understanding of the type system, but they are explained with the reduction rules for these values in \autoref{sec:wasmsemantics}.
+As in \wasm, there are many small details related to how exactly values are loaded and stored that are not particularly important to the understanding of the type system, but they are explained with the reduction rules for these values in \autoref{sec:wasmsemantics}.
 One thing that does not appear in the \wasm reduction rules but mysteriously appears in the typing rules without much explanation is $align$.
-According to the \wasm paper, $align$ is an ``alignment exponent''.
 It is checked against the size of the type of the value being stored/loaded $|t|$ (or optionally $|tp|$, which should be less than $|t|$) in the premise $2^{align} \leq (|tp| <)^{?} |t|$.
 
 \begin{mathpar}
     \inferrule*[right=\defrule{Mem-Load}]{ %% memory load
         C_\text{memory} = n \and
         2^{align} \leq (|tp| <)^{?} |t| \and
-        a_2 \text{ is fresh}
+        a_2 \not\in \phi
     }
     {
         C \vdash t.\<load> (tp\_sx)^{?}\; align\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
@@ -500,7 +556,7 @@ It is checked against the size of the type of the value being stored/loaded $|t|
 
     \inferrule*[right=\defrule{Current-Memory}]{ %% current mem
         C_\text{memory} = n \and
-        a \text{ is fresh}
+        a \not\in \phi
     }
     {
         C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi,\ti{\<ithreetwo>}{a}
@@ -508,7 +564,7 @@ It is checked against the size of the type of the value being stored/loaded $|t|
 
     \inferrule*[right=\defrule{Grow-Memory}]{ %% grow mem
         C_\text{memory} = n \and
-        a_2 \text{ is fresh}
+        a_2 \not\in \phi
     }
     {
         C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi,\ti{\<ithreetwo>}{a_2}
@@ -516,7 +572,7 @@ It is checked against the size of the type of the value being stored/loaded $|t|
 \end{mathpar}
 
 The last rules are the ones that can be used to compose sequences of instructions.
-The first rule is for the empty instruction sequence $\epsilon$, which, similar to in \wasm, simply has the same precondition and postcondition $\epsilon;l;\phi$.
+The first rule is for the empty instruction sequence $\epsilon$, which, similar to \wasm, simply has the same precondition and postcondition $\epsilon;l;\phi$.
 Second, we have \refrule{Stack-Poly} to add stack polymorphism (see \autoref{subsec:stackpoly}).
 Third, there is a rule to compose a sequence of instructions $e_1^{*}$ with another instruction $e_2$.
 \begin{mathpar}
@@ -556,7 +612,7 @@ If $\phi_1 \implies \phi_2$, then we consider $\phi_1$ to be stronger than $\phi
 This solves the aforementioned problem because we can weaken ``x is greater than 10'' to ``x is greater than 0'' (or equivalently strengthen ``x is greater than 0'' to ``x is greater than 10'').
 
 To fit strengthening and weakening into the type system, we define a subtyping judgment based on implication.
-The \refrule{Implies} says that if an indexed function type $tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $tfi_2$, and is otherwise equivalent, then $tfi_1$ is a subtype of $tfi_2$ since it can safely be used in place of $tfi_2$.
+The \refrule{Implies} says that if an indexed function type $\tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $\tfi_2$, and is otherwise equivalent, then $\tfi_1$ is a subtype of $\tfi_2$ since it can safely be used in place of $\tfi_2$.
 
 \begin{mathpar}
     \inferrule*[right=\defrule{Implies}]{
@@ -580,8 +636,8 @@ We then use this in the \name type system by adding a typing rule that allows th
 
 \subsection{Using Types for Check Elimination}
 \label{subsec:checkelim}
-In Section \ref{sec:newinstructions} we explained why \prechk-tagged instructions do not need dynamic checks because of their static guarantees of the \name type system.
-Now, we will see how the \name type system provides those guarantees by looking at the typing rules for each of the \prechk-tagged instructions.
+In Section \ref{sec:newinstructions} we explained that \prechk-tagged instructions do not need dynamic checks because of the static guarantees of the \name type system.
+Here, we see how the \name type system provides those guarantees by looking at the typing rules for each of the \prechk-tagged instructions.
 
 Integer division simply requires that the second argument is non-zero.
 The premise $\phi \implies \neg(=\ a_2\ 0)$ requires that the index constraints satisfy the proposition $a_2 \neq 0$ for the pre-checked instruction to be safe.
@@ -595,13 +651,13 @@ As an aside, recall that $a_3 \not\in \phi$ ensures that $a_3$ is fresh.
         C \vdash t.\<divpc> :
         {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
-            \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(div\;a_1\;a_2))
+            \\ \rightarrow \ti{t}{a_3};l;\phi,\ti{t}{a_3},(= a_3\;(\|div\|\;a_1\;a_2))
         \end{stackTL}}
     }
 \end{mathpar}
 
 Tagging memory loads and stores with \prechk requires ensuring that the memory index is valid.
-Since \wasm and \name use linear memory which is a contiguous block of memory, we simply have to ensure that the index is within those bounds.
+Since \wasm and \name use linear memory, which is a contiguous block of memory, we simply have to ensure that the index is within those bounds.
 The initial memory size is the number of $64$ Ki pages ($65,536$ bytes), so we check that the constraints in the index type context ensure that the memory index plus the static offset is between $0$ and $65,536-width$.
 We use $width$ as a shorthand to denote the number of bytes that is being stored/loaded, it is equal to $|t|/8$ if $tp^{?}=\epsilon$, and otherwise equal to $|tp|/8$.
 
@@ -642,19 +698,19 @@ Therefore, we just use the initial memory size.
 
 Indirect function calls in \wasm require a dynamic check to ensure that the index into the table points to a function of a suitable type (recall the explanation of tables and \<callindirect> from \autoref{sec:wasmsemantics}).
 Proving the safety of an indirect function call involves showing that every possible function that could be called will not cause a run-time type error.
-We ensure this by requiring that the type of every function at every possible index value has a subtype of the expected type: $\forall i. (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor tfis(i) <: tfi$ where $tfis=(tfi_2 ...)$.
-The $\forall$ and $\lor$ in this case are at the meta level and not within the index language.
+We ensure this by requiring that the type of every function at every possible index value has a subtype of the expected type: $\forall 0 < i \leq n. (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor \tfi s(i) <: \tfi$ where $\tfi s=(\tfi_2 ...)$.
+The $\forall$ and $\lor$ (as in $(\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor\; \tfi s(i) <: \tfi$) in this case are at the meta level and not within the index language.
 Further, we must show that the provided table index is within the table boundaries: $\phi \implies (\<gt>\; n\; a) \land (\<le> \ti{\<ithreetwo>}{0}\; a)$.
 \begin{mathpar}
     \inferrule*[right=\defrule{Call-Indirect-Prechk}]{ %% call_indirect
-        C_{table}(i) = (n, (tfi_2 ...)) \\
-        \phi \implies (\<gt>\; n\; a) \land (\<le> \ti{\<ithreetwo>}{0}\; a) \and
-        tfis=(tfi_2 ...) \\
-        tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
-        \forall i.\; (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor\; tfis(i) <: tfi
+        C_{table}(i) = (n, (\tfi_2 ...)) \\
+        \phi \implies (\<gt>\; n\; a) \land (\<le> \ti{\<ithreetwo>}{0}\; a) \\
+        \mathit{tfis}=(\tfi_2 ...) \\
+        \tfi = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+        \forall 0 < i \leq n.\; (\phi \implies \neg (= \ti{\<ithreetwo>}{i}\; a)) \lor\; \mathit{tfis}(i) <: \tfi
     }
     {
-        C \vdash \<callindirectpc> tfi :
+        C \vdash \<callindirectpc> \tfi :
         {\begin{stackTL}
             ti_1^{*}\;\ti{i32}{a};l;\phi_1
             \\ \rightarrow ti_2^{*};l;\phi_1,\phi_2
@@ -663,59 +719,190 @@ Further, we must show that the provided table index is within the table boundari
 \end{mathpar}
 
 \paragraph{An Example of Using Types for Check Elimination}
-Here we present a short contrived example of using types for check elimination.
+Here we present a short contrived example of using types for check elimination, based on the example from \autoref{fig:prechkexample}.
 We are typechecking a $\<divpc>$.
-First, we give the module type context $C_1$, which contains one local variable, which is an $\<ithreetwo>$, and the instruction sequence we are typing, which is a safe division happening inside of a block (\autoref{fig:exampleprechk}).
-The block takes two integers, and, using the local as temporary storage, either divides the first by the second, or the first by 1 if the second is 0.
-The type of the block has an empty index type context $\circ$ because it requires no information to typecheck.
-In the example we write the postcondition type of every instruction
-in the line below the instruction (for space reasons), offset to the right.
-Note that we omit type declarations in the index type context here for brevity.
+First, we give the module type context $C_1$, which contains one local variable, which is an $\<ithreetwo>$, and the instruction sequence we are typing, which is a safe division happening inside of a block (\autoref{fig:prechkexample}).
+We also use the shorthand $C_2$ for $C_1$ extended with the label postcondition for the instructions inside the block.
 
-Typingchecking the example relies on $\<select>$, where the second argument $(\<ithreetwo>.\<const> 1)$ is chosen if the first argument (and the conditional) $\<getlocal> 0$ is equal to zero.
-Once we reach $\<select>$, the precondition index type context will be $(\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5}\;{\<ithreetwo>}{a_6};\ti{\<ithreetwo>}{a_2});\circ,(= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1})$.
-Then, after select, we have $(\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_7};\ti{\<ithreetwo>}{a_2});\circ,(= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1}), (\text{if }(= a_6\; \ti{\<ithreetwo>}{0})\;(= a_7 a_5) (= a_7 a_4))$.
-We know $(= a_4 a_6)$ since $(= a_4 a_2)$ and $(= a_6 a_2)$.
-Since $(= a_4\; a_6)$, if $(= a_6\; \ti{\<ithreetwo>}{0})$ we choose $a_5$ which is 1, else we choose $a_4$, which must not be 0.
-Thus, $\circ,(= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1}), (\text{if }(= a_6\; \ti{\<ithreetwo>}{0})\;(= a_7\; a_5) (= a_7\;a_4)) \implies \neg(= a_7\; \ti{\<ithreetwo>}{0})$.
-
-\begin{figure}
-    $C_1 = \{ {\begin{stackTL}
+\begin{math}
+    \begin{array}{rcl}
+        C_1 &=& \{ {\begin{stackTL}
         \text{func } \epsilon, \text{ global } \epsilon, \text{ table } \epsilon, \text{ memory } \epsilon,
-        \\ \text{local } \<ithreetwo>, \text{ label } \epsilon, \text{ return } \epsilon
-        \end{stackTL}} \}$
+        \\ \text{local } \<ithreetwo>, \text{ label } \epsilon, \text{ return } \epsilon\}
+        \end{stackTL}} \\
 
-    $e^{*} = \<block>\;
-    {\begin{stackTL}
-        (\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\circ \rightarrow \ti{\<ithreetwo>}{a_0};\ti{\<ithreetwo>}{a_2};\circ)
-        \\ (\<teelocal> 0)
-        \\ \hfill {\begin{stackTL}
-            \ti{\<ithreetwo>}{a_0}\;\ti{\<ithreetwo>}{a_4};
-            \\\ti{\<ithreetwo>}{a_2};
-            \\(= a_4\;a_2)
-        \end{stackTL}}
-        \\ (\<ithreetwo>.\<const> 1)
-        \\ \hfill \ti{\<ithreetwo>}{a_0}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5};\ti{\<ithreetwo>}{a_2};(= a_4\;a_2),(= a_5\;\ti{\<ithreetwo>}{1})
-        \\ (\<getlocal> 0)
-        \\ \hfill {\begin{stackTL}
-            \ti{\<ithreetwo>}{a_0}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5}\;\ti{\<ithreetwo>}{a_6};
-            \\ \ti{\<ithreetwo>}{a_2};
-            \\ (= a_4\;a_2),(= a_5\;\ti{\<ithreetwo>}{1}),(= a_6\; a_2)
+        C_2 &=& \{ {\begin{stackTL}
+        \text{func } \epsilon, \text{ global } \epsilon, \text{ table } \epsilon, \text{ memory } \epsilon,
+        \\ \text{local } \<ithreetwo>, \text{ label } (\ti{\<ithreetwo>}{a_0};\ti{\<ithreetwo>}{a_2};\circ), \text{ return } \epsilon\}
+        \end{stackTL}} \\
+    \end{array}
+\end{math}
+
+The block takes two integers, and, using the local as temporary storage, either divides the first by the second, or the first by 1 if the second is 0.
+In the example we build up type derivations to reach a typing derivation for the whole block.
+We first state the rule that we will use, than give the derivation (in many cases we apply \refrule{Stack-Poly} inline for brevity).
+Typechecking the example relies on $\<select>$, where the second argument $(\<ithreetwo>.\<const> 1)$ is chosen if the first argument (and the conditional) $\<getlocal> 0$ is equal to zero, so the result must be non-zero.
+
+\begin{enumerate}
+    \item \refrule{Tee-Local} and \refrule{Stack-Poly}
+
+        Note that $\phi_1 = \circ,\ti{\<ithreetwo>}{a_1},\ti{\<ithreetwo>}{a_2}$, and $\phi_2 = \phi_1,(\<ithreetwo>\; a_4),(= a_4\; a_2)$.
+        $$\infer{
+            C_{2\text{local}}(0)=\<ithreetwo> \\
+            \ti{\<ithreetwo>}{a_2} = \ti{\<ithreetwo>}{a_3}[0 := \ti{\<ithreetwo>}{a_2}] \\
+            a_4 \not\in \phi_1 \\
+        }{
+            C_2 \vdash \<teelocal> 0 :
+            {\begin{stackTL}
+                \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\phi_1
+                \\ \rightarrow \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4};\ti{\<ithreetwo>}{a_2};\phi_2
             \end{stackTL}}
-        \\ (\<select>)
-        \\ \hfill {\begin{stackTL}
-            (\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_7};
-            \\\ti{\<ithreetwo>}{a_2});
-            \\ (= a_4\; a_6), (= a_5\; \ti{\<ithreetwo>}{1}),
-            \\ (\text{if }(= a_6\; \ti{\<ithreetwo>}{0})\;(= a_7\;a_5) (= a_7\;a_4))
-        \end{stackTL}}
-        \\ (\<ithreetwo>.\<divpc>)
-    \end{stackTL}} \\
-    \<nsend>$
+        }$$
 
-    \caption{\name Example of Typechecking a Prechk Instruction}
-    \label{fig:exampleprechk}
-\end{figure}
+    \item \refrule{Const} and \refrule{Stack-Poly}
+
+        Note that $\phi_3 = \phi_2,(= a_4\; a_2),(\<ithreetwo>\; a_5),(= a_5\;\ti{\<ithreetwo>}{1})$.
+        $$\infer{
+            a_5 \not\in \phi_2 \\
+        }{
+            C_2 \vdash \<ithreetwo>.\<const> 1 :
+            {\begin{stackTL}
+                \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4};\ti{\<ithreetwo>}{a_2};\phi_2
+                \\ \rightarrow \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5};\ti{\<ithreetwo>}{a_2};\phi_3
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Composition}
+        $$\infer{
+            1. \\ 2.
+        }{
+            C_2\;
+            {\begin{stackTL}
+                \vdash (\<teelocal> 0)\; (\<ithreetwo>.\<const> 1)
+                \\ :
+                {\begin{stackTL}
+                    \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\phi_1
+                    \\ \rightarrow \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5};\ti{\<ithreetwo>}{a_2};\phi_3
+                \end{stackTL}}
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Get-Local} and \refrule{Stack-Poly}
+
+        Note that $\phi_4 = \phi_3,(\<ithreetwo>\; a_6),(= a_6\;a_2)$.
+        $$\infer{
+            a_6 \not\in \phi_3 \\
+        }{
+            C_2 \vdash \<getlocal> 0 :
+            {\begin{stackTL}
+                \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5};\ti{\<ithreetwo>}{a_2};\phi_3
+                \\ \rightarrow \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5}\;\ti{\<ithreetwo>}{a_6};\ti{\<ithreetwo>}{a_2};\phi_4
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Composition}
+
+        Note that $\phi_4 = \phi_3,(\<ithreetwo>\; a_6),(= a_6\;a_2)$.
+        $$\infer{
+            3. \\ 4.
+        }{
+            C_2\;
+            {\begin{stackTL}
+                \vdash (\<teelocal> 0)\; (\<ithreetwo>.\<const> 1)\; (\<getlocal> 0)
+                \\ :
+                {\begin{stackTL}
+                    \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\phi_1
+                    \\ \rightarrow \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5}\;\ti{\<ithreetwo>}{a_6};\ti{\<ithreetwo>}{a_2};\phi_4
+                \end{stackTL}}
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Select} and \refrule{Stack-Poly}
+
+        Note that $\phi_5 = \phi_4,(\<ithreetwo>\; a_7),(\text{if }(= a_6\; \ti{\<ithreetwo>}{0})\;(= a_7\;a_5) (= a_7\;a_4))$.
+        $$\infer{
+            a_7 \not\in \phi_5
+        }{
+            C_2\;
+            {\begin{stackTL}
+                \vdash \<select>
+                \\ :
+                {\begin{stackTL}
+                    \rightarrow \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_4}\;\ti{\<ithreetwo>}{a_5}\;\ti{\<ithreetwo>}{a_6};\ti{\<ithreetwo>}{a_2};\phi_4
+                    \\ \rightarrow (\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_7};\ti{\<ithreetwo>}{a_2};\phi_5
+                \end{stackTL}}
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Composition}
+
+        $$\infer{
+            5. \\ 6.
+        }{
+            C_2\;
+            {\begin{stackTL}
+                \vdash (\<teelocal> 0)\; (\<ithreetwo>.\<const> 1)\; (\<getlocal> 0)\; (\<select>)
+                \\ :
+                {\begin{stackTL}
+                    \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\phi_1
+                    \\ \rightarrow (\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_7};\ti{\<ithreetwo>}{a_2};\phi_5
+                \end{stackTL}}
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Div-Prechk}
+
+        Note that $\phi_5 = \phi_5,(\<ithreetwo>\; a_8),(= a_8 (\|\<div>\|\; a_1\; a_7))$.
+        $$\infer{
+            \phi_5 \implies \neg(= a_7\; 0) \\ a_8 \not\in \phi_5
+        }{
+            C_2\;
+            {\begin{stackTL}
+                \vdash (\<ithreetwo>.\<divpc>)
+                \\ :
+                {\begin{stackTL}
+                    (\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_7};\ti{\<ithreetwo>}{a_2};\phi_5
+                    \\ \rightarrow \ti{\<ithreetwo>}{a_8};\ti{\<ithreetwo>}{a_2};\phi_6
+                \end{stackTL}}
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Composition}
+
+        $$\infer{
+            7. \\ 8.
+        }{
+            C_2\;
+            {\begin{stackTL}
+                \vdash (\<teelocal> 0)\; (\<ithreetwo>.\<const> 1)\; (\<getlocal> 0)\; (\<select>)\; (\<ithreetwo>.\<divpc>)
+                \\ :
+                {\begin{stackTL}
+                    \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\phi_1
+                    \\ \rightarrow \ti{\<ithreetwo>}{a_8};\ti{\<ithreetwo>}{a_2};\phi_6
+                \end{stackTL}}
+            \end{stackTL}}
+        }$$
+
+    \item \refrule{Block}
+
+    $$\infer{9.}{
+        C_1 \vdash\;
+        {\begin{stackTL}
+            \<block>\;
+            {\begin{stackTL}\ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\phi_1
+                \\ \rightarrow \ti{\<ithreetwo>}{a_8};\ti{\<ithreetwo>}{a_2};\phi_6
+            \end{stackTL}} \\
+            \quad{\begin{stackTL}
+                (\<teelocal> 0)
+                \\ (\<ithreetwo>.\<const> 1)
+                \\ (\<getlocal> 0)
+                \\ (\<select>)
+                \\ (\<ithreetwo>.\<div>)
+            \end{stackTL}}
+            \\ \<nsend> : \ti{\<ithreetwo>}{a_1}\;\ti{\<ithreetwo>}{a_2};\ti{\<ithreetwo>}{a_3};\phi_1
+            \\ \rightarrow \ti{\<ithreetwo>}{a_8};\ti{\<ithreetwo>}{a_2};\phi_6
+        \end{stackTL}}}$$
+\end{enumerate}
 
 \subsection{Module Types}
 The complete module typing rules are in Figure \ref{fig:modulerules} (note that $im$ is an import and $ex$ is an export).
@@ -736,16 +923,16 @@ Globals, $glob$, are typechecked under the module index context containing only 
 \begin{figure}
     \begin{mathpar}
         \inferrule*[right=\defrule{Func}]{ %% local function
-            tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
+            \tfi = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
             C_2 = C,\text{local } t_1^{*}\;t^{*},\text{label } (ti_2^{*};l_2;\phi_2),\text{return } (ti_2^{*},l_2,\phi_2) \\
             C_2 \vdash e^{*} : \epsilon ;\ti{t_1}{a_1}^{*}\;\ti{t}{a_2}^{*};\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
         } {
-            C \vdash ex^{*}\; \<func> tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; tfi
+            C \vdash ex^{*}\; \<func> \tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; \tfi
         } \and
 
         \inferrule*[]{ %% imported function
         } {
-            C \vdash ex^{*}\; \<func> tfi\; im : ex^{*}\; tfi
+            C \vdash ex^{*}\; \<func> \tfi\; im : ex^{*}\; \tfi
         } \\
 
         \inferrule*[]{ %% local global
@@ -763,14 +950,14 @@ Globals, $glob$, are typechecked under the module index context containing only 
         } \and
 
         \inferrule*[right=\defrule{Table}]{ %% local table
-            (C_{\text{func}}(i) = tfi)^n
+            (C_{\text{func}}(i) = \tfi)^n
         } {
-            C \vdash ex^{*}\; \<table> n\; i^n : ex^{*}\; (n,tfi^n)
+            C \vdash ex^{*}\; \<table> n\; i^n : ex^{*}\; (n,\tfi^n)
         } \and
 
         \inferrule*[]{ %% imported table
         } {
-            C \vdash ex^{*}\; \<table> (n,tfi^n)\; im : ex^{*}\; (n,tfi^n)
+            C \vdash ex^{*}\; \<table> (n,\tfi^n)\; im : ex^{*}\; (n,\tfi^n)
         } \and
 
         \inferrule*[]{ %% local memory
@@ -784,13 +971,13 @@ Globals, $glob$, are typechecked under the module index context containing only 
         }
 
         \inferrule*[]{ %% module
-            (C\vdash f : ex_f^{*}\; tfi)^{*} \and
+            (C\vdash f : ex_f^{*}\; \tfi)^{*} \and
             (C_i \vdash glob_i : ex_g^{*}\; tg_i)^{*} \\
-            (C \vdash tab : ex_t^{*}\; (n,tfi^n))^{?} \and
+            (C \vdash tab : ex_t^{*}\; (n,\tfi^n))^{?} \and
             (C \vdash mem : ex_m^{*}\; n)^{?} \\
             (C_i=\{\text{global } tg^{i-1}\})_i^{*} \and
             ex_f^{*\;*}\; ex_g^{*\;*}\; ex_t^{*\;?}\; ex_m^{*\;?} \text{ distinct} \\
-            C = \{\text{func } tfi^{*}, \text{global } tg^{*}, \text{table } (n,tfi^n)^{?}, \text{memory } n^{?}\}
+            C = \{\text{func } \tfi^{*}, \text{global } tg^{*}, \text{table } (n,\tfi^n)^{?}, \text{memory } n^{?}\}
         } {
             \vdash \<module> f^{*}\; glob^{*}\; tab^{?}\; mem^{?}
         }

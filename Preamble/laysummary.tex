@@ -1,8 +1,10 @@
 \chapter{Lay Summary}
-Downloading and running programs from unknown sources is very unsafe, but also very common.
-These untrusted programs usually require extra work to run safely.
+Downloading and running programs from unknown sources is very unsafe (they can potentially do anything, like blow up your computer), but also very common.
+These programs usually require extra work by the browser to run safely, which potentially make them slower and less efficient.
 JavaScript, the programming language that is most common for websites, is notoriously unsafe and slow, so we want to have an alternate language that is faster and safer.
+WebAssembly is one such language, that is supported by many browsers and designed to be faster than JavaScript (by allowing lower-level access to raw bits), and has many mechanisms in place to prevent reading secret data or taking over control of the browser it is executing inside.
+Unfortunately, these mechanisms may be unnecessary and therefore cause programs to be slower.
 
-We have designed a programming language, \name, that is meant to be safe without requiring extra work, potentially making it faster as well as safe.
-\name is built on top of WebAssembly, the only other programming language designed to run in browsers, that is supported by all of the major browsers (Firefox, Chrome, Edge, and Safari).
-We contribute the design of \name, as well as a reference implementation, and prove that \name is in fact safe.
+We have designed a programming language, \name, that is meant to be as safe as WebAssembly without requiring as much extra work by the browser, potentially making it faster.
+\name is built on top of WebAssembly, the only other programming language both designed to run in browsers and supported by all of the major browsers (Firefox, Chrome, Edge, and Safari).
+We contribute the design of \name, as well as a reference implementation, and prove that \name is in fact as safe as WebAssembly.

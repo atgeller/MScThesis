@@ -451,6 +451,12 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
     By case analysis on the reduction rules.
 
     \begin{itemize}
+        \item $S;C \vdash L^0[\<trap>] : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \\ $\land$ $L^0[\<trap>] \hookrightarrow \<trap>$
+
+            This case is trivial since $\<trap>$ accepts any precondition and postcondition.
+            Thus, $S;C\vdash \<trap> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Trap}.
+
         %% Binop -> const
         \item $S;C \vdash (t.\<const> c_1)\; (t.\<const> c_2)\; t.binop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
         \\ $\land$ $(t.\<const> c_1)\; (t.\<const> c_2)\; t.binop \hookrightarrow t.\<const> c$ where $c=binop(c_1,c_2)$
@@ -660,9 +666,13 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             First, we show the type of the body.
 
-            We have $S;C,\text{label}(t_4^{m};l_2;\phi_4) \vdash (t.\<const> c)^n : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n$ by \refrule{Const}.
+            We have $$S;C,\text{label}(t_4^{m};l_2;\phi_4) \vdash
+            {\begin{stackTL}
+                (t.\<const> c)^n : \epsilon;l_1;\phi_1
+                \\ \rightarrow \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n
+            \end{stackTL}}$$ by \refrule{Const}.
 
-            Then, since $\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \implies \phi_3$, we have $S;C,\text{label}(t_3^{n};l_1;\phi_3) \vdash (t.\<const> c)^n : \epsilon;l_1;\phi_1 \rightarrow \\ \ti{t}{a}^n;l_1;\phi_3$ by \refrule{Subtyping}.
+            Then, since $\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \implies \phi_3$, we have $$S;C,\text{label}(t_3^{n};l_1;\phi_3) \vdash (t.\<const> c)^n : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^n;l_1;\phi_3$$ by \refrule{Subtyping}.
 
             Recall we have $S;C,\text{label}(t_4^{m};l_2;\phi_4) \vdash e^{*} : \ti{t}{a}^n;l_1;\phi_3 \rightarrow ti_4^m;l_2;\phi_4$.
 
@@ -678,16 +688,27 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
             Finally, since $\phi_4 \implies \phi_2$, $S;C \vdash \<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_1^{*}\; ti_4^m;l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
         %% loop
-        \item Case: $S;C \vdash (t.\<const> c)^n \; \<loop> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-        \\ $\land$ $(t.\<const> c)^n \; \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \hookrightarrow \<label>_n \{ \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \} \; (t.\<const> c)^n \; e^{*} \<end>$
+        \item Case: $S;C \vdash (t.\<const> c)^n \; \<loop>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \\ $\land$ ${\begin{stackTL}(t.\<const> c)^n \; \<loop>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end>
+            \\ \hookrightarrow \<label>_n \{ \<loop>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \} \; (t.\<const> c)^n \; e^{*} \<end> \end{stackTL}}$
 
-            We want to show that $\<label>_n \{ \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+            We want to show that $\<label>_n\;
+            {\begin{stackTL}
+                \{ \<loop>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \}
+                \\ (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+            \end{stackTL}}$
 
             This rule is similar to the above one, except that we must reason a little more about the stored instructions since we are storing the loop.
 
             We start by figuring out what $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ looks like.
 
-            We know $S;C \vdash \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> : ti_1^{*}\; \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \rightarrow ti_2^{*};l_2;\phi_2$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
+            We know
+            $$S;C\;
+            {\begin{stackTL}
+                \vdash \<loop>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end>
+                \\ : ti_1^{*}\; \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \rightarrow ti_2^{*};l_2;\phi_2
+            \end{stackTL}}$$
+            by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
 
             By \reflemma{Inversion} on \refrule{Loop}, $l_1=l_3$ and $l_2=l_4$.
             We will use $l_1,l_2$ in place of $l_3,l_4$, respectively, for the remainder of the case.
@@ -696,11 +717,16 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Also, $\ti{t}{a}^n=ti_3^n$, $ti_2^{*}=ti_1^{*}\; ti_4^m$, $\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \implies \phi_3$, and $\phi_4 \implies \phi_2$ by \reflemma{Inversion} on \refrule{Loop}.
 
-            Now we have all the information we need to show that $\<label>_n \{ \<loop> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+            Now we have all the information we need to show that
+            $$S;C\;
+            {\begin{stackTL}
+                \vdash \<label>_n \{ \<loop>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e^{*} \<end> \} \; (t.\<const> c)^n \; e^{*} \<end>
+                \\ : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
+            \end{stackTL}}$$
 
             We have $S;C,\text{label}(t_3^{n};l_1;\phi_3) \vdash (t.\<const> c)^n : \epsilon;l_1;\phi_1 \rightarrow \\ \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n$ by \refrule{Const}.
 
-            Then, since $\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \implies \phi_3$, we have $S;C,\text{label}(t_3^{n};l_1;\phi_3) \vdash (t.\<const> c)^n : \epsilon;l_1;\phi_1 \rightarrow \\ \ti{t}{a}^n;l_1;\phi_3$ by \refrule{Subtyping}.
+            Then, since $\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \implies \phi_3$, we have $$S;C,\text{label}(t_3^{n};l_1;\phi_3) \vdash (t.\<const> c)^n : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a}^n;l_1;\phi_3$$ by \refrule{Subtyping}.
 
             Recall that $S;C,\text{label}(t_3^{n};l_1;\phi_3) \vdash e^{*} : ti_1^n;l_1;\phi_3 \rightarrow ti_2^m;l_1;\phi_4$.
 
@@ -708,35 +734,45 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             We have the type we want from the body.
             Now we get the type we want of the stored instructions, which in this case is the loop.
-            Since we already have the necessary type information of the body, we then have that $S;C \vdash \<loop> tfi \; e^{*} \<end> : \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \rightarrow ti_4^{m};l_2;\phi_4$ by \refrule{Loop}.
+            Since we already have the necessary type information of the body, we then have that $S;C \vdash \<loop>\; tfi \; e^{*} \<end> : \ti{t}{a}^n;l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{c})^n \rightarrow ti_4^{m};l_2;\phi_4$ by \refrule{Loop}.
 
-            Therefore, $S;C \vdash \<label>_m \{ \<loop> tfi \; e^{*} \<end> \} \; v^n \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti_4^m;l_2;\phi_4$ by \refrule{Label}.
+            Therefore, $S;C \vdash \<label>_m \{ \<loop>\; tfi \; e^{*} \<end> \} \; v^n \; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow ti_4^m;l_2;\phi_4$ by \refrule{Label}.
 
             Finally, since $\phi_4 \implies \phi_2$, $S;C \vdash \<label>_m \{ \epsilon \} \; (t.\<const> c)^n \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
-        \item Case: $S;C \vdash (\<ithreetwo>.\<const> 0) \; \<if> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-        \\ $\land$ $(\<ithreetwo>.\<const> 0) \; \<if> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_2^{*} \<end>$
+        \item Case: $S;C \vdash (\<ithreetwo>.\<const> 0) \; \<if>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \\ $\land$ ${\begin{stackTL}
+            (\<ithreetwo>.\<const> 0) \; \<if>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end>
+            \\ \hookrightarrow \<block>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_2^{*} \<end>
+        \end{stackTL}}$
 
-            We want to show that $\<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+            We want to show that $$\<block>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$$
 
             First, we reason about $ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-            We know $S;C \vdash \<if> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*}\; \ti{t}{a};l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{0})^n \rightarrow ti_2^{*};l_2;\phi_2$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
+            We know $$S;C
+            {\begin{stackTL}
+                \vdash \<if>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end>
+                \\ : ti_1^{*}\; \ti{t}{a};l_1;\phi_1,\ti{t}{a}^n,(= a \; \ti{t}{0})^n \rightarrow ti_2^{*};l_2;\phi_2
+            \end{stackTL}}$$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
 
             Then, we have $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e_2^{*} : ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4$ because it is a premise of \refrule{If} which we have assumed to hold.
 
             By \reflemma{Inversion} on \refrule{If}, $ti_1^{*}=ti_0^{*}\; ti_3^{n}$ and $ti_2^{*}=ti_0^{*} \; ti_4^{m}$ for some $ti_0^{*}$, $l_1=l_3$, $l_2=l_4$, $\phi_1,\ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{0}) \implies \phi_3$, and $\phi_4 \implies \phi_2$.
 
-            Now, we show that $\<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+            Now, we show that $\<block>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
 
-            $S;C \vdash \<block> ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4 \; e_2^{*} \<end>$ by \refrule{Block}.
+            $S;C \vdash \<block>\; ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4 \; e_2^{*} \<end>$ by \refrule{Block}.
 
             Since $a$ is fresh after reduction, $\phi_1 \implies \phi_1,\ti{\<ithreetwo>}{a},(= a\; \ti{\<ithreetwo>}{0})$ by $\implies$.
 
-            Therefore, $S;C \vdash \<block> ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4\; e_2^{*} \<end> : \\ ti_0^{*}\; ti_3^n;l_1;\phi_1,\ti{t}{a},(= a\; \ti{\<ithreetwo>}{0}) \rightarrow s\; ti_0^{*}\;ti_4^m;l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
+            Therefore, $S;C \vdash \<block>\; ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4\; e_2^{*} \<end> : \\ ti_0^{*}\; ti_3^n;l_1;\phi_1,\ti{t}{a},(= a\; \ti{\<ithreetwo>}{0}) \rightarrow s\; ti_0^{*}\;ti_4^m;l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
-        \item Case: $S;C \vdash (\<ithreetwo>.\<const> k+1) \; \<if> (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
-        \\ $\land$ $(\<ithreetwo>.\<const> k+1) \; \<if> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end> \hookrightarrow \<block> ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end>$
+        \item Case: $S;C\;{\begin{stackTL}\vdash (\<ithreetwo>.\<const> k+1) \;{\begin{stackTL}\<if>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4) \; e_1^{*}\\ \<else> e_2^{*}\\ \<end>\end{stackTL}}\\ : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\end{stackTL}}$
+        \\ $\land$ ${\begin{stackTL}
+            (\<ithreetwo>.\<const> k+1) \; \<if>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<else> e_2^{*} \<end>
+            \\ \hookrightarrow \<block>\; ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4 \; e_1^{*} \<end>
+        \end{stackTL}}$
 
             This case is the same as above, except with $e_2$ instead of $e_1$ and $k+1$ instead of $0$.
 
@@ -814,9 +850,13 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             This case is similar in structure to the $(\<ithreetwo>.\<const> k+1)\;(\<brif> j)$ case.
 
-            We know $S;C \vdash \<brtable> j_1^k\; j\; j_2^{*} : ti_1^{*}\;\ti{\<ithreetwo>}{a};l_1;\phi_1,\ti{t}{a},(= a\; \ti{\<ithreetwo>}{k}) \rightarrow ti_2^{*};l_2;\phi_2$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
+            We know $$S;C \vdash \<brtable> j_1^k\; j\; j_2^{*} :
+            {\begin{stackTL}
+                ti_1^{*}\;\ti{\<ithreetwo>}{a};l_1;\phi_1,\ti{t}{a},(= a\; \ti{\<ithreetwo>}{k})
+                \\ rightarrow ti_2^{*};l_2;\phi_2
+            \end{stackTL}}$$ by \reflemma{Inversion} on \refrule{Composition} and \refrule{Const}.
 
-            Then we know $C_label(j)=(ti_3^{*};l_1;\phi_3)$, where $ti_1^{*}=ti_0^{*}\; ti_3^{*}$, $ti_2^{*} =ti_0^{*}\; ti_3^{*}$, and $\phi_1,\ti{t}{a},\neg(= a\; \ti{\<ithreetwo>}{0}) \implies \phi_3$ by \reflemma{Inversion} on \refrule{Br-Table}.
+            Then we know $C_\text{label}(j)=(ti_3^{*};l_1;\phi_3)$, where $ti_1^{*}=ti_0^{*}\; ti_3^{*}$, $ti_2^{*} =ti_0^{*}\; ti_3^{*}$, and $\phi_1,\ti{t}{a},\neg(= a\; \ti{\<ithreetwo>}{0}) \implies \phi_3$ by \reflemma{Inversion} on \refrule{Br-Table}.
 
             Now we can show that $S;C \vdash \<br> j : ti_0^{*}\;ti_3^{*};l_1;\phi_1 \rightarrow ti_0^{*}\;ti_3^{*};l_2;\phi_2$.
 
@@ -848,7 +888,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Thus, $S;C\vdash \<call> s_\text{func}(i,j) : ti_0^{*}\;ti_3^{*};l_1;\phi_1 \rightarrow ti_0^{*}\;ti_4^{*};l_2;\phi_2$ by \refrule{Stack-Poly} and \refrule{Subtyping}.
 
-        \item Case: $S;C \vdash (\<ithreetwo>.\<const> j)\; \<callindirect> ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
+        \item Case: $S;C\; {\begin{stackTL}\vdash (\<ithreetwo>.\<const> j)\; \<callindirect> ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 \\: ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\end{stackTL}}$
         \\ $\land$ $s;(\<ithreetwo>.\<const> j)\; \<callindirect> ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 \hookrightarrow_i \<call> s_\text{tab}(i,j)$ where $s_\text{tab}(i,j)_\text{code}=(\<func> tfi_0\; \<local>\; t^{*}\; e^{*})$ and $tfi_0 <: ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$
 
             We want to show that $\<call> s_\text{tab}(i,j) : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
@@ -875,7 +915,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
                 \{ i;v^n \; (t.\<const> 0)^k \}
                 \\ \<block>\;
                 {\begin{stackTL}
-                    (\epsilon;ti_3^{n}\;\ti{t}{a}^{n};\phi_3,\ti{t}{a}^k,(= a \;\ti{t}{0})^k \rightarrow ti_4^{m};l_4;\phi_4)
+                    ({\begin{stackTL}\epsilon;ti_3^{n}\;\ti{t}{a}^{n};\phi_3,\ti{t}{a}^k,(= a \;\ti{t}{0})^k \\\rightarrow ti_4^{m};l_4;\phi_4)\end{stackTL}}
                     \\ e^{*}
                 \end{stackTL}}
                 \\ \<nsend>
@@ -920,7 +960,7 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             We can now reconstruct the type after reduction.
 
-            $S;C,\text{local } t_2^n\; t^k,\text{return }(ti_4^{m};l_4;g_4;\phi_4) \vdash \; \<block> tfi_1\; e^{*} \<end> : tfi_1$ by \refrule{Block}.
+            $S;C,\text{local } t_2^n\; t^k,\text{return }(ti_4^{m};l_4;g_4;\phi_4) \vdash \; \<block>\; tfi_1\; e^{*} \<end> : tfi_1$ by \refrule{Block}.
 
             $\vdash v : \ti{t_2}{a_2} ;\circ,\ti{t_2}{a_2},(\<eq> a_2 \; \ti{t_2}{c}))^n$ by \refrule{Admin-Const}, and $(\vdash (t \<const> 0) : \ti{t}{a};\circ,\ti{t}{a},(\<eq> a \; \ti{t}{0}))^k$ by \refrule{Admin-Const}.
 
@@ -930,9 +970,9 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             Then, $S;(ti_4^{m};l_4;\phi_4)\; \vdash v^n \; (t \<const> 0)^k;\<block>\; tfi_2\; e^{*} \<end> :  ti_4^{m};l_4;\phi_2$ by \refrule{Subtyping}.
 
-            $S;C \vdash \<local>_m\{j;v^n \; (t.\<const> 0)^k\} \; \<block> tfi_2\; e^{*} \<end> \<end> : \epsilon;l_1;\phi_1 \rightarrow \epsilon\;ti_4^m;l_1;\phi_1,\phi_2$ by \refrule{Local}.
+            $S;C \vdash \<local>_m\{j;v^n \; (t.\<const> 0)^k\} \; \<block>\; tfi_2\; e^{*} \<end> \<end> : \epsilon;l_1;\phi_1 \rightarrow \epsilon\;ti_4^m;l_1;\phi_1,\phi_2$ by \refrule{Local}.
 
-            $S;C \vdash \<local>_m\{j;v^n \; (t.\<const> 0)^k\} \; \<block> tfi_2\; e^{*} \<end> \<end> : tfi_0$ by \refrule{Stack-Poly}.
+            $S;C \vdash \<local>_m\{j;v^n \; (t.\<const> 0)^k\} \; \<block>\; tfi_2\; e^{*} \<end> \<end> : tfi_0$ by \refrule{Stack-Poly}.
 
         \item Case: $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$
         \\ $\land$ $\<local>_n \{ i;v_l^{*} \} \; \<trap> \<end> \hookrightarrow \; \<trap>$
@@ -948,9 +988,9 @@ We show that if a sequence of instructions $e^{*}$ reduces to another sequence o
 
             First, we derive the type of $(t.\<const> c)^n$ from the precondition of $\<return>$.
 
-            By \reflemma{Inversion} on \refrule{Local}, $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
+            $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
             $S;(ti_3^n;l_2;\phi_3) \vdash_i v_l^{*};L^k[(t.\<const> c)^n \; \<return>] : ti_3^n;l_2;\phi_3$,
-            and $\phi_1,\phi_3 \implies \phi_2$.
+            and $\phi_1,\phi_3 \implies \phi_2$ by \reflemma{Inversion} on \refrule{Local}.
 
             $(\vdash v_l : ti_l;\phi_l)^{*}$ and $S;C_l \vdash L^k[(t.\<const> c)^n \; \<return>] : \epsilon;ti_l^{*};\phi_l^{*} \rightarrow ti^n;l_3;\phi_3$,
             where $C_l = S_\text{inst}(i),\text{local} \; t^{*}, \text{return} \; (ti^n;l_3;\phi_3)$,
