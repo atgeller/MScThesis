@@ -16,13 +16,13 @@ We typeset \name instructions in a \tbsf{blue sans serif font} and \wasm instruc
 
 In order to support embedding of both local and imported functions we need a syntactic way of extracting the type annotation from the function.
 
-\begin{definition}{\fbox{$annotation(f)=tfi$}}
+\begin{definition}{\fbox{$annotation(f)=\tfi$}}
     \begin{mathpar}
         \begin{array}{rcl}
-            annotation(ex^{*}\; \<func> tfi\; \<local>\; t^{*}\; e^{*})
-            &=& tfi\\
-            annotation(ex^{*}\; \<func> tfi\; im)
-            &=& tfi\\
+            annotation(ex^{*}\; \<func> \tfi\; \<local>\; t^{*}\; e^{*})
+            &=& \tfi\\
+            annotation(ex^{*}\; \<func> \tfi\; im)
+            &=& \tfi\\
         \end{array}
     \end{mathpar}
 \end{definition}
@@ -50,17 +50,17 @@ We explain how to embed tables $tab$ in \autoref{def:embed-t}, and functions $f$
 \end{definition}
 
 Tables in \name must also provide the indexed function types of all the functions they contain, so to embed them we must include those types.
-We do this by parameterizing the embedding of the table $tab$ with all of the function types $tfi^{*}$.
-Then, we retrieve the indexed function type $ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2$ of the function pointed to by the function index $i$ in $tfi^{*}$ for every function index $i$ in the table.
+We do this by parameterizing the embedding of the table $tab$ with all of the function types $\tfi^{*}$.
+Then, we retrieve the indexed function type $ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2$ of the function pointed to by the function index $i$ in $\tfi^{*}$ for every function index $i$ in the table.
 We cannot embed imported tables because we have no way of accessing the types of the functions included in the table.
 
-\begin{definition}{\fbox{$\embed[tab]{tab}^{tfi^{*}}=\mathbluesf{tab}$}}
+\begin{definition}{\fbox{$\embed[tab]{tab}^{\tfi^{*}}=\mathbluesf{tab}$}}
     \label{def:embed-t}
     \begin{mathpar}
         \begin{array}{rcl}
             embed_{tab}(ex^{*}\; \<wtable> n\; i^{n})
             &=& ex^{*}\; \<table> n\; (ti_1;\epsilon;\phi_1 \rightarrow ti_2;\epsilon;\phi_2)^{n} \\
-            && \text{where } \forall i. tfi^{*}(i) = ti_1;\epsilon;\phi_1 \rightarrow ti_2;\epsilon;\phi_2
+            && \text{where } \forall i. \tfi^{*}(i) = ti_1;\epsilon;\phi_1 \rightarrow ti_2;\epsilon;\phi_2
         \end{array}
     \end{mathpar}
 \end{definition}
@@ -197,14 +197,14 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     $C_w = \{ \text{func } tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$ since it is a premise of WASM module.
 
     If $(C_w \vdash f : ex_f^{*}\; tf)^{*}$,
-    $(annotation(\embed[f]{f}) = tfi)^{*}$, and
-    $C_p = \{ \text{func } tfi^{*}, \text{global } tg^{*}, \text{table } n^{?},\; \text{memory } n^{?} \}$,
-    then $(C_p \vdash \embed[f]{f}^{*} : ex^{*}_f\; tfi)^{*}$ by \todo{TODO}.
+    $(annotation(\embed[f]{f}) = \tfi)^{*}$, and
+    $C_p = \{ \text{func } \tfi^{*}, \text{global } tg^{*}, \text{table } n^{?},\; \text{memory } n^{?} \}$,
+    then $(C_p \vdash \embed[f]{f}^{*} : ex^{*}_f\; \tfi)^{*}$ by \todo{TODO}.
 
-    $\embed[tab]{tab^{?}}^{tfi^{*}} = (ex_t^{*}\; \<table> n\; tfi_t^n)^{?}$,
-    where $\forall i. tfi^{*}(i) = tfi_t$ by \autoref{def:embed-t}.
+    $\embed[tab]{tab^{?}}^{\tfi^{*}} = (ex_t^{*}\; \<table> n\; \tfi_t^n)^{?}$,
+    where $\forall i. \tfi^{*}(i) = \tfi_t$ by \autoref{def:embed-t}.
 
-    Then, $(C_p \vdash ex_t^{*}\; \<table> n\; i^n : ex_t^{*}\; (n,tfi_t^n))^{?}$, by \refrule{Table}.
+    Then, $(C_p \vdash ex_t^{*}\; \<table> n\; i^n : ex_t^{*}\; (n,\tfi_t^n))^{?}$, by \refrule{Table}.
 
     Therefore, $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{*}}$.
 \end{proof}
