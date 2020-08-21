@@ -2,7 +2,7 @@
 \label{subsec:embedding}
 We present a way to embed \wasm programs in \name.
 The embedding function takes a \wasm program and replaces all of the type annotations with indexed function types that have no constraints on the variables.
-Intuitively, this is the only part of the surface syntax of \wasm that isn't in \name, so we must figure out a way to bring it over.
+Intuitively, the type annotations are the only part of the surface syntax of \wasm that isn't in \name, so we must figure out a way to bring it over.
 While this embedding requires no additional developer effort, it provides no information to the indexed type system beyond what can be inferred from the instructions in the program.
 We conjecture that a well typed \wasm program embedded in \name is also well typed, but we have not proved it.
 
@@ -47,7 +47,7 @@ We cannot embed imported tables because we have no way of accessing the types of
         \begin{array}{rcl}
             embed_{tab}(\<wtab> n\; i^{n})
             &=& \<tab> n\; (ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2)^{n} \\
-            && \text{where } \forall i. f^{*}(i) = \<func> 
+            && \text{where } \forall i. f^{*}(i) = \<func>
             \begin{stackTL}
                 ti_1;l_1;\phi_1 \rightarrow ti_2;l_2;\phi_2\;
                 \\ \<local>\; t^{*}\; e^{*}
@@ -78,7 +78,7 @@ We cannot embed imported functions because we have no way of accessing the types
                         \ti{t_2}{a_2}^{*};\ti{t_1}{a_3}^{*}\;\ti{t}{a_4}^{*};
                         \\ \quad (\circ,\ti{t_2}{a_2}^{*},\ti{t_1}{a_3}^{*}\ti{t}{a_4}^{*}))
                     \end{stackTL}
-                    \\ t^{*}\; ()\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}
+                    \\ t^{*}\; (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}
                 \end{stackTL}} \\
             && \<nsend>\\
         \end{array}
@@ -163,5 +163,6 @@ To know what the local variables are, we parameterize the embedding over the typ
 
 These are not the only differences in the surface syntax between \wasm and \name: we also introduced four new instructions (the \prechk-tagged instructions).
 The definition of embedding we have introduced has been entirely syntactic, but that will not work for replacing non-\prechk-tagged instructions with \prechk-tagged versions during embedding since we must be able to ensure that stronger guarantees are met.
-Instead, one could, for example, check at every $\<div>$, $\<callindirect>$, $\<load>$, and $\<store>$ whether the \prechk-tagged version of the instruction is welltyped, and only if it is well typed replace the instruction with the \prechk-tagged version.
-However, a more sophisticated static analysis could be able to provide more precise type annotations and therefore potentially allow even check eliminations.
+Thus, we do not have an explicit embedding that provides \prechk-tagged instructions, though we do posit the existence of a trivial embedding that would provide \prechk-tagged instructions.
+One could, for example, check at every $\<div>$, $\<callindirect>$, $\<load>$, and $\<store>$ whether the \prechk-tagged version of the instruction is well typed, and only if it is well typed replace the instruction with the \prechk-tagged version.
+However, a more sophisticated static analysis could provide more precise type annotations and therefore potentially allow even more check eliminations.

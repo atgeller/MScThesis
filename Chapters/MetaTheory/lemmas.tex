@@ -3,9 +3,12 @@ For example, if we have a typing derivation, $D$ for $S;C \vdash t.\<const> c : 
 $D$ can also include any number of applications of \refrule{Subtyping} and \refrule{Stack-Poly}, because they can be applied to any well-typed sequence of instructions, as well as \refrule{Composition} since it can be used with the empty sequence and any well-typed single instruction.
 However, the addition of \refrule{Composition} with the empty sequence is trivial because the postcondition of an empty instruction sequence must be immediately reachable from the precondition, and therefore the stack and local index store must be the same in both (and the postcondition index type context being reachable from the precondition index type context).
 
+Most cases of \reflemma{Inversion} are omitted.
+The complete definition can be found in the appendix (\autoref{sec:subreduxproof}).
+
 \begin{lemma}{\deflemma{Inversion}}
 
-    \begin{enumerate}
+    \begin{itemize}
         %% const
         \item If $S;C \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
         then $ti_2^{*} = ti_1^{*}\;\ti{t}{a}$, $l_1 = l_2$,
@@ -16,130 +19,18 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
         then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_3}$, $l_1 = l_2$,
         and $\phi_1,\ti{t}{a_3},(= a_3\;(binop\;a_1\;a_2)) \implies \phi_2$.
 
-        %% testop
-        \item If $S;C \vdash t.testop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti^{*} \; \ti{t}{a_1}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_2}$, $l_1 = l_2$,
-        and $\phi_1,\ti{\<ithreetwo>}{a_2},(= a_2\;(testop\;a_1)) \implies \phi_2$.
-
-        %% relop
-        \item If $S;C \vdash t.relop : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti^{*} \; \ti{t}{a_1} \; \ti{t}{a_2}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_3}$, $l_1 = l_2$,
-        and $\phi_1,\ti{\<ithreetwo>}{a_3},(= a_3\;(relop\;a_1\;a_2)) \implies \phi_2$.
-
-        %% nop
-        \item If $S;C \vdash \<nop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_2^{*}$, $l_1=l_2$, and $\phi_1 \implies \phi_2$.
-
-        %% drop
-        \item If $S;C \vdash \<drop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_0^{*}\;\ti{t}{a}$, $ti_2^{*} = ti_0^{*}$, $l_1=l_2$, and $\phi_1 \implies \phi_2$.
-
-        %% select
-        \item If $S;C \vdash \<select> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        \\ then $ti_1^{*} = ti_0^{*}\;\ti{t}{a_1}\;\ti{t}{a_2}\;\ti{\<ithreetwo>}{a_3}$, $ti_2^{*} = ti_0^{*};\ti{t}{a}$, $l_1=l_2$, and $\phi_1,\ti{t}{a},(\text{if} (= a_3\; \ti{\<ithreetwo>}{0})\; (= a_1\; a)\; (= a_2\; a)) \implies \phi_2$.
-
         %% block
         \item If $S;C \vdash \<block>\; {\begin{stackTL}(ti_3^{*};l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\\ e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2\end{stackTL}}$
         \\ then $ti_1^{*} = ti_0^{*}\; ti_3^{*}$, $ti_2^{*}=ti_0^{*}\; ti_4^m$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, and $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4$.
-
-        %% loop
-        \item If $S;C \vdash \<loop>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_0^{*}\; ti_3^n$, $ti_2^{*}=ti_0^{*}\; ti_4^m$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, and $S;C,\text{label}(ti_3^n;l_3;\phi_3) \vdash e^{*} : ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4$.
-
-        %% if
-        \item If $S;C \vdash \<if>\; (ti_3^n;l_3;\phi_3 \rightarrow ti_4^m;l_4;\phi_4)\; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_0^{*}\; ti_3^n\; \ti{\<ithreetwo>}{a}$, $ti_2^{*}=ti_0^{*}\; ti_4^m$, $l_1=l_3$, $l_2=l_4$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e_1^{*} : ti_3^n;l_3;\phi_3,\neg(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4$, and $S;C,\text{label}(ti_4^m;l_4;\phi_4) \vdash e_2^{*} : ti_3^n;l_3;\phi_3,(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_4^m;l_4;\phi_4$.
-
-        %% label
-        \item If $S;C \vdash \<label>_n \{ e_0^{*} \} e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_2^{*} = ti_1^{*} \; ti^{*}$,
-        $S;C \vdash e_0^{*} : ti_3^{*};l_3;\phi_3 \rightarrow ti^{*};l_2;\phi_2$,
-        and $S;C,\text{label } (ti_3^{*};l_3;\phi_3) \vdash e^{*} : \epsilon;l_1;\phi_1 \rightarrow ti^{*};l_2;\phi_2$
 
         %% br
         \item If $S;C \vdash \<br> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
         then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $C_\text{label}(i) = ti^{*};l_1;\phi_3$,
         and $\phi_1 \implies \phi_3$.
 
-        %% br_if
-        \item If $S;C \vdash \<brif> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_2^{*} \; \ti{\<ithreetwo>}{a}$, $l_1 = l_2$, $C_\text{label}(i) = ti_2^{*};l_1;\phi_3,\neg(= a\; \ti{\<ithreetwo>}{0})$,
-        $\phi_1 \implies \phi_3$,
-        and $\phi_1,(= a\; \ti{\<ithreetwo>}{0}) \implies \phi_2$.
-
-        %% br_table
-        \item If $S;C \vdash \<brtable> i^{+} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_2^{*} \; \ti{\<ithreetwo>}{a}$, $l_1 = l_2$, $C_\text{label}(i) = ti_2^{*};l_1;\phi_3$,
-        $\phi_1 \implies \phi_3$,
-        and $\phi_1 \implies \phi_2$.
-
-        %% call j
-        \item If $S;C \vdash \<call> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_0^{*} \; ti_3^{*}$, $ti_2^{*} = ti_0^{*} \; ti_4^{*}$, $C_\text{func}(j)=ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4$, $l_2=l_1$, $\phi_1 \implies \phi_3$, and $\phi_3,\phi_4 \implies \phi_2$.
-
         %% call_indirect
         \item If $S;C \vdash \<callindirect> ti_3^{*};l_3;\phi_3 \rightarrow ti_4^{*};l_4;\phi_4 : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
         then $ti_1^{*} = ti_0^{*} \; ti_3^{*}$, $ti_2^{*} = ti_0^{*} \; ti_4^{*}$, $l_2=l_1$, $\phi_1 \implies \phi_3$, and $\phi_3,\phi_4 \implies \phi_2$.
-
-        %% call cl
-        \item If $S;C \vdash \<call> cl : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_2^{*}=ti_1^{*}\;ti_4^m$, $l_2=l_1$, $\phi_1 \implies \phi_3$, $\phi_4 \implies \phi_2$, and $S\vdash cl : \epsilon;ti_3^{n}\;\ti{t}{a}^{n};\phi_3,\ti{t}{a}^k,(= a \;\ti{t}{0})^k \rightarrow ti_4^{m};l_4;\phi_4$
-
-        %% local
-        \item If $S;C \vdash \<local>_n \{ i;v_l^{*} \} \; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_2^{*} = ti_1^{*} \; ti^n$, $l_1 = l_2$,
-        $S;(ti^n;l_3;\phi_3) \vdash_i v_l^{*};e^{*} : ti^n;l_3;\phi_3$,
-        and $\phi_1,\phi_3 \implies \phi_2$.
-
-        %% return
-        \item If $S;C \vdash \<return> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_3^{*}\;ti^{*}$, $l_1 = l_3$, $C_\text{return} = ti^{*};l_3;\phi_3$,
-        and $\phi_1 \implies \phi_3$.
-
-        %% get-local
-        \item If $S;C \vdash \<getlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $l_1(i) = \ti{t}{a}$,
-        and $\phi_1,\ti{t}{a_2},(= a_2\;a) \implies \phi_2$.
-
-        %% set-local
-        \item If $S;C \vdash \<setlocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_2 = l_1[i := \ti{t}{a}]$, $C_\text{local}(i) = t$,
-        and $\phi_1 \implies \phi_2$.
-
-        %% tee-local
-        \item If $S;C \vdash \<teelocal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti^{*} \; \ti{t}{a}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_2}$, $l_2 = l_1[i := \ti{t}{a}]$, $C_\text{local}(i) = t$,
-        and $\phi_1,\ti{t}{a_2},(= a_2\;a) \implies \phi_2$.
-
-        %% get-global
-        \item If $S;C \vdash \<getglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_2^{*} = ti_1^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut}^{?} \; t$,
-        and $\phi_1,\ti{t}{a} \implies \phi_2$.
-
-        %% set-global
-        \item If $S;C \vdash \<setglobal> i : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_2^{*} \; \ti{t}{a}$, $l_1 = l_2$, $C_\text{global}(i) = \text{mut} \; t$,
-        and $\phi_1 \implies \phi_2$.
-
-        %% mem-load
-        \item If $S;C \vdash t.\<load> (tp\_sx)^{?}\; align\; o : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_1}$, $ti_2^{*} = ti^{*} \; \ti{t}{a_2}$, $l_1 = l_2$,
-        $C_\text{memory} = n$, $2^{align} \leq (|tp| <)^{?} |t|$, and $\phi_1,\ti{t}{a_2} \implies \phi_2$.
-
-        %% mem-store
-        \item If $S;C \vdash t.\<store> tp^{?}\; align\; o : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti_2^{*} \; \ti{\<ithreetwo>}{a_1} \; \ti{t}{a_2}$, $l_1 = l_2$, $C_\text{memory} = n$,
-        $2^{align} \leq (|tp| <)^{?} |t|$, and $\phi_1 \implies \phi_2$.
-
-        %% current-memory
-        \item If $S;C \vdash \<currentmemory> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        \\ then $ti_2^{*} = ti_1^{*} \; \ti{\<ithreetwo>}{a}$, $l_1 = l_2$, $C_\text{memory} = n$,
-        and $\phi_1,\ti{\<ithreetwo>}{a} \implies \phi_2$.
-
-        %% grow-memory
-        \item If $S;C \vdash \<growmemory> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$,
-        then $ti_1^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_1}$, $ti_2^{*} = ti^{*} \; \ti{\<ithreetwo>}{a_2}$, $l_1 = l_2$, $C_\text{memory} = n$,
-        and $\phi_1,\ti{\<ithreetwo>}{a_2} \implies \phi_2$.
 
         %% composition
         \item If $S;C \vdash e_1^{*} \; e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$,
@@ -149,7 +40,7 @@ However, the addition of \refrule{Composition} with the empty sequence is trivia
         \thought{This relies on a bit of a non-obvious idea that even if the precondition is changed through subtyping, the subtyping can be deferred until a later composition.}
 
         \thought{This also relies on the idea that even if subtyping appears in the derivation tree, it can equivalently be applied on the premises of the composition.}
-    \end{enumerate}
+    \end{itemize}
 \end{lemma}
 \begin{proof}
     Proof omitted, but follows from induction over typing derivations.
@@ -170,7 +61,7 @@ Thus, we can pull $v^n$ outside of the nested context and know that we can still
     By induction on $j$.
     \begin{itemize}
         \item Base case: $j=0$
-        
+
             We want to show that $S;C \vdash v^n : \epsilon;l_1;\phi_1 \rightarrow ti^n;l_3;\phi_4$ after reduction.
 
             We have $S;C \vdash v_0^{*} \; v^n \; e^{*} \<end> : s_1;l_1;\phi_1 \rightarrow s_2;l_2;\phi_2$ for some $v_0^{*}$ and $e^{*}$ by expanding $L^0$.

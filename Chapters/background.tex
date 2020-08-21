@@ -108,7 +108,8 @@ Memory load and store operations operate within the linear memory chunk.
 \section{\wasm Dynamic Semantics}
 \label{sec:wasmsemantics}
 \wasm is a stack-based assembly language specified using reduction semantics \footnote{For those unfamiliar with reduction semantics, I highly recommended these notes by Ron Garcia: \hyperlink{https://www.cs.ubc.ca/~rxg/cpsc509/05-reduction.pdf}{https://www.cs.ubc.ca/\textasciitilde rxg/cpsc509/05-reduction.pdf}}.
-Before we introduce the \wasm semantics, we first must introduce some administrative structures and instructions that are used in the reduction relation.
+Before we introduce the \wasm semantics, we first must introduce some administrative structures and instructions that are used in the reduction relation to keep track of information.
+Administrative instructions are not part of the surface syntax of a language (\eg you cannot put a local block in a \name program), and can only appear as an intermediate term during reduction.
 \autoref{fig:wasmadmin} shows the new administrative instructions and run-time structures.
 
 \begin{figure}
@@ -164,7 +165,7 @@ Label blocks can store instructions ($e^{*}$ inside the curly braces), and the a
 This is explained more when we describe how branching works.
 
 The second block instruction is the local block.
-Locals blocks are how closure calls get expanded.
+A $\<local>$ is the result of reducing a closure call; it is used to reduce a function body within the closed environment of the closure.
 They introduce an environment consisting of the module instance and local variables inside which their body is reduced.
 
 Finally, we introduce reduction contexts, $L^{k}$, where $k$ is the nesting depth.

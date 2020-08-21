@@ -1,13 +1,13 @@
 \chapter{Implementation}
 \label{chp:implementation}
 To ensure the feasibility of implementing the \name language we implemented a reference implementation \footnote{\hyperlink{https://github.com/atgeller/Wasm-prechk}{https://github.com/atgeller/Wasm-prechk}} in Redex \cite{redex}.
-We were able to handle the entirety of the type system and use the reference implementation to typecheck several test programs, including test programs using \prechk-tagged instructions.
+We were able to handle the entirety of the type system and use the reference implementation to typecheck several test programs, including test programs for each \prechk-tagged instruction, and negative results that ensure illegal \prechk-tagged instructions are not well-typed.
 Further, our reference implementation is able to implement constraint solving and implication.
 
 \section{Reference Implementation}
 We developed the reference implementation of \name in Redex by creating a reference implementation of \wasm and extending it with the \name syntax and type system.
-This ensured that our model works on silicon and not just on set theory, and made it possible to quickly test out various approaches.
-The syntatic representation we used in the Redex model differs a bit, as it is s-expression based and doesn't support the various annotations that are used in a formal model on paper.
+This ensured that our model works on silicon and not just in set theory, and made it possible to quickly test out various approaches.
+The syntactic representation we used in the Redex model differs a bit from the syntactic representation provided here, as it is s-expression based.
 
 However, we have only implemented a typechecker in the Redex model.
 Thus, we must manually construct derivations and ask if they are valid.
@@ -16,29 +16,76 @@ This may be solvable using a bi-directional type system approach, or by otherwis
 We implemented the static typing judgment \texttt{($\vdash$ C (e ...) tfi)}, where \texttt{e ...} is Redex for $e^{*}$.
 Here is \refrule{Const} in Redex.
 Note that it is essentially the same, minus a few syntactic differences.
+
 \begin{lstlisting}[escapeinside={(*}{*)}]
     [((*$\vdash$*) C ((t const c))
             ((() l (*$\phi$*))
-             (*$\rightarrow$*) (((t a)) l (((*$\phi$*) (t a)) (= a (t c))))))]
+             -> (((t a)) l (((*$\phi$*) (t a)) (= a (t c))))))]
 \end{lstlisting}
+
 There is an extra set of parentheses around \texttt{(t const c)} because the judgment works over sequences of instructions \texttt{(e ...)}, where \texttt{e ... = (t const c)} here.
 Also, there's no dot between the type $t$ and the constant instruction keyword $const$ because that is not necessary in Redex's s-expressions.
 
 In the above example, there is no requirement about the freshness of $a$.
 Redex does not support freshness requirements in judgments.
-It would be straightforward to add freshness requirements as a side-condition.
 However, because we use the typing judgment to check manually constructed derivations, we are simply careful in writing the derivations to ensure that this property is true.
 
 \section{Constraint Solving in Practice}
 In our implementation, we reason about constraints using the Z3 theorem prover \cite{z3}.
 
 \subsection{Translation of Constraints to Z3}
+\label{subsec:z3}
+Constraint solving and implication involves translating various parts of the \name index language into Z3 constraints.
 We use Z3 bitvectors to represent index variables.
-Z3 bitvectors are fixed-width bitvectors that Z3 can reason about using standard operations (addition, multiplication, shift left, etc...).
-\name integers are also fixed width, so this is an exact reprsentation within Z3.
+Z3 bitvectors are fixed-width bitvectors that Z3 can reason about using standard operations (addition, multiplication, shift left, etc...), and handle overflow (which can occur in \wasm).
+\name integers are also fixed width, so this is an exact representation within Z3.
 Further, fixed-width bitvectors are a finite domain that has more efficient reasoning and decidability compared to the natural numbers.
 Since bitvectors have similar operations to the \name index language, translating an index $x$ to Z3 only requires changing the name of operations (for example, $add$ becomes \texttt{bv_add}).
 Translating propositions to Z3 is also straightforward since Z3 has support for all of the first-order logic constructs we use to build and combine propositions.
+
+\begin{figure}
+    \fbox{$\mathit{compile}_{z3}(x) \doteq SMT$}
+
+    \begin{mathpar}
+        \begin{array}{rcl}
+            a &\doteq& a \\
+
+            \ti{\<ithreetwo>}{c} &\doteq& (\_\; \texttt{bv}c\;32) \\
+
+            \ti{\<isixfour>}{c} &\doteq& (\_\; \texttt{bv}c\;64) \\
+
+            (\<binop>\;x\;y) &\doteq& (\texttt{bv}binop\; \mathit{compile}_{z3}(x)\; \mathit{compile}_{z3}(y))\\
+
+            (\<relop>\;x\;y) &\doteq& (\texttt{bv}relop\; \mathit{compile}_{z3}(x)\; \mathit{compile}_{z3}(y))\\
+        \end{array}
+    \end{mathpar}
+
+    \fbox{$\mathit{compile}_{z3}(P) \doteq SMT$}
+    
+        \begin{mathpar}
+            \begin{array}{rcl}
+                (=\; x \; y) &\doteq& (= \mathit{compile}_{z3}(x)\; \mathit{compile}_{z3}(y))\\
+
+                (\text{if} P_1\; P_2\; P_3) &\doteq& (\texttt{ite } \mathit{compile}_{z3}(P_1)\; \mathit{compile}_{z3}(P_2)\; \mathit{compile}_{z3}(P_3)) \\
+
+                \neg P &\doteq& (\texttt{not } \mathit{compile}_{z3}(P)) \\
+
+                P_1 \land P_2 &\doteq& (\texttt{and } \mathit{compile}_{z3}(P_1)\; \mathit{compile}_{z3}(P_2)) \\
+
+                P_1 \lor P_2 &\doteq& (\texttt{or } \mathit{compile}_{z3}(P_1)\; \mathit{compile}_{z3}(P_2)) \\
+            \end{array}
+        \end{mathpar}
+
+    \fbox{$\mathit{compile}_{z3}(\ti{t}{a}) \doteq SMT$}
+        \begin{mathpar}
+            \begin{array}{rcl}
+                \ti{\<ithreetwo>}{a} &\doteq& (\texttt{declare-const } a \; (\_ \texttt{BitVector} 32))\\
+                \ti{\<isixfour>}{a} &\doteq& (\texttt{declare-const } a \; (\_ \texttt{BitVector} 64))\\
+            \end{array}
+        \end{mathpar}
+    \caption{Translation of \name Index Language to Z3}
+    \label{fig:z3translation}
+\end{figure}
 
 To test whether the satisfiability of one index type context $\phi_1$ implies that some other index type context $\phi_2$ is satisfiable, we first generate bitvectors to represent all of the index variables.
 Z3 constraints are generated based on the propositions in both contexts.
@@ -46,10 +93,40 @@ We assert that the constraints generated for the first context must hold.
 Finally, we ask Z3 to find an assignment to the variables declared in the type index contexts where the constraints from the second context do not hold (a counterexample).
 If a counterexample cannot be found then the implication must hold, otherwise it does not hold.
 
-Recall from \autoref{subsec:checkelim} that for $\<callindirectpc> tfi$, we have to be able to reason about which functions in a table can be called.
-In practice, we construct a Z3 array (intuitively similar to a normal array) that is the same size as the table.
-We fill the array with boolean values which are $true$ if the function at the table index is a valid function type (a subtype of the expected type $tfi$), and $false$ otherwise.
+We define the translations for certain parts of the index language to SMT (the Z3 constraint language) used in the reference interpreter in \autoref{fig:z3translation}.
+One key thing to note in the translation is that we use a slightly different representation of $relop$ and $testop$ within the reference implementation.
+With $relop$, the Z3 versions of the \name index language relation operators returns booleans, not bitvectors, so we convert every use of $relop$ from $(= a\; (relop\; x\;y))$ to $$(\text{if } (= \ti{t}{1}\;(relop\; x\;y))\; (= a\; \ti{t}{1})\; (= a\; \ti{t}{0}))$$, where $t$ is the primitive \wasm type of $a$ from the type declaration of $a$ in $\phi$.
+We do the same for $testop$, except we first convert $(\<eqz>\;x)$ (the only test operator) to $(= \ti{t}{0}\; x)$, so then $(= a\; (\<eqz>\; x))$ becomes $$(\text{if } (= \ti{t}{0}\; x)\; (= a\; \ti{t}{1})\; (= a\; \ti{t}{0}))$$
+
+We also include an example of a complete Z3 query in \autoref{fig:z3example}. 
+It is the Z3 query for testing the implication in the \<divpc> rule in the example in \autoref{elimexample}.
+
+\begin{figure}
+    \begin{lstlisting}[escapeinside={(*}{*)},language=SMT]
+        (declare-const a (_ BitVec (*\color{Aquamarine}{32}*)))
+        (declare-const b (_ BitVec (*\color{Aquamarine}{32}*)))
+        (declare-const c (_ BitVec (*\color{Aquamarine}{32}*)))
+        (declare-const d (_ BitVec (*\color{Aquamarine}{32}*)))
+        (define-fun satisfies () Bool
+            (=> (and (= c (_ bv1 (*\color{Aquamarine}{32}*)))
+                     (ite (= b (_ bv0 (*\color{Aquamarine}{32}*))) 
+                          (= d c)
+                          (= d b))
+                (and (not (= d (_ bv0 (*\color{Aquamarine}{32}*)))))))
+        (assert (not satisfies))
+        (check-sat)
+        (get-model)
+    \end{lstlisting}
+    \caption{Example of a Z3 query for constraint satisfaction}
+    \label{fig:z3example}
+\end{figure}
+
+\paragraph{How we implement the table in Z3}
+Recall from \autoref{subsec:checkelim} that for $\<callindirectpc> tfi$, we have to reason about which functions in a table can be called.
+In practice, we construct a Z3 array (intuitively similar to a normal array) that is the same size as the table (we chose Z3 arrays because they have a similar abstraction to tables).
+We fill the array with boolean values which are $true$ if the function at the table index is a suitable function type (a subtype of the expected type $tfi$), and $false$ otherwise.
 Finally, we assert all of the translated constraints from the index type context about the table index, and then make sure that reading from the array using the table index returns $true$.
+We do not show here how we generate Z3 constraints for tables, but it can be found in the Redex model.
 
 \subsection{Impact of Using Z3}
 Our choice of using Z3 has impacted \name in several ways.
@@ -65,6 +142,6 @@ Without these type annotations, we would not know whether a constant $c$ should 
 
 \paragraph{Performance Concerns}
 There are performance concerns when using an SMT solver.
-While our small examples programs have been near instantaneous to typecheck, we may see slowdown due to significantly larger constraint sets when typechecking large \wasm programs.
+While our small examples programs have been near instantaneous to typecheck (usually involving only one Z3 invocation with a few constraints), we may see slowdown due to significantly larger constraint sets when typechecking large \wasm programs.
 This would require a clever approach to reducing the size of the constraint set (perhaps using a form of type-level garbage collection on constraints on index variables that cannot be referred to).
 Also, we would want to make sure when writing a typechecker/synthesizer that we invoke Z3 as little as possible, by minimizing the amount of reasoning we do about the constraints.

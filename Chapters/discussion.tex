@@ -1,17 +1,16 @@
 \chapter{Discussion}
 \label{chp:discussion}
- 
-By creating \name, we have taken the first step towards creating a practical system in which an expressive type system is used with a low-level language for safety and performance.
+By creating \name, we have taken the first step towards creating a practical system in which an expressive type system is used with an existing and widely low-level language for safety and performance.
 \name provides concrete ways to use type information for compiler optimization at the assembly language level.
-This is a first step in the sense that it provides the scaffolding to build such a system that could be part of the infrastructure of the internet: unlike prior work, it is backwards compatible with a commonly used langauge, \wasm, supported by many major browsers.
+This is a first step in the sense that it provides the scaffolding to build such a system that could be part of the infrastructure of the internet: unlike prior work, it is backwards compatible with a commonly used language, \wasm, supported by many major browsers.
 However, there are still a number of unanswered questions.
 We have a number of future ideas for this work some based on what we think is necessary to realize our eventual goal of making \name practical in the real-world, and others based on problems identified during the course of the project so far.
 
 \paragraph{Empirical Evaluation}
-The first step would be to implement a compiler for \name so we are able to perform experiments and measure the real performance benefit provided by \name.
+The first step would involve testing the actual performance costs of dynamic checks.
+We could then implement a typechecker and compiler for \name so we are able to perform experiments and measure the real performance benefit provided by \name.
 This would allow us to empirically test whether \name actually improves performance.
 Our plan is to implement \name in Rust building on the CraneLift compilier.
-This will also require constructing an algorithm to build typing derivations as well as checking them.
 
 \paragraph{More Optimizations}
 There is also the potential to find other optimizations we can perform with the additional type information.
@@ -21,13 +20,14 @@ We can do similar optimizations with $\<brif>$ and $\<select>$.
 
 \paragraph{Types Annotations}
 Recall that the embedding of \wasm into \name from \autoref{subsec:embedding} does not take advantage of the possibility of using type annotations on functions and blocks to check stronger guarantees about programs.
+This means that we could potentially miss opportunities to remove dynamic checks by using \prechk-tagged instructions because we have less type information to work with.
 Type annotations can be added by the developer, who will then get stronger guarantees of correctness along with the potential for more optimizations.
 However, we would prefer for the developer not to have to hand-annotate compiled \wasm.
 Instead, we could use static analysis to try to find the weakest preconditions that guarantee the safety of \prechk-tagging instructions.
 We could also attempt to have have a compiler from a higher-level language to \wasm add annotations as a form of type preserving compilation similar to System F to Typed Assembly Language \cite{FtoTAL}.
 
 \paragraph{Reasoning About Global Variables}
-Reasoning about global variables is made difficult because static typechecking is restricted to within the module we are checking.
+Reasoning about global variables is made difficult because static typechecking is restricted to within the module we are checking, this restricts the reasoning ability of \name and again could cause us to miss opportunities for optimizations.
 Thus, it is difficult to reason about global variables imported from another module.
 Concretely, imagine, in the $j$th module calling a function $f$ that was imported from the $i$th module.
 The call instruction will be reduced to $\<call> \{\text{inst } i, \text{ func } f\}$ where $i$ is the module index for the module instance where $f$ is defined.
@@ -44,7 +44,7 @@ This would require more dependency in the type system then we currently have wit
 
 \paragraph{Support Streaming Compilation}
 The format of \wasm code allows compilation and execution to begin with only part of the program downloaded.
-Similar streaming compilation is theoretically possible with \name, but there are unanswered questions about how to work in typechecking in such a compilation pipeline.
+Similar streaming compilation is theoretically possible with \name, but there are unanswered questions about how to perform typechecking in such a compilation pipeline.
 Here are two examples of problems that we expect to face implementing such a system.
 First of all, we must make sure such a system is safe, which is complicated by the fact that we may begin executing code before we have finished typechecking.
 This should not be too much of an issue as long as we ensure code is typechecked before we can execute it, so we only execute well-typed code and if we come across code that is not well typed we halt execution and throw a type error.

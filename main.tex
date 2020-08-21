@@ -29,13 +29,41 @@
 \usepackage{multirow}
 \usepackage{mathtools}
 \usepackage{calc}
-\usepackage{natbib}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{listings}
+\usepackage{graphicx}
 
 % Always Use these
 \usepackage{microtype}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+
+\lstset{
+    basicstyle=\small\ttfamily
+}
+
+\definecolor{MyBlue}{rgb}{0,0,1}
+
+\lstdefinelanguage{SMT}
+{
+    alsodigit = {-},
+    keywords=[1]{
+        declare-const,
+        define-fun,
+        and,
+        not,
+        ite,
+        assert,
+        check-sat,
+        get-model,
+    },
+    keywordstyle=[1]\color{MyBlue},
+    morekeywords=[2]{
+        BitVec,
+        Bool,
+    },
+    keywordstyle=[2]\color{Aquamarine},
+}
 
 \newcommand{\shrug}[1][]{%
 \begin{tikzpicture}[baseline,x=0.8\ht\strutbox,y=0.8\ht\strutbox,line width=0.125ex,#1]
@@ -49,7 +77,7 @@
 \draw[shift={(-0.3,0.8)}] \eye;
 \draw[shift={(0,0.85)}] \eye;
 % draw mouth
-\draw (-0.1,0.2) to [out=15,in=-100] (0.4,0.95); 
+\draw (-0.1,0.2) to [out=15,in=-100] (0.4,0.95);
 \end{tikzpicture}}
 \newcommand{\thought}[1]{\textcolor{red}{\textit{(Thought: #1 \shrug)}}}
 \newcommand{\todo}[1]{\textcolor{red}{\textit{(TODO: #1)}}}
@@ -152,6 +180,8 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
     Chapters/implementation,
     Chapters/discussion,
     Chapters/conclusion,
+    Appendices/complete-type-system,
+    Appendices/proofs,
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -217,7 +247,14 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
 \include{Chapters/discussion}
 \include{Chapters/conclusion}
 
-\bibliographystyle{plainnat}
-\bibliography{citations}
+\begin{singlespace}
+    \raggedright
+    \bibliographystyle{abbrvnat}
+    \bibliography{citations}
+\end{singlespace}
+
+\appendix
+\include{Appendices/complete-type-system}
+\include{Appendices/proofs}
 
 \end{document}

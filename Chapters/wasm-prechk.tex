@@ -289,7 +289,7 @@ As in \wasm, \name generally has two kinds of typing rules.
 Most rules are for inferring or checking the types of instructions (in which case $e^{*}$ will be a single instruction).
 There are also a few rules to compose together instruction sequences.
 We present the typing rules mixed with discussion of those rules.
-The typing judgment definition in its entirety is reproduced in the appendix.
+The typing judgment definition in its entirety is reproduced in the appendix \autoref{chp:completejudgment}.
 
 Here are some of the simpler rules.
 These rules don't use or modify index type information.
@@ -462,7 +462,8 @@ The same two differences described above between the expected indexed function t
     }
     {
         C \vdash \<call> i : ti_1^{*};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
-    } \and
+    }
+
     \inferrule*[right=\defrule{Call-Indirect}]{ %% call_indirect
         C_\text{table}(i) = (j, \tfi_2^{*}) \and
     }
@@ -472,7 +473,7 @@ The same two differences described above between the expected indexed function t
             \vdash \<callindirect>  ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
             \\ : ti_1^{*}\;\ti{i32}{a};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
         \end{stackTL}}
-    } \and
+    }
 \end{mathpar}
 
 The only instructions that actually mutate the local index store are those that operate on local variables.
@@ -612,6 +613,8 @@ If $\phi_1 \implies \phi_2$, then we consider $\phi_1$ to be stronger than $\phi
 This solves the aforementioned problem because we can weaken ``x is greater than 10'' to ``x is greater than 0'' (or equivalently strengthen ``x is greater than 0'' to ``x is greater than 10'').
 
 To fit strengthening and weakening into the type system, we define a subtyping judgment based on implication.
+We are essentially parameterizing our typing judgment with the implication relation.
+As an aside, we show that this is a practical thing to do and that such a relation exists by implementing such an implication relation using Z3 (see \autoref{subsec:z3}).
 The \refrule{Implies} says that if an indexed function type $\tfi_1$ has a stronger precondition and weaker postcondition than some other indexed function type $\tfi_2$, and is otherwise equivalent, then $\tfi_1$ is a subtype of $\tfi_2$ since it can safely be used in place of $\tfi_2$.
 
 \begin{mathpar}
@@ -715,10 +718,11 @@ Further, we must show that the provided table index is within the table boundari
             ti_1^{*}\;\ti{i32}{a};l;\phi_1
             \\ \rightarrow ti_2^{*};l;\phi_1,\phi_2
         \end{stackTL}}
-    } \and
+    }
 \end{mathpar}
 
 \paragraph{An Example of Using Types for Check Elimination}
+\label{elimexample}
 Here we present a short contrived example of using types for check elimination, based on the example from \autoref{fig:prechkexample}.
 We are typechecking a $\<divpc>$.
 First, we give the module type context $C_1$, which contains one local variable, which is an $\<ithreetwo>$, and the instruction sequence we are typing, which is a safe division happening inside of a block (\autoref{fig:prechkexample}).

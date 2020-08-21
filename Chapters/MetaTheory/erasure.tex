@@ -9,6 +9,9 @@ As with the presentation of the embedding, we typeset \name instructions in a \t
 
 \paragraph{Erasing Surface Syntax}
 As with embedding, we start by defining erasure with the pinnacle syntactic object: the module.
+Defining and erasure for modules relies on the erasure of tables and functions, and therefore instructions and indexed function types.
+Keep in mind that the proofs of sound erasure work over the typing rules for these constructs, so we also define erasure of module type contexts since they are used in the typing rules for modules.
+
 Erasing a module erases all of the functions $f^{*}$ and the table $tab^{?}$.
 The globals $glob^{*}$ and optional memory $mem^{?}$ both have the same syntax in \name as in \wasm.
 
@@ -250,7 +253,7 @@ We must also remove the \prechk tag from \prechk-tagged instructions to turn the
 \end{definition}
 
 \paragraph{Erasing Typing Constructs}
-Here, we prove that erasing a \name static typing dervation is sound with respect to \wasm's type system.
+Here, we prove that erasing a \name static typing derivation is sound with respect to \wasm's type system.
 This means that erasure on the \name static typing judgment is sound with respect to \wasm's type system.
 Specifically, a \name instruction sequence $e^{*}$, that is well typed under a module type context $C$, produces a \wasm instruction sequence $e'^{*}=\erase[e^{*}]{e^{*}}$ that is well typed under the erased module type context $C'=\erase[C]{C}$.
 
@@ -264,6 +267,8 @@ Specifically, a \name instruction sequence $e^{*}$, that is well typed under a m
     Intuitively, we want to show that erasing the typing derivation produces a valid \wasm typing derivation.
 
     For most of the cases, the sequence of instructions $e^{*}$ contains only a single instruction $e_2$, so we elide the step of turning $\erase[e^{*}]{e^{*}}$ into $\erase[e^{*}]{e_2}$.
+
+    We present one Case below, the rest are in the appendix (\autoref{proof:statictypingerasure}).
 
     \begin{itemize}
         \item Case: $C \vdash t.binop : {\begin{stackTL}\ti{t}{a_1}\;\ti{t}{a_2};l_1;\phi_1 \\ \rightarrow \ti{t}{a_3};l_1;\phi_1,\ti{t}{a_3},(= a_3\; (binop\;a_1\;a_2))\end{stackTL}}$
@@ -282,174 +287,11 @@ Specifically, a \name instruction sequence $e^{*}$, that is well typed under a m
             By the definition of $erase_e$, we want to show that $\erase[C]{C}\vdash t.binop : t\;t \rightarrow t$ is valid in \wasm.
 
             Trivially, we have $\erase[C]{C}\vdash t.binop : t\;t \rightarrow t$ by \refrule{Wasm-Binop}, since \refrule{Wasm-Binop} works under any module type context.
-
-        \item Case: $C \vdash \<block>\;
-        {\begin{stackTL}
-            \ti{t_1}{a_1}^{*};l_1;\phi_1
-            \\ \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2
-            \\ e^{*} \<end> :
-            {\begin{stackTL}
-                \ti{t_1}{a_1}^{*};l_1;\phi_1
-                \\ \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2
-            \end{stackTL}}
-        \end{stackTL}}$
-
-            We want to show that $$\erase[C]{C} \vdash erase_e(\<block>\;
-            {\begin{stackTL}
-                \ti{t_1}{a_1}^{*};l_1;\phi_1
-                \\ \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2
-                \\ e^{*} \<end> :
-                {\begin{stackTL}
-                    \ti{t_1}{a_1}^{*};l_1;\phi_1
-                    \\ \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2)
-                \end{stackTL}}
-            \end{stackTL}}$$
-
-            By the definition of $erase_e$ and $erase_{tfi}$ (we also perform the step of erasing indexed function types here to avoid an extra step), we want to show that $\erase[C]{C} \vdash \<wblock>\; t_1^{*} \rightarrow t_2^{*} e^{*} \<wend> : t_1^{*} \rightarrow t_2^{*}$ is a valid \wasm judgment.
-
-            This proof is slightly more involved, since the derivation for this rule includes a premise that $$C,\text{label}(\ti{t_2}{a_2}^{*};l_2;\phi_2) \vdash e^{*} : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$$
-
-            By the inductive hypothesis for the well-typedness of $e^{*}$, we have that $$\erase[C]{C,\text{label}(\ti{t_2}{a_2}^{*};l_2;\phi_2)}\;
-            {\begin{stackTL}
-                \vdash \erase[e^{*}]{e^{*}}
-                \\: erase_{tfi}(
-                {\begin{stackTL}
-                    \ti{t_1}{a_1}^{*};l_1;\phi_1
-                    \\ \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2)
-                \end{stackTL}}
-            \end{stackTL}}$$
-
-            Then we have $\erase[C]{C},\text{label}(t_2^{*}) \vdash \erase[e^{*}]{e^{*}} : t_1^{*}\rightarrow t_2^{*}$ by definition of $erase_C$ and $erase_{tfi}$.
-
-            Now that we have satisfied the premise, $$\erase[C]{C} \vdash \<wblock>\; t_1^{*} \rightarrow t_2^{*} e^{*} \<wend> : t_1^{*} \rightarrow t_2^{*}$$ by \refrule{Wasm-Block}.
-
-        \item Case: $C \vdash \<br>\; i : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$
-
-            We want to show that $$\erase[C]{C}\;
-            {\begin{stackTL}
-                    \vdash erase_e(\<br> i)\;
-                    \\ : \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2}
-            \end{stackTL}}$$
-
-            We have to reason about $\erase[C]{C}$ because the typing judgment relies on the label stack from $C$.
-
-            From $C \vdash \<br>\; i : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$, we have that $C_\text{label}(i)=\ti{t_1}{a_1}^{*};l_1;\phi_1$, since it is a premise.
-
-            Then ${\erase[C]{C}}_\text{label}(i) = t_1^{*}$, by the definition of $erase_C$.
-
-            $$\erase[C]{C}\;
-            {\begin{stackTL}
-                    \vdash erase_e(\<br> i)\;
-                    \\ : {\begin{stackTL}
-                        \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1
-                        \\ \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2}
-                    \end{stackTL}}
-            \end{stackTL}} \\
-            = \erase[C]{C} \vdash \<br> i : t_1^{*} \rightarrow t_2^{*}$$
-
-            Recall that ${\erase[C]{C}}_\text{label}(i) = t_1^{*} \rightarrow t_2^{*}$, then $\erase[C]{C} \vdash \<br> i : t_1^{*} \rightarrow t_2^{*}$ by \refrule{Wasm-Br}.
-
-        \item Case: $C \vdash \<call>\; i : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$
-
-            We want to show that $$\erase[C]{C}\;
-            {\begin{stackTL}
-                    \vdash erase_e(\<call> i)\;
-                    \\ : \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2}
-            \end{stackTL}}$$
-
-            We again have to reason about $\erase[C]{C}$ because the typing judgment relies on the function type from $C$.
-
-            From $C \vdash \<call>\; i : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$, we have that $C_\text{func}(i)=\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$, since it is a premise.
-
-            Then, ${\erase[C]{C}}_\text{func}(i) = \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2} = t_1^{*} \rightarrow t_2^{*}$, by the definition of $erase_C$.
-
-            $$\erase[C]{C}\;
-            {\begin{stackTL}
-                    \vdash erase_e(\<call> i)\;
-                    \\ : {\begin{stackTL}
-                        \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1
-                        \\ \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2}
-                    \end{stackTL}}
-            \end{stackTL}} \\
-            = \erase[C]{C} \vdash \<call> i : t_1^{*} \rightarrow t_2^{*}$$
-
-            Recall that ${\erase[C]{C}}_\text{func}(i) = t_1^{*} \rightarrow t_2^{*}$.
-
-            Then $\erase[C]{C} \vdash \<call> i : t_1^{*} \rightarrow t_2^{*}$ by \refrule{Wasm-Call}.
-
-        \item Case: $C \vdash \<setlocal>\; i : \ti{t}{a};l_1;\phi_1 \rightarrow \epsilon;l_1[i := a];\phi_1$
-
-            We want to show that $$\erase[C]{C}\;
-            {\begin{stackTL}
-                    \vdash erase_e(\<setlocal> i)\;
-                    \\ : \erase[tfi]{\ti{t}{a};l_1;\phi_1 \rightarrow \epsilon;l_1[i := a];\phi_1}
-            \end{stackTL}}$$
-
-            We again have to reason about $\erase[C]{C}$ because the typing judgment relies on the local variable types from $C$.
-
-            From $C \vdash \<setlocal>\; i : \ti{t}{a};l_1;\phi_1 \rightarrow \epsilon;l_1[i := a];\phi_1$, we have that $C_\text{local}(i)=t$, since it is a premise.
-
-            Then, we have that ${\erase[C]{C}}_\text{local}(i) = t$, by the definition of $erase_C$.
-
-            $$\erase[C]{C}\;
-            {\begin{stackTL}
-                    \vdash erase_e(\<setlocal> i)\;
-                    \\ : {\begin{stackTL}
-                        \erase[tfi]{\ti{t}{a}^{*};l_1;\phi_1
-                        \\ \rightarrow \epsilon;l_1[i := a];\phi_1}
-                    \end{stackTL}}
-            \end{stackTL}} \\
-            = \erase[C]{C} \vdash \<setlocal> i : t \rightarrow \epsilon$$
-
-            Recall that ${\erase[C]{C}}_\text{local}(i) = t \rightarrow \epsilon$, then $\erase[C]{C} \vdash \<setlocal> i : t \rightarrow \epsilon$ by \refrule{Wasm-Set-Local}.
-
-        \item Case: $C \vdash e_1^{*}\;e_2 : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2};l_2;\phi_2$
-
-            We want to show that $$\erase[C]{C}\;
-            {\begin{stackTL}
-                    \vdash erase_e(e_1^{*}\;e_2)\;
-                    \\ : \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_2}{a_2};l_2;\phi_2}
-            \end{stackTL}}$$
-
-            For this typing rule, we must invoke the inductive hypothesis twice: one on the sequence $e_1^{*}$ and once on the instruction $e_2$. Then we must show that we can compose the erased subsequence together to get a well-typed sequence.
-
-            We know that $C \vdash e_1^{*} : \ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_3}{a_3};l_3;\phi_3$ and that $C \vdash e_2 : \ti{t_3}{a_3}^{*};l_3;\phi_3 \rightarrow \ti{t_2}{a_2};l_2;\phi_2$ because they are premieses of \refrule{Composition} which we have assumed to hold.
-
-            $\erase[C]{C} \vdash \erase[e^{*}]{e_1^{*}} : \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1 \rightarrow \ti{t_3}{a_3};l_3;\phi_3}$ by the inductive hypothesis on $e_1^{*}$.
-
-            $\erase[C]{C} \vdash \erase[e^{*}]{e_1^{*}} : t_1^{*} \rightarrow t_3^{*}$ by definition of $erase_{tfi}$.
-
-            $\erase[C]{C} \vdash \erase[e^{*}]{e_2} : \erase[tfi]{\ti{t_3}{a_3}^{*};l_3;\phi_3 \rightarrow \ti{t_2}{a_2};l_2;\phi_2}$, by the inductive hypothesis on $e_2$.
-
-            $\erase[C]{C} \vdash \erase[e^{*}]{e_2^{*}} : t_3^{*} \rightarrow t_2^{*}$ by definition of $erase_{tfi}$.
-
-            $$\erase[C]{C}\;
-                {\begin{stackTL}
-                        \vdash erase_{e^{*}}(e_1^{*}\;e_2)\;
-                        \\ : {\begin{stackTL}
-                            \erase[tfi]{\ti{t_1}{a_1}^{*};l_1;\phi_1
-                            \\ \rightarrow \ti{t_2}{a_2};l_2;\phi_2}
-                        \end{stackTL}}
-                \end{stackTL}} \\
-                = \erase[C]{C}
-                {\begin{stackTL}
-                    \vdash\;
-                    {\begin{stackTL}
-                        \erase[e^{*}]{e_1^{*}}
-                        \\ \erase[e^{*}]{e_2}
-                    \end{stackTL}}
-                    \\: t_1^{*} \rightarrow t_2^{*}
-                \end{stackTL}}$$
-
-            Recall that we have $\erase[C]{C} \vdash \erase[e^{*}]{e_1^{*}} : t_1^{*} \rightarrow t_3^{*}$ and that $\erase[C]{C} \vdash \erase[e^{*}]{e_2^{*}} : t_3^{*} \rightarrow t_2^{*}$ by definition of $erase_{tfi}$.
-
-            Then, $\erase[C]{C} \; \vdash\; \erase[e^{*}]{e_1^{*}}\; \erase[e^{*}]{e_2}: t_1^{*} \rightarrow t_2^{*}$ by \refrule{Wasm-Composition}.
-
     \end{itemize}
 \end{proof}
 
 To erase a module type context, we must erase all of the function types $tfi^{*}$, the table type $(n,tfi_2^{*})$ if one is present, and the postconditions in the label stack $(\ti{t_1}{a_1}^{*};l_1;\phi_1)^{*}$ and the return stack $(\ti{t_2}{a_2}^{*};l_2;\phi_2)^{?}$.
-We erasing postconditions the same way we erase the postconditions of indexed function types: by keeping only the primitive \wasm types ($t_1^{*}$ in the case of a label postcondition).
+We erase postconditions the same way we erase the postconditions of indexed function types: by keeping only the primitive \wasm types ($t_1^{*}$ in the case of a label postcondition).
 Recall that erasing a table type means discarding the type information about the functions in the table.
 
 \begin{definition}{\fbox{$\erase[C]{C} = \mathredbold{C}$}}
@@ -477,8 +319,11 @@ Recall that erasing a table type means discarding the type information about the
 \end{definition}
 
 \paragraph{Erasing Programs}
+Defining and erasure for programs relies on the erasure of the store and its various structures, as well as the erasure of instructions which we have already defined and proven.
+Remember, the proofs of sound erasure work over the typing rules for these constructs, so we have to show sound erasure for all of the various typing rules that \refrule{Program} relies on.
+
 Now we will show that erasing a well-typed \name program in reduction form ($s;v^{*};e^{*}$) is sound with respect to \wasm's type system.
-Intuitively, we acclomplish this by showing that erasing typing derivations of the \refrule{Program} judgment produce valid \wasm typing derivations, like in \reflemma{Sound Static Typing Erasure}.
+Intuitively, we accomplish this by showing that erasing typing derivations of the \refrule{Program} judgment produce valid \wasm typing derivations, like in \reflemma{Sound Static Typing Erasure}.
 To do so, we must show sound erasure for \refrule{Code}, as it is a premise of \refrule{Program}; this is done by \reflemma{Sound Code Typing Erasure}.
 Erasing programs involves erasing many run-time data structures, including the store $s$ and store context $S$, as well as modules instances $inst^{*}$ in $s$, and closures $cl$ in modules instances and the optional table.
 Erasing the store is shown to be safe by \reflemma{Sound Store Erasure}.
@@ -550,6 +395,8 @@ Note that while we add $S$ to the judgment used in \reflemma{Sound Static Typing
     In addition to the prior cases from \reflemma{Sound Static Typing Erasure}, which trivially still hold since the value of $S$ does not matter to those rules, we add proves for a few administrative typing rules, which may refer to $S$.
     Again, several proof cases are omitted as they are simple.
 
+    We present one Case below, the rest are in the appendix (\autoref{proof:admintypingerasure}).
+
     \begin{itemize}
         \item $S;C \vdash \<label>_n \{ e_0^{*} \}\; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{n};l_2;\phi_2$
 
@@ -583,33 +430,6 @@ Note that while we add $S$ to the judgment used in \reflemma{Sound Static Typing
             ,\text{label}(\ti{t_3}{a_3}^{*};l_3;\phi_3))
             \\ \vdash \erase[e^{*}]{e^{*}}
             \\ : \erase[tfi]{\epsilon;l_1;\phi_1 \rightarrow \ti{t_3}{a_3}^{*};l_3;\phi_3}
-        \end{stackTL}}$$
-
-        \item $S;C \vdash \<local>_n \{ i;v^{*} \}\; e^{*} \<end> : \epsilon;l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{n};l_2;\phi_2$
-
-        The premise of this rule relies on \refrule{Code} with a non-empty return postcondition, which we have not yet proved sound erasure for, so instead we must derive \refrule{Code} for the erased program.
-
-        Thus, we must show that $(\vdash v : t_v)^{*}$ and
-        $$\erase[S]{S};erase_C(
-        {\begin{stackTL}
-            S_\text{inst}(i),\text{local } t_v^{*},\text{ return}(\ti{t_2}{a_2}^{n};l_2;\phi_2))
-            \\ \vdash \erase[e^{*}]{e^{*}}
-            \\: \erase[tfi]{\epsilon;l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{n};l_2;\phi_2}
-        \end{stackTL}}$$
-
-        We have \refrule{Code} as a premise of \refrule{Local}, which we have assumed to hold.
-
-        Therefore, $(\vdash v : t_v)^{*}$ trivially, since neither values nor primitive types are affected by erasure.
-
-        We also know that
-        $$S;S_\text{inst}(i),\text{local } t_v^{*},\text{ return}(\ti{t_2}{a_2}^{n};l_2;\phi_2)) {\begin{stackTL}\vdash e^{*} \<end> \\: \epsilon;l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{n};l_2;\phi_2\end{stackTL}}$$
-
-        Therefore, by the inductive hypothesis of the well-typedness of $e^{*}$, we have that
-        $$\erase[S]{S};erase_C(
-        {\begin{stackTL}
-            S_\text{inst}(i),\text{local } t_v^{*},\text{ return}(\ti{t_2}{a_2}^{n};l_2;\phi_2))
-            \\ \vdash \erase[e^{*}]{e^{*}}
-            \\: \erase[tfi]{\epsilon;l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{n};l_2;\phi_2}
         \end{stackTL}}$$
     \end{itemize}
 \end{proof}

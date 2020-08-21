@@ -2,7 +2,7 @@
 \label{chp:metatheory}
 
 Now that we have introduced \name and shown how it can be used for reasoning, it is time to reason about \name itself.
-First, we will take a look at the relationship between \wasm and \name, by showing methods to convert \wasm programs to \name programs and vice versa.
+First, we will take a look at the relationship between \wasm and \name, by showing methods to translate \wasm programs to \name programs and vice versa.
 Then, we will prove the type safety of \name, to ensure that our claim that \name is as safe as \wasm is valid.
 However, before we can do any of that, we must ``complete'' our reasoning ability by creating a way to connect the reduction relation form with the type system.
 
@@ -14,11 +14,11 @@ They are not part of the surface syntax of a language (\eg you cannot put a loca
 \autoref{fig:storerules} shows the \name typing rules for module instances $inst$, the run time store $s$, and various data structures contained within $s$.
 There are many different judgments being introduced, so we explicitly state the form of the judgment before stating the rule for that judgment.
 
-During reduction, we use \refrule{Program} (\autoref{fig:programrules}) to ensure that a \name program (consisting of the store $s$, local variables $v^{*}$, and instruction sequence $e^{*}$) is well typed (notice that it has the same form as the reduction relation).
-It uses \refrule{Code} and \refrule{Store}, to ensure that a reducible \name program is well typed.
+During reduction, we use \refrule{Program} (\autoref{fig:programrules}) to ensure that a \name program state (consisting of the store $s$, local variables $v^{*}$, and instruction sequence $e^{*}$) is well typed (notice that it has the same form as the reduction relation).
+It uses \refrule{Code} and relies on the store being well-typed (\refrule{Store} in \autoref{fig:storerules}), to ensure that a reducible \name program is well typed.
 \refrule{Code} checks that a sequence of instructions is well typed with an empty stack, the indexed types and constraints for the given local variables in the precondition, and an optional return postcondition (not used by \refrule{Program}).
 Since local variables are values, we know that each one of them is equal to some constant, so \refrule{Code} is really just checking that the sequence of instructions has some postcondition reachable from the given local variables.
-There is an optional return postcondition for \refrule{Code} because \refrule{Local} has as a premise a judgment of the exactly same form, except with a return postcondition.
+There is an optional return postcondition for \refrule{Code} because the typing rule for local blocks (as seen in \refrule{Local} in \autoref{fig:adminrules}) has as a premise a judgment of the exactly same form, except with a return postcondition.
 
 \begin{figure}
     $$ S ::= \{ \text{inst } C^{*}, \text{ tab } n^{*}, \text{ mem } m^{*} \} $$
@@ -58,8 +58,8 @@ Further, \refrule{Store} ensures that all of the closures in all of the tables i
 
 To get the type of the store, we in turn have to know the types of each of the various run-time data structures.
 \refrule{Instance} checks that a module instance is well-typed by the index module context under the store context $S$.
-It checks all of the closures $cl^{*}$ against their expected types $tfi^{*}$ in $C$, and similarly for all of the globals ($v^{*}$ and $()\text{mut}^{?} t)^{*}$).
-The table and memory indices ($i$ and $j$, respectively) are used to lookup the the relevant types ($(n,tfi^{*})$ and $m$, respectively) in the store context $S$.
+It checks all of the closures $cl^{*}$ against their expected types $tfi^{*}$ in $C$, and similarly for all of the globals ($v^{*}$ and $(\text{mut}^{?}\; t)^{*}$).
+The table and memory indices ($i$ and $j$, respectively) are used to look up the the relevant types ($(n,tfi^{*})$ and $m$, respectively) in the store context $S$.
 Closures are typechecked by \refrule{Closure}, which falls back on the module typing rules from \autoref{fig:modulerules} to typecheck the function definition inside of the closure.
 \refrule{Admin-Const} gets the postcondition indexed types and constraints on values; it is used to typecheck local and global variables.
 
@@ -177,7 +177,7 @@ This is accomplished in \autoref{subsec:erasure} using an erasure function that 
 
 \section{Type Safety}
 \label{sec:typesafety}
-\emph{Type safety} is the property that a well-typed program either reduces to another well-typed program, is an irreducible expression (in the case of \name, a sequence of values), or throws an error (trap, in the case of \name).
+\emph{Type safety} is the property that a well-typed program either reduces to another well-typed program, is an intentionally irreducible expression (in the case of \name, a sequence of values), or throws an error (trap, in the case of \name).
 Thus, type safety assures us that the behavior of a well-typed program is always well defined.
 The type safety of \wasm guarantees a number of important properties, including memory safety.
 Proving the type safety of \name gives us a high degree of assurance that it has the same level of safety as \wasm.
