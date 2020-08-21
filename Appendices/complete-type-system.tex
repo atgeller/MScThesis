@@ -4,7 +4,7 @@
 \begin{mathpar}
     \boxed{tfi <: tfi} \\
 
-    \inferrule*[right=\defrule{Implies}]{
+    \inferrule*[right=\rulename{Implies}]{
         \phi_0 \implies \phi_1 \and
         \phi_2 \implies \phi_3
     }{
@@ -15,23 +15,23 @@
 \begin{mathpar}
     \boxed{C\vdash e^{*} : tfi} \\
 
-    \inferrule*[right=\defrule{Unreachable}]{ }{ %% unreachable
+    \inferrule*[right=\rulename{Unreachable}]{ }{ %% unreachable
         C \vdash \<unreachable> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule*[right=\defrule{Nop}]{ }{ %% nop
+    \inferrule*[right=\rulename{Nop}]{ }{ %% nop
         C \vdash \<nop> : \epsilon;l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule*[right=\defrule{Drop}]{ }{ %% drop
+    \inferrule*[right=\rulename{Drop}]{ }{ %% drop
         C \vdash \<drop> : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule*[right=\defrule{Const}]{ a \not\in \phi }{ %% const
+    \inferrule*[right=\rulename{Const}]{ a \not\in \phi }{ %% const
         C \vdash t.\<const> c : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a},(= a \ti{t}{c})
     }
 
-    \inferrule*[right=\defrule{Binop}]{ a_3 \not\in \phi }{ %% binop
+    \inferrule*[right=\rulename{Binop}]{ a_3 \not\in \phi }{ %% binop
         C \vdash t.binop :
         {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
@@ -39,7 +39,7 @@
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Testop}]{ a_3 \not\in \phi }{ %% testop
+    \inferrule*[right=\rulename{Testop}]{ a_3 \not\in \phi }{ %% testop
         C \vdash t.testop :
         {\begin{stackTL}
             \ti{t}{a_1}\;l;\phi
@@ -47,7 +47,7 @@
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Relop}]{ a_3 \not\in \phi }{ %% relop
+    \inferrule*[right=\rulename{Relop}]{ a_3 \not\in \phi }{ %% relop
         C \vdash t.relop :
         {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2};l;\phi
@@ -55,7 +55,7 @@
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Select}]{a_3 \not\in \phi}{ %% select
+    \inferrule*[right=\rulename{Select}]{a_3 \not\in \phi}{ %% select
         C \vdash \<select> : {\begin{stackTL}
             \ti{t}{a_1}\;\ti{t}{a_2}\;\ti{i32}{a};l;\phi
             \\ \rightarrow \ti{t}{a_3};l;\phi,
@@ -66,7 +66,7 @@
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Block}]{ %% block
+    \inferrule*[right=\rulename{Block}]{ %% block
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
     }
     {
@@ -75,14 +75,14 @@
 \end{mathpar}
 
 \begin{mathpar}
-    \inferrule*[right=\defrule{Loop}]{ %% loop
+    \inferrule*[right=\rulename{Loop}]{ %% loop
         C_2,\text{label } (ti_1^{*};l_1;\phi_1)^{*} \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
     }
     {
         C \vdash \<loop>\; (ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2)\; e^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule*[right=\defrule{If}]{ %% if
+    \inferrule*[right=\rulename{If}]{ %% if
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_1^{*} : ti_1^{*};l_1;\phi_1, \neg(= a\; \ti{\<ithreetwo>}{0}) \rightarrow ti_2^{*};l_2;\phi_2 \\
         C_2,\text{label } (ti_2^{*};l_2;\phi_2) \vdash e_2^{*} : ti_1^{*};l_1;\phi_1, (= a\; \ti{\<ithreetwo>}{0})) \rightarrow ti_2^{*};l_2;\phi_2 \\
     }
@@ -90,28 +90,28 @@
         C \vdash \<if>\; (ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2)\; e_1^{*} \<else> e_2^{*} \<end> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule*[right=\defrule{Br}]{ %% br
+    \inferrule*[right=\rulename{Br}]{ %% br
         C_{\text{label}}(i) = ti^{*};l_1;\phi_1
     }
     {
         C \vdash \<br> i : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule*[right=\defrule{Return}]{ %% return
+    \inferrule*[right=\rulename{Return}]{ %% return
         C_{\text{return}} = ti^{*};l_1;\phi_1
     }
     {
         C \vdash \<return> : ti_1^{*}\;ti^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule*[right=\defrule{Br-If}]{ %% br_if
+    \inferrule*[right=\rulename{Br-If}]{ %% br_if
         C_{\text{label}}(i) = ti^{*};l_1;\phi_1,\neg(= a\; \ti{\<ithreetwo>}{0})
     }
     {
         C \vdash \<brif> i : ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti^{*};l_1;\phi_1,(= a\; \ti{\<ithreetwo>}{0})
     }
 
-    \inferrule*[right=\defrule{Br-Table}]{ %% br_table
+    \inferrule*[right=\rulename{Br-Table}]{ %% br_table
         (C_{\text{label}}(i) = ti^{*};l_1;\phi_i)^{+} \and
         (\phi_1 \implies \phi_i)^n
     }
@@ -119,14 +119,14 @@
         C \vdash \<brtable> i^{+} : ti_1^{*}\;ti^{*}\;\index{i32}{a};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
 
-    \inferrule*[right=\defrule{Call}]{ %% call
+    \inferrule*[right=\rulename{Call}]{ %% call
         C_\text{func}(i) = ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
     {
         C \vdash \<call> i : ti_1^{*};l;\phi_1 \rightarrow ti_2^{*};l;\phi_1,\phi_2
     }
 
-    \inferrule*[right=\defrule{Call-Indirect}]{ %% call_indirect
+    \inferrule*[right=\rulename{Call-Indirect}]{ %% call_indirect
         C_\text{table}(i) = (j, \tfi_2^{*}) \and
     }
     {
@@ -137,7 +137,7 @@
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Get-Local}]{ %% get_local
+    \inferrule*[right=\rulename{Get-Local}]{ %% get_local
         C_{\text{local}}(i) = t \and
         l(i) = \ti{t}{a} \and
         a_2 \not\in \phi
@@ -146,7 +146,7 @@
         C \vdash \<getlocal> i : \epsilon;l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2},(= a_2 \; a)
     }
 
-    \inferrule*[right=\defrule{Set-Local}]{ %% set_local
+    \inferrule*[right=\rulename{Set-Local}]{ %% set_local
         C_{\text{local}}(i) = t \and
         l_2 = l_1[i := \ti{t}{a}] \and
     }
@@ -156,7 +156,7 @@
 \end{mathpar}
 
 \begin{mathpar}
-    \inferrule*[right=\defrule{Tee-Local}]{ %% tee_local
+    \inferrule*[right=\rulename{Tee-Local}]{ %% tee_local
         C_{\text{local}}(i) = t \and
         l_2 = l_1[i := \ti{t}{a}] \and
         a_2 \not\in \phi
@@ -165,7 +165,7 @@
         C \vdash \<teelocal> i : \ti{t}{a};l_1;\phi \rightarrow \ti{t}{a_2};l_2;\phi,\ti{t}{a_2},(= a_2 \; a)
     }
 
-    \inferrule*[right=\defrule{Get-Global}]{ %% get_global
+    \inferrule*[right=\rulename{Get-Global}]{ %% get_global
         C_\text{global}(i) = \text{mut}^{?}\; t \and
         a \not\in \phi
     }
@@ -173,14 +173,14 @@
         C \vdash \<getglobal> i : \epsilon;l;\phi \rightarrow \ti{t}{a};l;\phi,\ti{t}{a}
     }
 
-    \inferrule*[right=\defrule{Set-Global}]{ %% set_global
+    \inferrule*[right=\rulename{Set-Global}]{ %% set_global
         C_\text{global}(i) = \text{mut } t
     }
     {
         C \vdash \<setglobal> i : \ti{t}{a};l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule*[right=\defrule{Mem-Load}]{ %% memory load
+    \inferrule*[right=\rulename{Mem-Load}]{ %% memory load
         C_\text{memory} = n \and
         2^{align} \leq (|tp| <)^{?} |t| \and
         a_2 \not\in \phi
@@ -189,7 +189,7 @@
         C \vdash t.\<load> (tp\_sx)^{?}\; align\; o : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{t}{a_2};l;\phi,\ti{t}{a_2}
     }
 
-    \inferrule*[right=\defrule{Mem-Store}]{ %% memory store
+    \inferrule*[right=\rulename{Mem-Store}]{ %% memory store
         C_\text{memory} = n \and
         2^{align} \leq (|tp| <)^{?} |t|
     }
@@ -197,7 +197,7 @@
         C \vdash t.\<store> tp^{?}\; align\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule*[right=\defrule{Current-Memory}]{ %% current mem
+    \inferrule*[right=\rulename{Current-Memory}]{ %% current mem
         C_\text{memory} = n \and
         a \not\in \phi
     }
@@ -205,7 +205,7 @@
         C \vdash \<currentmemory> : \epsilon;l;\phi \rightarrow \ti{\<ithreetwo>}{a};l;\phi,\ti{\<ithreetwo>}{a}
     }
 
-    \inferrule*[right=\defrule{Grow-Memory}]{ %% grow mem
+    \inferrule*[right=\rulename{Grow-Memory}]{ %% grow mem
         C_\text{memory} = n \and
         a_2 \not\in \phi
     }
@@ -213,13 +213,13 @@
         C \vdash \<growmemory> : \ti{\<ithreetwo>}{a_1};l;\phi \rightarrow \ti{\<ithreetwo>}{a_2};l;\phi,\ti{\<ithreetwo>}{a_2}
     }
 
-    \inferrule*[right=\defrule{Empty}]{ %% empty
+    \inferrule*[right=\rulename{Empty}]{ %% empty
     }
     {
         C \vdash \epsilon : \epsilon;l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule*[right=\defrule{Stack-Poly}]{ %% extra vars
+    \inferrule*[right=\rulename{Stack-Poly}]{ %% extra vars
         C \vdash e^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }
     {
@@ -228,7 +228,7 @@
 \end{mathpar}
 
 \begin{mathpar}
-    \inferrule*[right=\defrule{Composition}]{ %% combine
+    \inferrule*[right=\rulename{Composition}]{ %% combine
         C \vdash e_1^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 \\
         C \vdash e_2 : ti_2^{*};l_2;\phi_2 \rightarrow ti_3^{*};l_3;\phi_3
     }
@@ -236,14 +236,14 @@
         C \vdash e_1^{*}\;e_2 : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3
     }
 
-    \inferrule*[right=\defrule{Subtyping}]{
+    \inferrule*[right=\rulename{Subtyping}]{
         ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2 <: ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3 \\
         C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2
     }{
         C \vdash e^{*} \rightarrow ti_1^{*};l_1;\phi_0 \rightarrow ti_2^{*};l_2;\phi_3
     }
 
-    \inferrule*[right=\defrule{Div-Prechk}]{
+    \inferrule*[right=\rulename{Div-Prechk}]{
         \phi \implies \neg(=\ a_2\ 0) \and
         a_3 \not\in \phi
     }{
@@ -254,7 +254,7 @@
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Load-Prechk}]{ %% memory load
+    \inferrule*[right=\rulename{Load-Prechk}]{ %% memory load
         C_\text{memory} = n \and
         2^{align} \leq (|tp| <)^{?} |t| \and
         a_3 \not\in \phi \\
@@ -272,7 +272,7 @@
         \end{stackTL}}
     }
 
-    \inferrule*[right=\defrule{Store-Prechk}]{ %% memory store
+    \inferrule*[right=\rulename{Store-Prechk}]{ %% memory store
         C_\text{memory} = n \and
         2^{align} \leq (|tp| <)^{?} |t| \\
         \phi \implies
@@ -285,7 +285,7 @@
         C \vdash t.\<storepc> tp^{?}\; align\; o : \ti{\<ithreetwo>}{a_1}\;\ti{t}{a_2};l;\phi \rightarrow \epsilon;l;\phi
     }
 
-    \inferrule*[right=\defrule{Call-Indirect-Prechk}]{ %% call_indirect
+    \inferrule*[right=\rulename{Call-Indirect-Prechk}]{ %% call_indirect
         C_{table}(i) = (n, (\tfi_2 ...)) \\
         \phi \implies (\<gt>\; n\; a) \land (\<le> \ti{\<ithreetwo>}{0}\; a) \\
         \mathit{tfis}=(\tfi_2 ...) \\
