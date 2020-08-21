@@ -1,7 +1,7 @@
 \chapter{Conclusion}
 \label{chp:conclusion}
 We have introduced \name, a low-level language that uses an expressive type system to potentially improve performance via the elimination of unnecessary run-time checks.
-\name is based on \wasm, a real world language commonly used in performance-critical and untrusted contexts, where both safety and performance are critical.
+\name is based on \wasm, an existing real-world language commonly used in performance-critical and untrusted contexts, where both safety and performance are critical.
 To ensure the safety of \name, we have proven the type safety of the \name language as well as showing a sound type erasure to \wasm, demonstrating that \name is at least as safe as \wasm.
 We have shown that an indexed type system can be used in a low-level language to reduce the number of dynamic checks required, without sacrificing safety and security guarantees or increasing the programmer's proof burden.
 We built a reference interpreter for \name to demonstrate the practicality of implementing a typechecker for \name.

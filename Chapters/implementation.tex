@@ -136,12 +136,14 @@ We currently do not support floating point values because Z3 is unable to reason
 In addition, the \wasm unary operators ($ctz$, $clz$, and $popcnt$, which provide bit-level information) and certain binary operators ($rotr$ and $rotl$) would be difficult and inefficient to reason about using Z3 due to their non-linearity, so we do not currently support them in \name.
 However, we treat these operators (and floating point values), like memory operations and simply assume nothing about them.
 
-\paragraph{Type Annotations in Constraints.}
+\paragraph{Type Annotations in Constraints}
 The requirement of adding explicit type annotations for index variables and constants that appear in type indices comes from needing to know what width the variable will be when we convert it to a Z3 bitvector.
 Without these type annotations, we would not know whether a constant $c$ should be represented using a 32-bit or 64-bit vector (depending on if it is an $\<ithreetwo>$ or $\<isixfour>$).
 
 \paragraph{Performance Concerns}
 There are performance concerns when using an SMT solver.
-While our small examples programs have been near instantaneous to typecheck (usually involving only one Z3 invocation with a few constraints), we may see slowdown due to significantly larger constraint sets when typechecking large \wasm programs.
+Our small examples programs have been near instantaneous to typecheck (usually involving only one Z3 invocation with a few constraints).
+For example, the query in \autoref{fig:z3example}, is very small and takes milliseconds to run.
+However, it is likely that we will see a slowdown due to significantly larger constraint sets when typechecking large \wasm programs.
 This would require a clever approach to reducing the size of the constraint set (perhaps using a form of type-level garbage collection on constraints on index variables that cannot be referred to).
 Also, we would want to make sure when writing a typechecker/synthesizer that we invoke Z3 as little as possible, by minimizing the amount of reasoning we do about the constraints.
