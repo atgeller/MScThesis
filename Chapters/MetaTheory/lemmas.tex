@@ -1,9 +1,12 @@
 \reflemma{Inversion} tells us what typing rules can apply to a given \name instruction sequence, and therefore lets us reason about what the type of that sequence looks like.
 For example, if we have a typing derivation, $D$ for $S;C \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$, then we know that $D$ must have at its base \refrule{Const}, because that is the only way we have of typing constant instructions.
 $D$ can also include any number of applications of \refrule{Subtyping} and \refrule{Stack-Poly}, because they can be applied to any well-typed sequence of instructions.
-Thus, we do not know the exact types, since the typing rules are non-deterministic, but we can reason about the general shape given the base type on top of which \refrule{Subtyping} and \refrule{Stack-Poly} get applied.
+
+We do not know the exact types of instructions just from them being well typed, since the typing rules are non-deterministic.
+However, we can reason about the general shape of the types given the base type on top of which \refrule{Subtyping} and \refrule{Stack-Poly} get applied.
 Additionally, \refrule{Composition} can be used with the empty sequence and any well-typed single instruction.
-However, the addition of \refrule{Composition} with the empty sequence is trivial because the postcondition of an empty instruction sequence must be immediately reachable from the precondition, and therefore the stack and local index store must be the same in both (and the postcondition index type context being reachable from the precondition index type context).
+The addition of \refrule{Composition} with the empty sequence is trivial because the postcondition of an empty instruction sequence must be immediately reachable from the precondition.
+Therefore the stack and local index store must be the same in both the precondition and postcondition of the empty sequence in the above case, and the postcondition index type context must be reachable from the precondition index type context.
 
 Most cases of \reflemma{Inversion} are omitted.
 The complete definition can be found in the appendix (\autoref{sec:subreduxproof}).

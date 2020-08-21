@@ -173,6 +173,7 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
     Preamble/dedication,
     Preamble/abstract,
     Preamble/laysummary,
+    Preamble/preface,
     Chapters/introduction,
     Chapters/background,
     Chapters/wasm-prechk,
@@ -193,7 +194,7 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
 \degreetitle{Masters of Science}
 
 \institution{The University Of British Columbia}
-\faculty{The Faculty of Graduate Studies}
+\faculty{The Faculty of Graduate and Postdoctoral Studies}
 \campus{Vancouver}
 \department{Computer Science}
 
@@ -215,12 +216,15 @@ sub[sub], shl[shl], or[or], gt[gt], import[import\;], export[export\;], convert[
 
 \maketitle
 
-%%\makecommitteepage
+\makecommitteepage
 
 \include{Preamble/abstract}
 \cleardoublepage
 
 \include{Preamble/laysummary}
+\cleardoublepage
+
+\include{Preamble/preface}
 \cleardoublepage
 
 \tableofcontents                %% Mandatory
