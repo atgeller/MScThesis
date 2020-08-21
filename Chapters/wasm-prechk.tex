@@ -930,7 +930,7 @@ Globals, $glob$, are typechecked under the module index context containing only 
             C \vdash ex^{*}\; \<func> \tfi\; \<local> t^{*}\; e^{*} : ex^{*}\; \tfi
         } \and
 
-        \inferrule*[]{ %% imported function
+        \inferrule*[right=\defrule{Imported Func}]{ %% imported function
         } {
             C \vdash ex^{*}\; \<func> \tfi\; im : ex^{*}\; \tfi
         } \\

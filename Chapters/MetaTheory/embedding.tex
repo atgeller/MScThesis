@@ -84,7 +84,7 @@ We construct an indexed function type that has the precondition of the expected 
                     (\ti{t_1}{a_1}^{*};\epsilon;(\circ,\ti{t_1}{a_1}^{*})
                     \\ \rightarrow
                     \ti{t_2}{a_2}^{*};\epsilon;(\circ,\ti{t_2}{a_2}^{*}))
-                    \\ \<local>\; t^{*}\; \embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}
+                    \\ \<local>\; t^{*}\; (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}
                 \end{stackTL}\\
             embed_f(ex^{*}\; \<wfunc> (t_1^{*} \rightarrow t_2^{*})\; im)
             &=& ex^{*}\; \<func>\;
@@ -195,8 +195,8 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     Thus, we only need to reason about the functions $f^{*}$ and table $tab^{?}$.
 
     % 1. Instantiate premises of WASM module.
-    $(C_w \vdash f : ex_f^{*}\; tf)^{*}$, where
-    $C_w = \{ \text{func } tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$
+    $(C_w \vdash f : ex_f^{*}\; \tf)^{*}$, where
+    $C_w = \{ \text{func } \tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$
     since they are premises of WASM module.
 
     % 2. Instantiate the structure of the function embeddings. This gets us the type annotations of the functions.
@@ -215,17 +215,53 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     Then, $(C_p \vdash ex_t^{*}\; \<table> n\; i^n : ex_t^{*}\; (n,\tfi_t^n))^{?}$, by \refrule{Table}.
 
     % 7. Claim well-typedness of the embedded functions. (1, 4)
-    $(C_p \vdash \embed[f]{f} : ex_f^{*}\; \tfi)^{*}$ by \autoref{thm:functionembedding}.
+    $(C_p \vdash \embed[f]{f} : ex_f^{*}\; \tfi)^{*}$ by \reflemma{Sound Function Typing Embedding}.
 
     % 8. Claim well-typedness of embedded module. (4, 6, 7)
     Therefore, $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{*}}$.
 \end{proof}
 
-\begin{theorem}{Sound Function Typing Embedding}
-    \label{thm:functionembedding}
+\begin{lemma}{Sound Function Typing Embedding}
 
-    If $(C_w \vdash f : ex_f^{*}\; tf)^{*}$, where
-    $C_w = \{ \text{func } tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$,
+    If $C_w \vdash f : ex_f^{*}\; t_1^{*} \rightarrow t_2^{*}$, where
+    $C_w = \{ \text{func } \tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$,
     $C_p = \{ \text{func } \tfi^{*},\; \text{global } tg^{*},\; \text{table } (n,\tfi_t^n)^{?}, \text{memory } n^{?} \}$,
-    \\ then $(C_p \vdash \embed[f]{f}^{*} : ex_f^{*}\; \tfi)^{*}$.
-\end{theorem}
+    \\ then $C_p \vdash \embed[f]{f}^{*} : ex_f^{*}\; \tfi_f$, where
+    $\tfi_f = \ti{t_1}{a_1}^{*};\epsilon;(\circ,\ti{t_1}{a_1}^{*}) \rightarrow \ti{t_2}{a_2}^{*};\epsilon;(\circ,\ti{t_2}{a_2}^{*})$,
+    $\phi_1 = (\circ,\ti{t_1}{a_1}^{*})$,
+    $\phi_2 = (\circ,\ti{t_2}{a_2}^{*})$.
+    % These are just to make the statements not quite so long
+\end{lemma}
+\begin{proof}
+
+    Proceed by cases on the definition of $f$.
+
+    \begin{enumerate}
+        \item $f = ex_f^{*}\; \<wfunc> \tf\; \<wlocal>\; t^{*}\; e^{*}$
+
+        $C_w,\text{local } t_1^{*}\;t^{*},\text{label } (t_2^{*}),\text{return } (t_2^{*}) \vdash e^{*} : \epsilon \rightarrow t_2^{*}$ since it is a premise of WASM Func.
+
+        $\embed[f]{f} = ex_f^{*}\; \<func> \tfi_f\; \<local>\; t^{*}\; (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*}$ by \autoref{def:embed-f}.
+
+        Let $C_f = C_p,\text{local } t_1^{*}\;t^{*},\text{label } (\ti{t_2}{a_2}^{*};l;\phi_2),\text{return } (\ti{t_2}{a_2}^{*};l;\phi_2)$.
+
+        \thought{l comes out of nowhere, shouldn't be a problem depending on what the instruction list lemma is}
+
+        $C_f \vdash (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : \epsilon;\ti{t_1}{a_1}^{*}\;\ti{t}{a_l}^{*};\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l;\phi_2$ by \reflemma{Sound Instruction List Typing Embedding}.
+
+        Then, $C_p \vdash ex_f^{*}\; \<func> \tfi_f\; \<local>\; t^{*}\; (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : ex_f^{*}\; \tfi_f$ by \refrule{Func}.
+
+        \item $f = ex_f^{*}\; \<wfunc> \tf\; im$
+
+        $\embed[f]{f} = ex_f^{*}\; \<func> \tfi_f\; im$ by \autoref{def:embed-f}.
+
+        Then, $C_p \vdash ex_f^{*}\; \<func> \tfi_f\; im : ex_f^{*}\; \tfi_f$ by \refrule{Imported Func}.
+
+    \end{enumerate}
+\end{proof}
+
+\begin{lemma}{Sound Instruction List Typing Embedding}
+
+    \todo{...}
+\end{lemma}
+
