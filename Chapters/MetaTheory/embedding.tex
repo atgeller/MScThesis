@@ -186,7 +186,7 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     \label{thm:moduleembedding}
 
     If $\vdash \<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{?}$ and
-    $tab = (ex_t^{*}\; \<wtable> n\; i^{*})$,
+    $tab = (ex_t^{*}\; \<wtable> n\; i^n)$,
     \\ then $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{?}}$
 \end{theorem}
 \begin{proof}
@@ -194,17 +194,38 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     Note that the globals $glob^{*}$ and memory $mem^{?}$ are not affected by embedding, and have the same module typing rules in \wasm as in \name.
     Thus, we only need to reason about the functions $f^{*}$ and table $tab^{?}$.
 
-    $C_w = \{ \text{func } tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$ since it is a premise of WASM module.
+    % 1. Instantiate premises of WASM module.
+    $(C_w \vdash f : ex_f^{*}\; tf)^{*}$, where
+    $C_w = \{ \text{func } tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$
+    since they are premises of WASM module.
 
-    If $(C_w \vdash f : ex_f^{*}\; tf)^{*}$,
-    $(annotation(\embed[f]{f}) = \tfi)^{*}$, and
-    $C_p = \{ \text{func } \tfi^{*}, \text{global } tg^{*}, \text{table } n^{?},\; \text{memory } n^{?} \}$,
-    then $(C_p \vdash \embed[f]{f}^{*} : ex^{*}_f\; \tfi)^{*}$ by \todo{TODO}.
+    % 2. Instantiate the structure of the function embeddings. This gets us the type annotations of the functions.
+    $(annotation(\embed[f]{f}) = \tfi)^{*}$.
 
-    $\embed[tab]{tab^{?}}^{\tfi^{*}} = (ex_t^{*}\; \<table> n\; \tfi_t^n)^{?}$,
-    where $\forall i. \tfi^{*}(i) = \tfi_t$ by \autoref{def:embed-t}.
+    % 3. Construct the table types from the function annotations and i. (2)
+    Let $\tfi_t = (\forall i. \tfi^n(i))^{?}$.
 
+    % 4. Construct the context for the embeddings. (2, 3)
+    Let $C_p = \{ \text{func } \tfi^{*}, \text{global } tg^{*}, \text{table } (n,\tfi_t^n)^{?}, \text{memory } n^{?} \}$.
+
+    % 5. Instantiate the table embedding, using the definition of tfi_t above. (3)
+    $\embed[tab]{tab^{?}}^{\tfi^{*}} = (ex_t^{*}\; \<table> n\; \tfi_t^n)^{?}$ by \autoref{def:embed-t}.
+
+    % 6. Claim well-typedness of the embedded table. (4, 5)
     Then, $(C_p \vdash ex_t^{*}\; \<table> n\; i^n : ex_t^{*}\; (n,\tfi_t^n))^{?}$, by \refrule{Table}.
 
+    % 7. Claim well-typedness of the embedded functions. (1, 4)
+    $(C_p \vdash \embed[f]{f} : ex_f^{*}\; \tfi)^{*}$ by \autoref{thm:functionembedding}.
+
+    % 8. Claim well-typedness of embedded module. (4, 6, 7)
     Therefore, $\vdash \embed[module]{\<wmodule> f^{*}\;glob^{*}\;tab^{?}\;mem^{*}}$.
 \end{proof}
+
+\begin{theorem}{Sound Function Typing Embedding}
+    \label{thm:functionembedding}
+
+    If $(C_w \vdash f : ex_f^{*}\; tf)^{*}$, where
+    $C_w = \{ \text{func } tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$,
+    $C_p = \{ \text{func } \tfi^{*},\; \text{global } tg^{*},\; \text{table } (n,\tfi_t^n)^{?}, \text{memory } n^{?} \}$,
+    \\ then $(C_p \vdash \embed[f]{f}^{*} : ex_f^{*}\; \tfi)^{*}$.
+\end{theorem}
