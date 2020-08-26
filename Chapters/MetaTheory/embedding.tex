@@ -249,6 +249,10 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
         $C_f \vdash (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : \epsilon;\ti{t_1}{a_1}^{*}\;\ti{t}{a_l}^{*};\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l;\phi_2$ by \reflemma{Sound Instruction List Typing Embedding}.
 
+        \thought{where do the local type declarations get added to the constraint sets, do we need them?}
+
+        \thought{I believe we need type declarations for all referenced index vars in the constraint set?}
+
         Then, $C_p \vdash ex_f^{*}\; \<func> \tfi_f\; \<local>\; t^{*}\; (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : ex_f^{*}\; \tfi_f$ by \refrule{Func}.
 
         \item $f = ex_f^{*}\; \<wfunc> \tf\; im$
@@ -262,6 +266,77 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
 \begin{lemma}{Sound Instruction List Typing Embedding}
 
-    \todo{...}
+    If $C_w \vdash e^{*} : \epsilon \rightarrow t_2^{*}$,
+    $C_w = \{ \text{func } \tf^{*}, \text{global } tg^{*}, \text{table } n_t^{?}, \text{memory } n_m^{?}, \text{local } t_l^{*}, \text{label } (t_2^{*}), \text{return } (t_2^{*}) \}$,
+    $C_p = \{ \text{func } \tfi^{*}, \text{global } tg^{*}, \text{table } (n_t,\tfi_t^n)^{?}, \text{memory } n_m^{?}, \text{local } t_l^{*}, \text{label } (\ti{t_2}{a_2}^{*};l_2;\phi_2), \text{return } (\ti{t_2}{a_2}^{*};l_2;\phi_2) \}$, where
+    $\tf = \epsilon \rightarrow t_2^{*}$,
+    $\tfi = \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$,
+    $\phi_2 = \circ,\ti{t_2}{a_2}^{*}$,
+    \\ then $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow ti^{*};l_2;\phi_2$.
+
+    \thought{This is one nasty lemma, but requires all the specifics because if we're not careful the prechk code adds information.}
+
+    \thought{This is still a little over-specific, i.e. I think we could allow for non-empty preconditions, but I think this is all we need.}
+\end{lemma}
+\begin{proof}
+
+    \thought{How....}
+
+    Since no constraints are placed on the index variables $a_2^{*}$, any values of type $t_2$ will satisfy $\phi_2$.
+
+    Since the WASM rules guarantee that the postcondition values of $e^{*}$ have type $t_2$.
+
+    % I need to claim that the embedded instructions have the same type type.
+    % Then how can I claim composition - it relies on what the type annotations for block, loop instructions are.
+    % Maybe I should make a lemma about composition specifically?
+
+    Thought maybe this lemma could mimick the typing rule and make a claim about $e^{*}\;e$? that way I can show composition with the rest and kind of recursively deconstruct any instruction list.
+    this does prevent us from typing empty instruction lists, which I think might be valid wasm code as long as the instruction is $\epsilon \rightarrow \epsilon$.
+
+    Proceed by cases on the instruction list, either $e^{*} = \epsilon$, or $e^{*} = e_1^{*}\; e_2$, then claim that $e_1^{*}$ types under WASM by inversion on WASM composition,
+    then use the inversion on composition to claim that the WASM precondition of $e_2$ is the postcondition of $e_1^{*}$, then invoke an instruction based lemma that claims WASM well-typed
+    implies the embedding is prechk well-typed with a type that makes it fit what we want here.
+
+    \begin{enumerate}
+        \item $e^{*} = \epsilon$
+
+        $t_2^{*} = \epsilon$ by \todo{not sure how to justify, inversion on WASM Empty?}
+
+        Then we can choose $l_2 = \ti{t_l}{a_l}^{*}$.
+
+        Note that $\phi_2 = \circ$.
+
+        $C_p \vdash \epsilon : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;(\phi_2,\ti{t_l}{a_l}^{*})$ by \refrule{Empty}.
+
+        Therefore, $C_p \vdash \epsilon : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Implies}.
+
+        Therefore, $C_p \vdash (\embed[e]{e^{*}}) : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Implies}.
+
+        \item $e^{*} = e_1^{*}\; e_2^{*}$
+
+        \thought{claim inversion on WASM typing to get a type, then invoke the instruction typing lemma to show the embedding has an equivalent type, then invoke this lemma again}
+
+        By inversion on WASM composition, $C_w \vdash e_1^{*} : \epsilon \rightarrow t_3^{*}$ and $C_w \vdash e_2 : t_3^{*} \rightarrow t_2^{*}$.
+
+        $C_p \vdash \embed[e]{e_2}^{(t_l^{*})} : \ti{t_3}{a_3}^{*};l_3;\phi_3 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$ by \reflemma{Sound Instruction Typing Embedding}.
+
+        \todo{Will have to specify the exact layout of $l_3$, $\phi_3$, this will have to include the local type declarations}.
+
+        $C_p \vdash (\embed[e_1]{e_1}^{(t_l^{*})})^{*} : \epsilon;l_1;\phi_1 \rightarrow \ti{t_3}{a_3}^{*};l_3;\phi_3$ by \reflemma{Sound Instruction List Typing Embedding}.
+
+        \todo{$l_1$, $\phi_1$ are currently not specified, will specify them earlier so I don't have to write out the exact definition every time.}
+
+        Therefore, $C_p \vdash (\embed[e]{e^{*}}) : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Composition}.
+
+    \end{enumerate}
+
+\end{proof}
+
+\begin{lemma}{Sound Instruction Typing Embedding}
+
+    If $C_w \vdash e : t_1^{*} \rightarrow t_2^{*}$,
+    \\ then $C_p \vdash \embed[e]{e}^{(t_l^{*})} : \ti{t_1}{a_1}^{*};\ti{t_l}{a_3}^{*};\phi_1 \rightarrow \ti{t_2}{a_2}^{*};\ti{t_l}{a_4}^{*};\phi_2$, where
+    $\phi_1 = \circ,\ti{t_1}{a_1}^{*},\ti{t_l}{a_3}^{*}$,
+    $\phi_2 = \circ,\ti{t_2}{a_2}^{*},\ti{t_l}{a_4}^{*}$.
 \end{lemma}
 
