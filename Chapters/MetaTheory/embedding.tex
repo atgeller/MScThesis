@@ -223,21 +223,24 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
 \begin{lemma}{Sound Function Typing Embedding}
 
-    If $C_w \vdash f : ex_f^{*}\; t_1^{*} \rightarrow t_2^{*}$, where
-    $C_w = \{ \text{func } \tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?},\; \text{memory } n^{?} \}$,
+    If $C_w \vdash f : ex_f^{*}\; t_1^{*} \rightarrow t_2^{*}$,
+    $C_w = \{ \text{func } \tf^{*},\; \text{global } tg^{*},\; \text{table } n^{?}, \text{memory } n^{?} \}$,
     $C_p = \{ \text{func } \tfi^{*},\; \text{global } tg^{*},\; \text{table } (n,\tfi_t^n)^{?}, \text{memory } n^{?} \}$,
+    % make sure the function definitions match
+    $(\erase[\tfi]{\tfi} = \tf)^{*}$,
     \\ then $C_p \vdash \embed[f]{f}^{*} : ex_f^{*}\; \tfi_f$, where
-    $\tfi_f = \ti{t_1}{a_1}^{*};\epsilon;(\circ,\ti{t_1}{a_1}^{*}) \rightarrow \ti{t_2}{a_2}^{*};\epsilon;(\circ,\ti{t_2}{a_2}^{*})$,
-    $\phi_1 = (\circ,\ti{t_1}{a_1}^{*})$,
-    $\phi_2 = (\circ,\ti{t_2}{a_2}^{*})$.
     % These are just to make the statements not quite so long
+    $\tfi_f = \ti{t_1}{a_1}^{*};\epsilon;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};\epsilon;\phi_2$,
+    $\phi_1 = \circ,\ti{t_1}{a_1}^{*}$,
+    $\phi_2 = \circ,\ti{t_2}{a_2}^{*}$.
 \end{lemma}
 \begin{proof}
 
-    Proceed by cases on the definition of $f$.
+    Proceed by cases on the typing derivation of $C_w \vdash f : ex_f^{*}\; t_1^{*} \rightarrow t_2^{*}$.
 
     \begin{enumerate}
-        \item $f = ex_f^{*}\; \<wfunc> \tf\; \<wlocal>\; t^{*}\; e^{*}$
+        \item $f = ex_f^{*}\; \<wfunc> t_1^{*} \rightarrow t_2^{*}\; \<wlocal>\; t^{*}\; e^{*}$
+        \\ $\land$ $C_w \vdash ex_f^{*}\; \<wfunc> t_1^{*} \rightarrow t_2^{*}\; \<wlocal>\; t^{*}\; e^{*} : ex_f^{*}\; t_1^{*} \rightarrow t_2^{*}$
 
         $C_w,\text{local } t_1^{*}\;t^{*},\text{label } (t_2^{*}),\text{return } (t_2^{*}) \vdash e^{*} : \epsilon \rightarrow t_2^{*}$ since it is a premise of WASM Func.
 
@@ -245,17 +248,18 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
         Let $C_f = C_p,\text{local } t_1^{*}\;t^{*},\text{label } (\ti{t_2}{a_2}^{*};l;\phi_2),\text{return } (\ti{t_2}{a_2}^{*};l;\phi_2)$.
 
-        \thought{l comes out of nowhere, shouldn't be a problem depending on what the instruction list lemma is}
+        \thought{$l$ comes out of nowhere, should it be more specified?}
 
-        $C_f \vdash (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : \epsilon;\ti{t_1}{a_1}^{*}\;\ti{t}{a_l}^{*};\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l;\phi_2$ by \reflemma{Sound Instruction List Typing Embedding}.
+        Let $l_1 = \ti{t_1}{a_1}^{*}\;\ti{t}{a_l}^{*}$.
 
-        \thought{where do the local type declarations get added to the constraint sets, do we need them?}
+        $C_f \vdash (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : \epsilon;l_1;\phi_1 \rightarrow \ti{t_2}{a_2}^{*};l;\phi_2$ by \reflemma{Sound Instruction Typing Embedding}.
 
-        \thought{I believe we need type declarations for all referenced index vars in the constraint set?}
+        \todo{This doesn't really work, since $\phi_1$ and $\phi_2$ don't reference the locals, so the $\phi$s and $C_f$ doesn't match the premises of the lemma}.
 
         Then, $C_p \vdash ex_f^{*}\; \<func> \tfi_f\; \<local>\; t^{*}\; (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : ex_f^{*}\; \tfi_f$ by \refrule{Func}.
 
-        \item $f = ex_f^{*}\; \<wfunc> \tf\; im$
+        \item $f = ex_f^{*}\; \<wfunc> t_1^{*} \rightarrow t_2^{*}\; im$
+        \\ $\land$ $C_w \vdash ex_f^{*}\; \<wfunc> t_1^{*} \rightarrow t_2^{*}\; im : ex_f^{*}\; t_1^{*} \rightarrow t_2^{*}$
 
         $\embed[f]{f} = ex_f^{*}\; \<func> \tfi_f\; im$ by \autoref{def:embed-f}.
 
@@ -264,72 +268,95 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     \end{enumerate}
 \end{proof}
 
-\begin{lemma}{Sound Instruction List Typing Embedding}
+\begin{lemma}{Sound Instruction Typing Embedding}
 
-    If $C_w \vdash e^{*} : \epsilon \rightarrow t_2^{*}$,
-    $C_w = \{ \text{func } \tf^{*}, \text{global } tg^{*}, \text{table } n_t^{?}, \text{memory } n_m^{?}, \text{local } t_l^{*}, \text{label } (t_2^{*}), \text{return } (t_2^{*}) \}$,
-    $C_p = \{ \text{func } \tfi^{*}, \text{global } tg^{*}, \text{table } (n_t,\tfi_t^n)^{?}, \text{memory } n_m^{?}, \text{local } t_l^{*}, \text{label } (\ti{t_2}{a_2}^{*};l_2;\phi_2), \text{return } (\ti{t_2}{a_2}^{*};l_2;\phi_2) \}$, where
-    $\tf = \epsilon \rightarrow t_2^{*}$,
-    $\tfi = \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$,
-    $\phi_2 = \circ,\ti{t_2}{a_2}^{*}$,
-    \\ then $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow ti^{*};l_2;\phi_2$.
-
-    \thought{This is one nasty lemma, but requires all the specifics because if we're not careful the prechk code adds information.}
-
-    \thought{This is still a little over-specific, i.e. I think we could allow for non-empty preconditions, but I think this is all we need.}
+    If $C_w \vdash e^{*} : t_1^{*} \rightarrow t_2^{*}$,
+    $C_w = \{
+        \text{func } \tf^{*},
+        \text{global } tg^{*},
+        \text{table } n_t^{?},
+        \text{memory } n_m^{?},
+        \text{local } t_l^{*},
+        \text{label } (t_b^{*})^{*},
+        \text{return } (t_r^{*})^{?}
+    \}$,
+    $C_p = \{
+        \text{func } \tfi^{*},
+        \text{global } tg^{*},
+        \text{table } (n_t,\tfi_t^n)^{?},
+        \text{memory } n_m^{?}, \text{local } t_l^{*},
+        \text{local } t_l^{*},
+        \text{label } (\ti{t_b}{a_b};l_b;(\circ,l_b,\ti{t_b}{a_b}))^{*},
+        \text{return } (\ti{t_r}{a_r};l_r;(\circ,\ti{t_r}{a_r}))^{?}
+    \}$,
+    % note that the label types include the locals types, but that the return type doesn't
+    % make sure the function definitions match
+    $(\erase[\tfi]{\tfi} = \tf)^{*}$,
+    \\ then $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$, where
+    % these are to make the definitions not quite as long, might be overcomplicating things
+    $\phi_1 = \circ,l_1,ti_1^{*}$.
+    $l_1 = \ti{t_l}{a_{l1}}$,
+    $ti_1^{*} = \ti{t_1}{a_1}^{*}$,
+    $ti_2^{*} = \ti{t_2}{a_2}^{*}$,
+    $l_2 = \ti{t_l}{a_{l2}}$,
+    $\phi_2 = \circ,l_2,ti_2^{*}$.
 \end{lemma}
 \begin{proof}
 
-    % I need to claim that the embedded instructions have the same type type.
-    % Then how can I claim composition - it relies on what the type annotations for block, loop instructions are.
-    % Maybe I should make a lemma about composition specifically?
-
-    % Thought maybe this lemma could mimick the typing rule and make a claim about $e^{*}\;e$? that way I can show composition with the rest and kind of recursively deconstruct any instruction list.
-    % this does prevent us from typing empty instruction lists, which I think might be valid wasm code as long as the instruction is $\epsilon \rightarrow \epsilon$.
-
-    % Proceed by cases on the instruction list, either $e^{*} = \epsilon$, or $e^{*} = e_1^{*}\; e_2$, then claim that $e_1^{*}$ types under WASM by inversion on WASM composition,
-    % then use the inversion on composition to claim that the WASM precondition of $e_2$ is the postcondition of $e_1^{*}$, then invoke an instruction based lemma that claims WASM well-typed
-    % implies the embedding is prechk well-typed with a type that makes it fit what we want here.
-
-    Proceed by cases on the structure of $e^{*}$.
+    Proceed by induction on the depth of the typing derivation of $C_w \vdash e^{*} : t_1^{*} \rightarrow t_2^{*}$.
 
     \begin{enumerate}
+        % WASM Empty
         \item $e^{*} = \epsilon$
+        \\ $\land$ $t_1^{*} = t_2^{*} = \epsilon$
+        \\ $\land$ $C_w \vdash \epsilon : t_1^{*} \rightarrow t_2^{*}$
 
-        $t_2^{*} = \epsilon$ by \todo{not sure how to justify, inversion on WASM Empty?}
+        Want to show $C_p \vdash \epsilon : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-        Then we can choose $l_2 = \ti{t_l}{a_l}^{*}$.
+        Note that $ti_1^{*} = ti_2^{*} = \epsilon$.
 
-        Note that $\phi_2 = \circ$.
+        Therefore, $C_p \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Empty}.
 
-        $C_p \vdash \epsilon : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;(\phi_2,\ti{t_l}{a_l}^{*})$ by \refrule{Empty}.
+        % WASM Composition
+        \item $e^{*} = e_1^{*}\; e_2$
+        \\ $\land$ $C_w \vdash e_1^{*} : t_1^{*} \rightarrow t_3^{*}$
+        \\ $\land$ $C_w \vdash e_2 : t_3^{*} \rightarrow t_2^{*}$
 
-        Therefore, $C_p \vdash \epsilon : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Implies}.
+        Want to show $C_p \vdash (\embed[e]{e_1}^{(t_l^{*})})^{*}\; \embed[e]{e_2}^{(t_l^{*})} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-        Therefore, $C_p \vdash (\embed[e]{e^{*}}) : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Implies}.
+        Let $ti_3^{*} = \ti{t_3}{a_3}$, $l_3 = \ti{t_l}{a_{l3}}^{*}$, $\phi_3 = \circ,l_3,ti_3^{*}$.
 
-        \item $e^{*} = e_1^{*}\; e_2^{*}$
+        $C_p \vdash (\embed[e]{e_1}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$ by the inductive hypothesis.
 
-        \thought{claim inversion on WASM typing to get a type, then invoke the instruction typing lemma to show the embedding has an equivalent type, then invoke this lemma again}
+        $C_p \vdash \embed[e]{e_2}^{(t_l^{*})} : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_2$ by the inductive hypothesis.
 
-        By inversion on WASM composition, $C_w \vdash e_1^{*} : \epsilon \rightarrow t_3^{*}$ and $C_w \vdash e_2 : t_3^{*} \rightarrow t_2^{*}$.
+        Therefore, $C_p \vdash (\embed[e]{e_1}^{(t_l^{*})})^{*}\; \embed[e]{e_2}^{(t_l^{*})} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Composition}.
 
-        $C_p \vdash \embed[e]{e_2}^{(t_l^{*})} : \ti{t_3}{a_3}^{*};l_3;\phi_3 \rightarrow \ti{t_2}{a_2}^{*};l_2;\phi_2$
-        where $l_3 = \ti{t_l}{a_4}^{*}$, $\phi_3 = \circ,\ti{t_l}{a_4}^{*},\ti{t_3}{a_3}^{*}$, by \reflemma{Sound Instruction Typing Embedding}.
+        % WASM Stack Polymorphism
+        \item $t_1^{*} = t^{*}\; t_3^{*}$
+        \\ $\land$ $t_2^{*} = t^{*}\; t_4^{*}$
+        \\ $\land$ $C_w \vdash e^{*} : t_3^{*} \rightarrow t_4^{*}$
 
-        $C_p \vdash (\embed[e_1]{e_1}^{(t_l^{*})})^{*} : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \ti{t_3}{a_3}^{*};l_3;\phi_3$ by \reflemma{Sound Instruction List Typing Embedding}.
+        Want to show $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-        Therefore, $C_p \vdash (\embed[e]{e^{*}}) : \epsilon;\ti{t_l}{a_l}^{*};(\circ,\ti{t_l}{a_l}^{*}) \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Composition}.
+        Let $ti_1^{*} = \ti{t}{a}^{*}\; \ti{t_3}{a_3}^{*}$, $\phi_3 = \circ,l_1,\ti{t_3}{a_3}^{*}$.
+
+        Let $ti_2^{*} = \ti{t}{a}^{*}\; \ti{t_4}{a_4}^{*}$, $\phi_4 = \circ,l_2,\ti{t_4}{a_4}^{*}$.
+
+        \thought{I'm not sure if these let statements require more justification...}
+
+        $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \ti{t_3}{a_3}^{*};l_1;\phi_3 \rightarrow \ti{t_4}{a_4}^{*};l_2;\phi_4$ by the inductive hypothesis.
+
+        Because $a$ are fresh, $\phi_1 = \phi_3,\ti{t}{a}^{*} \implies \phi_3$.
+
+        \thought{Are they really fresh? If they are, why?}
+
+        $\phi_4 \implies \phi_4,\ti{t}{a}^{*} = \phi_2$ trivially.
+
+        $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \ti{t_3}{a_3}^{*};l_1;\phi_1 \rightarrow \ti{t_4}{a_4}^{*};l_2;\phi_2$ by \refrule{Implies}.
+
+        $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Stack-Poly}.
 
     \end{enumerate}
-
 \end{proof}
-
-\begin{lemma}{Sound Instruction Typing Embedding}
-
-    If $C_w \vdash e : t_1^{*} \rightarrow t_2^{*}$,
-    \\ then $C_p \vdash \embed[e]{e}^{(t_l^{*})} : \ti{t_1}{a_1}^{*};\ti{t_l}{a_3}^{*};\phi_1 \rightarrow \ti{t_2}{a_2}^{*};\ti{t_l}{a_4}^{*};\phi_2$, where
-    $\phi_1 = \circ,\ti{t_1}{a_1}^{*},\ti{t_l}{a_3}^{*}$,
-    $\phi_2 = \circ,\ti{t_2}{a_2}^{*},\ti{t_l}{a_4}^{*}$.
-\end{lemma}
 
