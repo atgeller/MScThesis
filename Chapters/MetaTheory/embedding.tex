@@ -256,6 +256,14 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
         \todo{This doesn't really work, since $\phi_1$ and $\phi_2$ don't reference the locals, so the $\phi$s and $C_f$ doesn't match the premises of the lemma}.
 
+        \thought{umm, $a_2$, $l$, and $\phi_2$ are part of $C_f$, but are also getting chosen in the Sound Instruction Typing Embedding lemma...}
+
+        \thought{we could have the postcondition of the lemma not be the same as what's put in the context, then have a kind of cohesion lemma/proof that things match up?}
+
+        \thought{somehow use the fact that any values will satisfy the postcondition?}
+
+        \thought{we know that the number and types of the values on the stack and locals match from the wasm typing.}
+
         Then, $C_p \vdash ex_f^{*}\; \<func> \tfi_f\; \<local>\; t^{*}\; (\embed[e]{e}^{(t_1^{*}\;t^{*})})^{*} : ex_f^{*}\; \tfi_f$ by \refrule{Func}.
 
         \item $f = ex_f^{*}\; \<wfunc> t_1^{*} \rightarrow t_2^{*}\; im$
@@ -267,14 +275,6 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
     \end{enumerate}
 \end{proof}
-
-\thought{
-    The sound instruction typing embedding lemma is saying that there exists a type of the required form.
-    We can choose the exact values, such as $l_1 = l_2$, because that still fits the form.
-    The function proof just requires that this lemma proves an existential for a type of the given form (with the exact raw types) since it is only making existential claims on the exact index types.
-    But the inductive hypothesis in the composition case requires that either the stack precondition or the post condition are treated as fixed, otherwise that proof case would have values that are choosen at two independent points.
-    I think it would be easiest to treat the precondition as fixed.
-}
 
 \begin{lemma}{Sound Instruction Typing Embedding}
 
@@ -336,6 +336,28 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
         Choose $ti_2^{*} = \ti{t}{a}$, $\phi_2 = \phi_1,\ti{t}{a}$, note that this choice of $\phi_2$ is consistent with our choice of $l_2$.
 
         Therefore, $C_p \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        % WASM binop
+        \item $e^{*} = t.\<binop>$
+        \\ $\land$ $t_1^{*} = t\;t$
+        \\ $\land$ $t_2^{*} = t$
+        \\ $\land$ $C_w \vdash t.\<binop> : t\;t \rightarrow t$
+
+        Want to show $C_p \vdash t.\<binop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        Choose $l_2 = l_1$.
+
+        Note that since $t_1^{*} = t\;t$, $ti_1^{*} = \ti{t}{a_3}\;\ti{t}{a_4}$.
+
+        $C_p \vdash t.\<binop> : \ti{t}{a_3}\;\ti{t}{a_4};l_1;\phi_1 \rightarrow \ti{t}{a_5};l_2;(\phi_1,\ti{t}{a_5},(=\;a_5\;(\|\<binop>\|\;a_3\;a_4)))$ by \refrule{Binop}.
+
+        $\phi_1,\ti{t}{a_5},(=\;a_5\;(\|\<binop>\|\;a_3\;a_4)) \implies \phi_1,\ti{t}{a_5}$ trivially.
+
+        $C_p \vdash t.\<binop> : \ti{t}{a_3}\;\ti{t}{a_4};l_1;\phi_1 \rightarrow \ti{t}{a_5};l_2;(\phi_1,\ti{t}{a_5})$ by \refrule{Implies}.
+
+        Choose $ti_2^{*} = \ti{t}{a_5}$, $\phi_2 = \circ,l_2,\ti{t}{a_5}$.
+
+        Therefore, $C_p \vdash t.\<binop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
         % WASM Empty
         \item $e^{*} = \epsilon$
