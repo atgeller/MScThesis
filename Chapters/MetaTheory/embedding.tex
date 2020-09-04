@@ -268,6 +268,14 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     \end{enumerate}
 \end{proof}
 
+\thought{
+    The sound instruction typing embedding lemma is saying that there exists a type of the required form.
+    We can choose the exact values, such as $l_1 = l_2$, because that still fits the form.
+    The function proof just requires that this lemma proves an existential for a type of the given form (with the exact raw types) since it is only making existential claims on the exact index types.
+    But the inductive hypothesis in the composition case requires that either the stack precondition or the post condition are treated as fixed, otherwise that proof case would have values that are choosen at two independent points.
+    I think it would be easiest to treat the precondition as fixed.
+}
+
 \begin{lemma}{Sound Instruction Typing Embedding}
 
     If $C_w \vdash e^{*} : t_1^{*} \rightarrow t_2^{*}$,
@@ -289,16 +297,17 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
         \text{label } (\ti{t_b}{a_b};l_b;(\circ,l_b,\ti{t_b}{a_b}))^{*},
         \text{return } (\ti{t_r}{a_r};l_r;(\circ,\ti{t_r}{a_r}))^{?}
     \}$,
-    % note that the label types include the locals types, but that the return type doesn't
+    % note that the label types include the locals types, but that the return type doesn't - this isn't quite right, need to do some changes to function typing
     % make sure the function definitions match
     $(\erase[\tfi]{\tfi} = \tf)^{*}$,
-    \\ then $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$, where
-    % these are to make the definitions not quite as long, might be overcomplicating things
-    $\phi_1 = \circ,l_1,ti_1^{*}$.
-    $l_1 = \ti{t_l}{a_{l1}}$,
+    % claiming that for all valid precondition types of this form...
     $ti_1^{*} = \ti{t_1}{a_1}^{*}$,
+    $l_1 = \ti{t_l}{a_{l1}}^{*}$,
+    $\phi_1 = \circ,l_1,ti_1^{*}$.
+    \\ then $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$, where
+    % there exists a valid postcondition type of this form.
     $ti_2^{*} = \ti{t_2}{a_2}^{*}$,
-    $l_2 = \ti{t_l}{a_{l2}}$,
+    $l_2 = \ti{t_l}{a_{l2}}^{*}$,
     $\phi_2 = \circ,l_2,ti_2^{*}$.
 \end{lemma}
 \begin{proof}
@@ -306,16 +315,42 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     Proceed by induction on the depth of the typing derivation of $C_w \vdash e^{*} : t_1^{*} \rightarrow t_2^{*}$.
 
     \begin{enumerate}
+        % WASM Const
+        \item $e^{*} = t.\<const> c$
+        \\ $\land$ $t_1^{*} = \espilon$
+        \\ $\land$ $t_2^{*} = t$
+        \\ $\land$ $C_w \vdash t.\<const> c : \epsilon \rightarrow t$
+
+        Want to show $C_p \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        Choose $l_2 = l_1$.
+
+        $C_p \vdash t.\<const> c : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;(\phi_1,\ti{t}{a},(=\;a\;\ti{t}{c}))$ by \refrule{Const}.
+
+        $\phi_1,\ti{t}{a},(=\;a\;\ti{t}{c}) \implies \phi_1,\ti{t}{a}$ trivially.
+
+        $C_p \vdash t.\<const> c : \epsilon;l_1;\phi_1 \rightarrow \ti{t}{a};l_2;(\phi_1,\ti{t}{a})$ by \refrule{Implies}.
+
+        Note that since $t_1^{*} = \epsilon$, $ti_1^{*} = \epsilon$.
+
+        Choose $ti_2^{*} = \ti{t}{a}$, $\phi_2 = \phi_1,\ti{t}{a}$, note that this choice of $\phi_2$ is consistent with our choice of $l_2$.
+
+        Therefore, $C_p \vdash t.\<const> c : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
         % WASM Empty
         \item $e^{*} = \epsilon$
         \\ $\land$ $t_1^{*} = t_2^{*} = \epsilon$
-        \\ $\land$ $C_w \vdash \epsilon : t_1^{*} \rightarrow t_2^{*}$
+        \\ $\land$ $C_w \vdash \epsilon : \epsilon \rightarrow \epsilon$
 
         Want to show $C_p \vdash \epsilon : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-        Note that $ti_1^{*} = ti_2^{*} = \epsilon$.
+        $C_p \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_1;\phi_1$ by \refrule{Empty}.
 
-        Therefore, $C_p \vdash \epsilon : \epsilon;l_1;\phi_1 \rightarrow \epsilon;l_2;\phi_2$ by \refrule{Empty}.
+        Note that since $t_1^{*} = \epsilon$, $ti_1^{*} = \epsilon$.
+
+        Choose $ti_2^{*} = \epsilon$, $l_2 = l_1$, $\phi_2 = \phi_1$.
+
+        Therefore, $C_p \vdash \epsilon : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
         % WASM Composition
         \item $e^{*} = e_1^{*}\; e_2$
@@ -324,11 +359,16 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
         Want to show $C_p \vdash (\embed[e]{e_1}^{(t_l^{*})})^{*}\; \embed[e]{e_2}^{(t_l^{*})} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
-        Let $ti_3^{*} = \ti{t_3}{a_3}$, $l_3 = \ti{t_l}{a_{l3}}^{*}$, $\phi_3 = \circ,l_3,ti_3^{*}$.
+        Note that $ti_3^{*}, l_3, \phi_3$ are getting defined in the first invocation of the inductive hypothesis.
 
         $C_p \vdash (\embed[e]{e_1}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_3^{*};l_3;\phi_3$ by the inductive hypothesis.
 
         $C_p \vdash \embed[e]{e_2}^{(t_l^{*})} : ti_3^{*};l_3;\phi_3 \rightarrow ti_2^{*};l_2;\phi_2$ by the inductive hypothesis.
+
+        \thought{
+            This relies on the fact that we're making existential claims on the postcondition from forall claims on the precondition.
+            The first claim of the inductive hypothesis chooses values for $ti_3^{*}, l_3, \phi_3$, that are then validly used in the second one because they're under a forall.
+        }
 
         Therefore, $C_p \vdash (\embed[e]{e_1}^{(t_l^{*})})^{*}\; \embed[e]{e_2}^{(t_l^{*})} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Composition}.
 
@@ -341,21 +381,23 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
         Let $ti_1^{*} = \ti{t}{a}^{*}\; \ti{t_3}{a_3}^{*}$, $\phi_3 = \circ,l_1,\ti{t_3}{a_3}^{*}$.
 
-        Let $ti_2^{*} = \ti{t}{a}^{*}\; \ti{t_4}{a_4}^{*}$, $\phi_4 = \circ,l_2,\ti{t_4}{a_4}^{*}$.
-
-        \thought{I'm not sure if these let statements require more justification...}
-
         $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \ti{t_3}{a_3}^{*};l_1;\phi_3 \rightarrow \ti{t_4}{a_4}^{*};l_2;\phi_4$ by the inductive hypothesis.
 
-        Because $a$ are fresh, $\phi_1 = \phi_3,\ti{t}{a}^{*} \implies \phi_3$.
+        Because $a$ are fresh, $\phi_3,\ti{t}{a}^{*} \implies \phi_3$.
+
+        Note that $\phi_1 = \phi_3,\ti{t}{a}^{*}$.
 
         \thought{Are they really fresh? If they are, why?}
 
-        $\phi_4 \implies \phi_4,\ti{t}{a}^{*} = \phi_2$ trivially.
+        $\phi_4 \implies \phi_4,\ti{t}{a}^{*}$ trivially.
 
-        $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \ti{t_3}{a_3}^{*};l_1;\phi_1 \rightarrow \ti{t_4}{a_4}^{*};l_2;\phi_2$ by \refrule{Implies}.
+        $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \ti{t_3}{a_3}^{*};l_1;\phi_1 \rightarrow \ti{t_4}{a_4}^{*};l_2;\phi_4,\ti{t}{a}^{*}$ by \refrule{Implies}.
 
-        $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$ by \refrule{Stack-Poly}.
+        $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : \ti{t}{a}^{*}\; \ti{t_3}{a_3}^{*};l_1;\phi_1 \rightarrow \ti{t}{a}^{*}\; \ti{t_4}{a_4}^{*};l_2;\phi_4,\ti{t}{a}^{*}$ by \refrule{Stack-Poly}.
+
+        Choose $ti_2^{*} = \ti{t}{a}^{*}\; \ti{t_4}{a_4}^{*}$, $\phi_2 = \phi_4,\ti{t}{a}^{*}$.
+
+        Therefore, $C_p \vdash (\embed[e]{e}^{(t_l^{*})})^{*} : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
     \end{enumerate}
 \end{proof}
