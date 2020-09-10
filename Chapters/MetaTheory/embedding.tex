@@ -317,7 +317,7 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
     \begin{enumerate}
         % WASM Const
         \item $e^{*} = t.\<const> c$
-        \\ $\land$ $t_1^{*} = \espilon$
+        \\ $\land$ $t_1^{*} = \epsilon$
         \\ $\land$ $t_2^{*} = t$
         \\ $\land$ $C_w \vdash t.\<const> c : \epsilon \rightarrow t$
 
@@ -353,11 +353,67 @@ Want to prove that the embedding produces well-typed \name, embedding works on a
 
         $\phi_1,\ti{t}{a_5},(=\;a_5\;(\|\<binop>\|\;a_3\;a_4)) \implies \phi_1,\ti{t}{a_5}$ trivially.
 
-        $C_p \vdash t.\<binop> : \ti{t}{a_3}\;\ti{t}{a_4};l_1;\phi_1 \rightarrow \ti{t}{a_5};l_2;(\phi_1,\ti{t}{a_5})$ by \refrule{Implies}.
+        Choose $\phi_2 = \circ,l_2,\ti{t}{a_5}$.
 
-        Choose $ti_2^{*} = \ti{t}{a_5}$, $\phi_2 = \circ,l_2,\ti{t}{a_5}$.
+        $\phi_1,\ti{t}{a_5} \implies \phi_2$ trivially.
+
+        $C_p \vdash t.\<binop> : \ti{t}{a_3}\;\ti{t}{a_4};l_1;\phi_1 \rightarrow \ti{t}{a_5};l_2;\phi_2$ by \refrule{Implies}.
+
+        Choose $ti_2^{*} = \ti{t}{a_5}$.
 
         Therefore, $C_p \vdash t.\<binop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        % WASM testop
+        \item $e^{*} = t.\<testop>$
+        \\ $\land$ $t_1^{*} = t$
+        \\ $\land$ $t_2^{*} = \<ithreetwo>$
+        \\ $\land$ $C_w \vdash t.\<testop> : t \rightarrow \<ithreetwo>$
+
+        Want to show $C_p \vdash t.\<testop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        Choose $l_2 = l_1$.
+
+        Note that since $t_1^{*} = t$, $ti_1^{*} = \ti{t}{a_3}$.
+
+        $C_p \vdash t.\<testop> : \ti{t}{a_3};l_1;\phi_1 \rightarrow \ti{\<ithreetwo>}{a_4};l_2;(\phi_1,\ti{\<ithreetwo>}{a_4},(=\;a_4\;(\|\<testop>\|\;a_3)))$ by \refrule{Testop}.
+
+        $\phi_1,\ti{\<ithreetwo>}{a_4},(=\;a_4\;(\|\<testop>\|\;a_3)) \implies \phi_1,\ti{\<ithreetwo>}{a_4}$ trivially.
+
+        Choose $\phi_2 = \circ,l_2,\ti{\<ithreetwo>}{a_4}$.
+
+        $\phi_1,\ti{\<ithreetwo>}{a_4} \implies \phi_2$ trivially.
+
+        $C_p \vdash t.\<testop> : \ti{t}{a_3};l_1;\phi_1 \rightarrow \ti{\<ithreetwo>}{a_4};l_2;\phi_2$ by \refrule{Implies}.
+
+        Choose $ti_2^{*} = \ti{\<ithreetwo>}{a_4}$.
+
+        Therefore, $C_p \vdash t.\<testop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        % WASM relop
+        \item $e^{*} = t.\<relop>$
+        \\ $\land$ $t_1^{*} = t\;t$
+        \\ $\land$ $t_2^{*} = \<ithreetwo>$
+        \\ $\land$ $C_w \vdash t.\<relop> : t\;t \rightarrow \<ithreetwo>$
+
+        Want to show $C_p \vdash t.\<relop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
+
+        Choose $l_2 = l_1$.
+
+        Note that since $t_1^{*} = t\;t$, $ti_1^{*} = \ti{t}{a_3}\;\ti{t}{a_4}$.
+
+        $C_p \vdash t.\<relop> : \ti{t}{a_3}\;\ti{t}{a_4};l_1;\phi_1 \rightarrow \ti{\<ithreetwo>}{a_5};l_2;(\phi_1,\ti{\<ithreetwo>}{a_5},(=\;a_5\;(\|\<relop>\|\;a_3\;a_4)))$ by \refrule{Relop}.
+
+        $\phi_1,\ti{\<ithreetwo>}{a_5},(=\;a_5\;(\|\<relop>\|\;a_3\;a_4)) \implies \phi_1,\ti{\<ithreetwo>}{a_5}$ trivially.
+
+        Choose $\phi_2 = \circ,l_2,\ti{\<ithreetwo>}{a_5}$.
+
+        $\phi_1,\ti{\<ithreetwo>}{a_5} \implies \phi_2$ trivially.
+
+        $C_p \vdash t.\<relop> : \ti{t}{a_3}\;\ti{t}{a_4};l_1;\phi_1 \rightarrow \ti{\<ithreetwo>}{a_5};l_2;\phi_2$ by \refrule{Implies}.
+
+        Choose $ti_2^{*} = \ti{\<ithreetwo>}{a_5}$.
+
+        Therefore, $C_p \vdash t.\<relop> : ti_1^{*};l_1;\phi_1 \rightarrow ti_2^{*};l_2;\phi_2$.
 
         % WASM Empty
         \item $e^{*} = \epsilon$
