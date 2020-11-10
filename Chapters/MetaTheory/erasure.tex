@@ -35,15 +35,16 @@ We show that erasing a well-typed \name module yields a well-typed \wasm module.
 
 \begin{theorem}{Sound Module Erasure}
 
-    If $\vdash \<module> f^{*}\; glob^{*}\; (n,tfi^{n})^{?}\; mem^{?}$,
-    \\ then $\vdash \<wmodule> \erase[f]{f}^{*} glob^{*} n^{?} mem^{?}$
+    If $\vdash \<module> f^{*}\; glob^{*}\; tab^{?}\; mem^{?}$,
+    \\ then $\vdash \<wmodule> \erase[f]{f}^{*}\; glob^{*}\; \erase[tab]{tab}^{?}\; mem^{?}$
 \end{theorem}
 \begin{proof}
 
     Note that the globals $glob^{*}$ and memory $mem^{?}$ are not affected by erasure, and have the same module typing rules in \wasm as in \name.
     Thus, we only need to reason about the functions $f^{*}$ and table $tab^{?}$.
 
-    Then, by \reflemma{Sound Function Typing Erasure} and \reflemma{Sound Table Erasure}, we have that $\vdash \<wmodule> \erase[f]{f}^{*} glob^{*} n^{?} mem^{?}$.
+    Then, by \reflemma{Sound Function Typing Erasure} and \reflemma{Sound Table Erasure}, we have that\\
+    $\vdash \<wmodule> \erase[f]{f}^{*}\; glob^{*}\; \erase[tab]{tab}^{?}\; mem^{?}$.
 \end{proof}
 
 Erasing a table definition $\<table> n\;i^{n}$ does nothing, since a table definition has the same syntax in \name and in \wasm.
@@ -54,10 +55,10 @@ We do not use or care about the exports, since they are unchanged and only used 
 
     \begin{mathpar}
         \begin{array}{rcl}
-            \<table> n\;i^{n}
-            &=& \<wtable> n\;i^{n} \\
-            \<table> (n,tfi^{n})\; im
-            &=& \<wtable> n\; im \\
+            ex^{*}\; \<table> n\;i^{n}
+            &=& ex^{*}\; \<wtable> n\;i^{n} \\
+            ex^{*}\; \<table> (n,tfi^{n})\; im
+            &=& ex^{*}\; \<wtable> n\; im \\
         \end{array}
     \end{mathpar}
 \end{definition}
@@ -67,25 +68,25 @@ This proof relies on the definition of $\erase[C]{C}$: \autoref{def:erase-C}.
 
 \begin{lemma}{\deflemma{Sound Table Erasure}}
 
-    If $C \vdash tab$,
-    \\ then $\erase[C]{C} \vdash \erase[tab]{tab}$
+    If $C \vdash tab : ex^{*}\; (n,tfi^n)$,
+    \\ then $\erase[C]{C} \vdash \erase[tab]{tab} : ex^{*}\; n$
 \end{lemma}
 \begin{proof}
 
     By case analysis on $\erase[tab]{tab}$.
 
     \begin{itemize}
-        \item Case: $tab=\<table> n\;i^{n}$
+        \item Case: $tab=ex^{*}\; \<table> n\;i^{n}$
 
             We know $(C_\text{func}(i)=tfi)^{n}$ because it is a premise of \refrule{Table}.
 
             Then, $(\erase[C]{C}_\text{func}(i)=tfi)^{n}$ by definition of $\erase[C]{C}$.
 
-            Therefore, $\erase[C]{C} \vdash \<wtable> n\;i^{n}$ because \wasm accepts any module type context in that rule.
+            Therefore, $\erase[C]{C} \vdash ex^{*}\; \<wtable> n\;i^{n} : ex^{*}\; n$ because \wasm accepts any module type context in that rule.
 
-        \item Case: $tab=\<table> (n,tfi^{n})\; im$
+        \item Case: $tab=ex^{*}\; \<table> (n,tfi^{n})\; im$
 
-            Trivially $\erase[C]{C} \vdash \<wtable> n\;im$ because \wasm accepts any module type context and imported table.
+            Trivially $\erase[C]{C} \vdash ex^{*}\; \<wtable> n\;im : ex^{*}\; n$ because \wasm accepts any module type context and imported table.
     \end{itemize}
 \end{proof}
 
